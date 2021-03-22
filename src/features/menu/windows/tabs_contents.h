@@ -1,0 +1,108 @@
+#pragma once
+
+#include <imgui/im_tools.h>
+
+#include "../../../settings/settings.h"
+
+#include <fmt/core.h>
+
+namespace menu_tabs_content
+{
+	using namespace ImGui;
+	using namespace settings;
+
+
+	namespace internal
+	{
+		inline ImGuiComboFlags combo_flags = ImGuiComboFlags_NoArrowButton;
+		
+		inline ImVec2 calc_toggle_button_size()
+		{
+			return { GetWindowSize().x / 12, GetWindowSize().y / 25 };
+		}
+
+		inline void text_and_toggle_button(std::string text, std::string tag, bool* var)
+		{
+			Text("%s", text.c_str());
+			SameLine();
+			ToggleButton(tag.c_str(), var);
+		}
+	}
+	
+	inline void draw_legit_bot()
+	{
+	}
+
+	inline void draw_rage_bot()
+	{
+	}
+
+	inline void draw_visuals()
+	{
+		constexpr auto panels_in_visuals_count = 3;
+		
+		BeginGroupPanel("ESP##VISUALS_ESP", {GetWindowSize().x / panels_in_visuals_count, -1});
+		{
+			internal::text_and_toggle_button("Enabled", "##VISUALS_ESP_ENABLED", &visuals::esp);
+			internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_BOX_ENABLE", &visuals::esp_box);
+			internal::text_and_toggle_button("Box team color", "##VISUALS_ESP_COLOR_BY_TEAM", &visuals::esp_box_color_by_team);
+			if (visuals::esp_box)
+			{
+				if (BeginCombo("##VISUALS_ESP_BOX_TYPE_COMBO", fmt::format("Box type: {}", to_string(static_cast<visuals::e_esp_box_type>(visuals::esp_box_type))).c_str(), internal::combo_flags))
+				{
+					for (auto i = 0; i < static_cast<int>(visuals::e_esp_box_type::iter_last); ++i)
+					{
+						const auto is_selected = (visuals::esp_box_type == i);
+						if (Selectable(to_string(static_cast<visuals::e_esp_box_type>(i)), is_selected))
+							visuals::esp_box_type = i;
+						if (is_selected)
+							SetItemDefaultFocus();
+					}
+					EndCombo();
+				}
+			}
+			
+			internal::text_and_toggle_button("Name", "##VISUALS_ESP_NAME_ENABLE", &visuals::esp_name);
+			internal::text_and_toggle_button("Health", "##VISUALS_ESP_HEALTH_ENABLE", &visuals::esp_health);
+		}
+		EndGroupPanel();
+	}
+
+	inline void draw_misc()
+	{
+		constexpr auto panels_in_visuals_count = 3;
+		
+		BeginGroupPanel("ESP##VISUALS_ESP", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			if (Button("Get all entitys"))
+			{
+				if (interfaces::engine->is_in_game())
+				{	
+					std::vector<std::string> out;
+					for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
+					{
+						auto ent = get_entity_by_index(i);
+						if (!ent/* || !ent->is_use_lua()*/)
+							continue;
+						out.push_back(
+							"Print name:     " + ent->get_print_name() + "    class name: " + ent->get_class_name() +
+							"     lua script_name: " + ent->get_lua_script_name() + "    network class: " + ent->
+							get_client_class()->network_name);
+					}
+					
+					std::cout << "\n\n";
+					for (auto i : out)
+						std::cout << i << "\n";
+					std::cout << "Total size: " << out.size();
+					std::cout << "\n";
+				}
+			}
+			
+		}
+		EndGroupPanel();
+	}
+
+	inline void draw_setting()
+	{
+	}
+}
