@@ -93,6 +93,6 @@ c_image img_loader::load_from_memory(unsigned char const* data, int size, bool i
 		throw std::runtime_error("Invalid channels num: " + std::to_string(channels_num)
 			+ "\tin file ");
 
-	const auto size = width * height * channels_num;
-	return c_image(width, height, { tx.get(), tx.get() + size }, format);
+	const auto img_size = width * height * channels_num;
+	return c_image(width, height, { tx.get(), tx.get() + img_size }, format);
 }

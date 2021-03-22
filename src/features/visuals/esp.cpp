@@ -58,7 +58,7 @@ inline void draw_box(c_base_entity* ent, math::c_box& box)
 		                   ? ent->get_team_color().get_u32()
 		                   : c_color(settings::colors::colors_map["esp_box_color"]).get_u32();
 
-	const auto box_type = static_cast<int>(settings::visuals::esp_box);
+	const auto box_type = static_cast<int>(settings::visuals::esp_box_type);
 	
 	if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::flat))
 	{
