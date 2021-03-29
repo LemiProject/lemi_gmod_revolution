@@ -10,7 +10,7 @@ enum class e_type
 
 enum class e_special
 {
-	glob,
+	glob = 0,
 	env,
 	reg
 };

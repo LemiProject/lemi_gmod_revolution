@@ -8,7 +8,7 @@ namespace game_utils
 {
 	inline DWORD matrix_offset = 0x0;
 	
-	inline bool screen_transform(const c_vector& in, c_vector& out)	//We are rendering using imgui, so we need to normalize view_matrix
+	inline bool screen_transform(const D3DMATRIX& world_matrix, const c_vector& in, c_vector& out)	//We are rendering using imgui, so we need to normalize view_matrix
 	{
 		auto exception_filter = [](int code, PEXCEPTION_POINTERS ex)
 		{
@@ -17,24 +17,8 @@ namespace game_utils
 
 		__try
 		{
-			auto* glua = interfaces::lua_shared->get_interface((int)e_special::glob);
-			if (glua)
-			{
-				glua->push_special((int)e_special::glob);
-				glua->get_field(-1, "cam");
-				glua->get_field(-1, "Start3D");
-				glua->call(0, 1);
-				glua->pop();
-			}
-
-			const auto& world_matrix = interfaces::engine->get_world_to_screen_matrix();
-
-			if (glua) 
-			{
-				glua->get_field(-1, "End3D");
-				glua->call(0, 1);
-				glua->pop(3);
-			}
+			if (!interfaces::engine->is_in_game())
+				return false;
 			
 			const auto w = world_matrix.m[3][0] * in.x + world_matrix.m[3][1] * in.y + world_matrix.m[3][2] * in.z + world_matrix.m[3][3];
 			if (w < 0.001f)
@@ -61,12 +45,12 @@ namespace game_utils
 		}
 	}
 
-	inline bool world_to_screen(const c_vector& in, c_vector& out)
+	inline bool world_to_screen(const D3DMATRIX& matrix, const c_vector& in, c_vector& out)
 	{
 		if (matrix_offset == 0x0)
 			return false;
 
-		if (!screen_transform(in, out))
+		if (!screen_transform(matrix, in, out))
 			return false;
 
 		int w, h;
@@ -78,7 +62,7 @@ namespace game_utils
 		return true;
 	}
 	
-	inline bool get_entity_box(c_base_entity* ent, math::c_box& box_in)
+	inline bool get_entity_box(c_base_entity* ent, math::box_t& box_in)
 	{
 		c_vector flb, brt, blb, frt, frb, brb, blt, flt;
 
@@ -86,6 +70,25 @@ namespace game_utils
 		const auto min = ent->get_collidable_ptr()->mins() + origin;
 		const auto max = ent->get_collidable_ptr()->maxs() + origin;
 
+		//auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		//if (glua)
+		//{
+		//	glua->push_special((int)e_special::glob);
+		//	glua->get_field(-1, "cam");
+		//	glua->get_field(-1, "Start3D");
+		//	glua->call(0, 1);
+		//	glua->pop();
+		//}
+
+		const auto& world_matrix = interfaces::engine->get_world_to_screen_matrix();
+
+		//if (glua)
+		//{
+		//	glua->get_field(-1, "End3D");
+		//	glua->call(0, 1);
+		//	glua->pop(3);
+		//}
+		
 		c_vector points[] = {
 			c_vector(min.x, min.y, min.z),
 			c_vector(min.x, max.y, min.z),
@@ -97,10 +100,10 @@ namespace game_utils
 			c_vector(max.x, min.y, max.z)
 		};
 
-		if (!world_to_screen(points[3], flb) || !world_to_screen(points[5], brt)
-			|| !world_to_screen(points[0], blb) || !world_to_screen(points[4], frt)
-			|| !world_to_screen(points[2], frb) || !world_to_screen(points[1], brb)
-			|| !world_to_screen(points[6], blt) || !world_to_screen(points[7], flt))
+		if (!world_to_screen(world_matrix, points[3], flb) || !world_to_screen(world_matrix, points[5], brt)
+			|| !world_to_screen(world_matrix, points[0], blb) || !world_to_screen(world_matrix, points[4], frt)
+			|| !world_to_screen(world_matrix, points[2], frb) || !world_to_screen(world_matrix, points[1], brb)
+			|| !world_to_screen(world_matrix, points[6], blt) || !world_to_screen(world_matrix, points[7], flt))
 			return false;
 
 		c_vector arr[] = { flb, brt, blb, frt, frb, brb, blt, flt };

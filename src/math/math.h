@@ -4,14 +4,22 @@
 
 namespace math
 {
+	struct vec2_t
+	{
+		float x, y;
+	};
 	
-	struct c_box
+	struct box_t
 	{
 		float x, y, w, h;
 
-		ImVec2 get_min() const { return { x, y }; }
-		ImVec2 get_max() const { return { x + w, y + h }; }
+		vec2_t get_min() const { return { x, y }; }
+		vec2_t get_max() const { return { x + w, y + h }; }
 	};
-	
+
+	__forceinline box_t create_box(vec2_t min, vec2_t max)
+	{
+		return { min.x, min.y, max.x - min.x, max.y - min.y };
+	}
 	
 }

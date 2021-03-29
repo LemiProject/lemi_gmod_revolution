@@ -1,10 +1,13 @@
 #pragma once
 
 #include <imgui/im_tools.h>
+#include <imgui/imgui_stdlib.h>
 
 #include "../../../settings/settings.h"
 
 #include <fmt/core.h>
+
+#include "../../../render_system/render_system.h"
 
 namespace menu_tabs_content
 {
@@ -66,6 +69,18 @@ namespace menu_tabs_content
 			internal::text_and_toggle_button("Health", "##VISUALS_ESP_HEALTH_ENABLE", &visuals::esp_health);
 		}
 		EndGroupPanel();
+
+		SameLine();
+		
+		BeginGroupPanel("CHAMS##VISUALS_CHAMS", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			internal::text_and_toggle_button("Enabled", "##VISUALS_CHAMS_ENABLED", &visuals::chams);
+			internal::text_and_toggle_button("IgnoreZ", "##VISUALS_CHAMS_IGNOREZ", &visuals::ignore_z);
+			internal::text_and_toggle_button("Entity chams", "##VISUALS_CHAMS_ENTITY", &visuals::entity_chams);
+
+			InputText("Material##VISUALS_CHAMS_MATERIAL", &visuals::chams_material);
+		}
+		EndGroupPanel();
 	}
 
 	inline void draw_misc()
@@ -97,7 +112,9 @@ namespace menu_tabs_content
 					std::cout << "\n";
 				}
 			}
-			
+
+			if (Button("Reload fonts"))
+				surface_render::reload_fonts();
 		}
 		EndGroupPanel();
 	}

@@ -74,7 +74,7 @@ public:
 		if (!is_use_lua())
 			return {};
 
-		auto* const glua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!glua)
 			return {};
 		push_entity();
@@ -93,10 +93,10 @@ public:
 
 	std::string get_class_name()
 	{
-		//if (!is_use_lua())
-		//	return {};
+		if (!is_use_lua())
+			return {};
 
-		auto* const glua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!glua)
 			return {};
 		push_entity();
@@ -112,46 +112,9 @@ public:
 		glua->pop(2);
 		return out;
 	}
-
-	c_color get_team_color()
-	{
-		auto* const glua = interfaces::lua_shared->get_interface((int)e_special::glob);
-		c_color color;
-
-		if (!glua)
-			return c_color();
-
-		glua->push_special((int)e_special::glob);
-
-		glua->push_special((int)e_special::glob);
-		glua->get_field(-1, "team");
-		glua->get_field(-1, "GetColor");
-		glua->push_number(this->get_team_num());
-		glua->call(1, 1);
-
-		glua->push_string("r");
-		glua->get_table(-2);
-		int r = glua->get_number(-1);
-		glua->pop();
-
-		glua->push_string("g");
-		glua->get_table(-2);
-		int g = glua->get_number(-1);
-		glua->pop();
-
-		glua->push_string("b");
-		glua->get_table(-2);
-		int b = glua->get_number(-1);
-		glua->pop();
-
-		glua->pop(4);
-
-		color.init(r, g, b);
-		return color;
-	}
 };
 
-inline c_base_entity* get_entity_by_index(const int i)
+__forceinline c_base_entity* get_entity_by_index(const int i)
 {
 	return static_cast<c_base_entity*>(interfaces::entity_list->get_entity_by_index(i));
 }

@@ -14,77 +14,74 @@
 #include "../../settings/settings.h"
 
 
-inline ImDrawList* draw_list;
-
-void draw_health(c_base_entity* ent, math::c_box box)
+void draw_health(c_base_entity* ent, math::box_t box)
 {
 	if (ent->is_alive())
 	{
 		const auto health = std::clamp(ent->get_health(), 0, ent->get_max_health());
 		const auto pos = ImVec2(box.x - 6.f, box.y);
 
-		const math::c_box void_box{ pos.x, pos.y, 3, box.h };
+		const math::box_t void_box{ pos.x, pos.y, 3, box.h };
 		auto health_box{ void_box };
 
 		health_box.h = health * void_box.h / 100;
 		health_box.y = void_box.y + void_box.h - health_box.h;
 
-		const auto health_color = c_color(settings::colors::colors_map["esp_health_color_hp"]).get_u32();
-		const auto void_color = c_color(settings::colors::colors_map["esp_health_color_void"]).get_u32();
-		
-		draw_list->AddRectFilled(ImVec2(void_box.x, void_box.y), ImVec2(void_box.x + void_box.w, void_box.y + void_box.h), void_color);
-		draw_list->AddRectFilled(ImVec2(health_box.x, health_box.y), ImVec2(health_box.x + health_box.w, health_box.y + health_box.h), health_color);
+		const auto health_color = c_color(settings::colors::colors_map["esp_health_color_hp"]);
+		const auto void_color = c_color(settings::colors::colors_map["esp_health_color_void"]);
+
+		surface_render::filled_rect(void_box, void_color);
+		surface_render::filled_rect(health_box, health_color);
 	}
 }
 
-inline void draw_name(c_base_entity* ent, math::c_box& box)
+inline void draw_name(c_base_entity* ent, math::box_t& box)
 {
-	ImGui::PushFont(render_system::fonts::in_game_font);
-	
 	const auto text = ent->is_player() ? static_cast<c_base_player*>(ent)->get_name() : ent->get_print_name();
-	
-	
-	const auto text_size = ImGui::CalcTextSize(text.c_str());
-	//const auto position = ImVec2(box.get_max().x - box.w / 2 - text_size.x / 2, box.get_min().y - text_size.y / 2);
-	const auto position = ImVec2(box.x + (box.w * 0.5f - text_size.x * 0.5f), box.y - text_size.y * 1.1f);
 
-	draw_list->AddTextOutlined(position, ent->get_team_color().get_u32(), c_color(0, 0, 0, 255).get_u32() , text.c_str());
-	ImGui::PopFont();
+
+	int w, h;
+	interfaces::surface->get_text_size(surface_render::fonts::in_game_font, get_wc_t(text.c_str()), w,h);
+	const math::vec2_t text_size = {(float)w, (float)h};
+	
+	const auto position = math::vec2_t{ box.x + box.w * 0.5f, box.y + box.h};
+	
+	const auto color = ent->is_player() ? static_cast<c_base_player*>(ent)->get_team_color() : c_color(settings::colors::colors_map["esp_health_color_hp"]);
+
+	surface_render::text(position, surface_render::fonts::in_game_font, text, color);
 }
 
-inline void draw_box(c_base_entity* ent, math::c_box& box)
+inline void draw_box(c_base_entity* ent, math::box_t& box)
 {
-	const auto color = settings::visuals::esp_box_color_by_team
-		                   ? ent->get_team_color().get_u32()
-		                   : c_color(settings::colors::colors_map["esp_box_color"]).get_u32();
-
+	c_color color;
+	if (ent->is_player())
+		color = settings::visuals::esp_box_color_by_team
+		                   ? static_cast<c_base_player*>(ent)->get_team_color()
+		                   : c_color(settings::colors::colors_map["esp_box_color"]);
+	else
+		color = c_color(settings::colors::colors_map["esp_box_color"]);
+	
 	const auto box_type = static_cast<int>(settings::visuals::esp_box_type);
 	
 	if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::flat))
 	{
-		draw_list->AddRect(box.get_min(), box.get_max(), color);
+		surface_render::bordered_rect(box, color);
 	}
 	else if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::bounding))
 	{
-		draw_list->AddRect(ImVec2(box.x - 1.f, box.y - 1.f), ImVec2(box.x + box.w + 1.f, box.y + box.h + 1.f), c_color(0, 0, 0, 255).get_u32(), 0, ImDrawCornerFlags_All, 1);
-		draw_list->AddRect(ImVec2(box.x + 1.f, box.y + 1.f), ImVec2(box.x + box.w - 1.f, box.y + box.h - 1.f), c_color(0, 0, 0, 255).get_u32(), 0, ImDrawCornerFlags_All, 1);
+		//draw_list->AddRect(ImVec2(box.x - 1.f, box.y - 1.f), ImVec2(box.x + box.w + 1.f, box.y + box.h + 1.f), c_color(0, 0, 0, 255).get_u32(), 0, ImDrawCornerFlags_All, 1);
+		//draw_list->AddRect(ImVec2(box.x + 1.f, box.y + 1.f), ImVec2(box.x + box.w - 1.f, box.y + box.h - 1.f), c_color(0, 0, 0, 255).get_u32(), 0, ImDrawCornerFlags_All, 1);
 
-		draw_list->AddRect(ImVec2(box.x, box.y), ImVec2(box.x + box.w, box.y + box.h), color, 0, ImDrawCornerFlags_All, 2);
+		surface_render::bordered_rect(math::create_box({ box.x - 1.f, box.y - 1.f }, { box.x + box.w + 1.f, box.y + box.h + 1.f }), colors::black_color);
+		surface_render::bordered_rect(math::create_box({ box.x + 1.f, box.y + 1.f }, { box.x + box.w - 1.f, box.y + box.h - 1.f }), colors::black_color);
+
+		surface_render::bordered_rect(math::create_box({ box.x, box.y }, { box.x + box.w, box.y + box.h }), color);
+		//draw_list->AddRect(ImVec2(box.x, box.y), ImVec2(box.x + box.w, box.y + box.h), color, 0, ImDrawCornerFlags_All, 2);
 	}
 	else if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::corners))
 	{
-		draw_list->AddRect(ImVec2(box.x, box.y), ImVec2(box.x + box.w, box.y + box.h), color, 10.f, ImDrawCornerFlags_All, 2);
+		surface_render::corner_box(box, color);
 	}
-}
-
-bool entity_in_vector(c_base_entity* ent)
-{
-	for (auto element : settings::visuals::entitys_to_draw)
-	{
-		if (element == ent->get_class_name())
-			return true;
-	}
-	return false;
 }
 
 void visuals::esp::run_esp()
@@ -92,23 +89,21 @@ void visuals::esp::run_esp()
 	if (!interfaces::engine->is_in_game() || !settings::visuals::esp)
 		return;
 	
-	draw_list = ImGui::GetOverlayDrawList();
-	
 	for (auto i = 0; i <= interfaces::entity_list->get_highest_entity_index(); ++i)
 	{
 		auto* ent = get_entity_by_index(i);
 
-		if (!ent)
+		if (!ent || !ent->is_alive() || ent->is_dormant())
 			continue;
 		
-		const auto is_draw = entity_in_vector(ent) || ent->is_player();
+		const auto is_draw = settings::visuals::entitys_to_draw.exist(ent->get_class_name()) || ent->is_player();
 
 		const auto has_owner = interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) ? true : false;
 		
-		if (!is_draw || !ent->is_alive() || ent == get_local_player() || has_owner)
+		if (!is_draw || ent == get_local_player() || has_owner)
 			continue;
 		
-		math::c_box box{};
+		math::box_t box{};
 		if (!game_utils::get_entity_box(ent, box))
 			continue;
 
@@ -122,3 +117,4 @@ void visuals::esp::run_esp()
 			draw_health(ent, box);
 	}
 }
+

@@ -1620,17 +1620,17 @@ void ImDrawList::AddText(const ImFont* font, float font_size, const ImVec2& pos,
     font->RenderText(this, font_size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip_rect != NULL);
 }
 
-void ImDrawList::AddTextOutlined(const ImVec2& pos, ImU32 col, ImU32 outline_col, const char* text_begin,
+void ImDrawList::AddTextOutlined(const ImFont* font, const ImVec2& pos, ImU32 col, ImU32 outline_col, const char* text_begin,
 	const char* text_end, float outline_size)
 {
     //Eeeeee it`s time to best "outline" text!
+	
+    AddText(font, 0.0f, ImVec2(pos.x - outline_size, pos.y), outline_col, text_begin, text_end);
+    AddText(font, 0.0f, ImVec2(pos.x, pos.y - outline_size), outline_col, text_begin, text_end);
+    AddText(font, 0.0f, ImVec2(pos.x + outline_size, pos.y), outline_col, text_begin, text_end);
+    AddText(font, 0.0f, ImVec2(pos.x, pos.y + outline_size), outline_col, text_begin, text_end);
 
-    AddText(ImVec2(pos.x - outline_size, pos.y), outline_col, text_begin, text_end);
-    AddText(ImVec2(pos.x, pos.y - outline_size), outline_col, text_begin, text_end);
-    AddText(ImVec2(pos.x + outline_size, pos.y), outline_col, text_begin, text_end);
-    AddText(ImVec2(pos.x, pos.y + outline_size), outline_col, text_begin, text_end);
-
-    AddText(pos, col, text_begin, text_end);
+    AddText(font, 0.0f, pos, col, text_begin, text_end);
 }
 
 void ImDrawList::AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end)

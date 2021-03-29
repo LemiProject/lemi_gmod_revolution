@@ -4,6 +4,7 @@
 #include <json.hpp>
 #include <vector>
 #include <map>
+#include <mutex>
 
 #include "../game_sdk/entitys/c_base_entity.h"
 
@@ -37,6 +38,20 @@ namespace settings
 			iter_last //For creating foreach impl for (auto i = 0; i < iter_last; ++i) { //code }
 		}; const char* to_string(e_esp_box_type e);
 
+		class c_entity_list
+		{
+			std::vector<std::string> classes;
+			std::mutex mutex;
+			
+		public:
+			void push_back(const std::string& c);
+			void remove(int idx);
+			bool exist(const std::string& c);
+			int find(const std::string& c);
+			void exchange(std::vector<std::string>& c);
+			bool empty();
+		};
+		
 		inline auto esp = true;
 		inline auto esp_box = true;
 		inline auto esp_name = true;
@@ -46,7 +61,12 @@ namespace settings
 		
 		inline int esp_box_type = static_cast<int>(e_esp_box_type::bounding);
 
-		inline std::vector<std::string> entitys_to_draw = {};
+		inline c_entity_list entitys_to_draw;
+
+		inline auto chams = true;
+		inline auto entity_chams = true;
+		inline auto ignore_z = true;
+		inline std::string chams_material = "debug/debugambientcube";
 	}
 
 	namespace aim
@@ -64,7 +84,8 @@ namespace settings
 		{
 			{"esp_box_color", {1, 0, 0, 0.8f}},
 			{"esp_health_color_hp", {0, 1, 0, 0.8f}},
-			{"esp_health_color_void", {0, 0, 0, 0}}
+			{"esp_health_color_void", {0, 0, 0, 0}},
+			{"chams_color_modulation", {0, 0.7f, 0.3f, 1}}
 		};
 	}
 	

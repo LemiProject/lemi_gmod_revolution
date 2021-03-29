@@ -60,6 +60,48 @@ const char* settings::visuals::to_string(const e_esp_box_type e)
 	}
 }
 
+void settings::visuals::c_entity_list::push_back(const std::string& c)
+{
+	//std::unique_lock<std::mutex> l(mutex);
+	if (!exist(c))
+		classes.push_back(c);
+}
+
+void settings::visuals::c_entity_list::remove(int idx)
+{
+	//std::unique_lock<std::mutex> l(mutex);
+	classes.erase(classes.begin() + idx);
+}
+
+bool settings::visuals::c_entity_list::exist(const std::string& c)
+{
+	//std::lock_guard<std::mutex> l(mutex);
+	return std::find(classes.begin(), classes.end(), c) != classes.end();
+}
+
+int settings::visuals::c_entity_list::find(const std::string& c)
+{
+	//std::lock_guard<std::mutex> l(mutex);
+	if (!classes.empty())
+		for (auto i = 0; i < classes.size(); ++i)
+			if (classes.at(i) == c)
+				return i;
+	
+	return -1;
+}
+
+void settings::visuals::c_entity_list::exchange(std::vector<std::string>& c)
+{
+	//std::unique_lock<std::mutex> l(mutex);
+	classes = c;
+}
+
+bool settings::visuals::c_entity_list::empty()
+{
+	//std::lock_guard<std::mutex> l(mutex);
+	return classes.empty();
+}
+
 void settings::parse_settings_from_string(std::string_view string)
 {
 	auto j = json::parse(string.data());

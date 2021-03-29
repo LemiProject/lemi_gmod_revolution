@@ -100,8 +100,8 @@ inline std::array<float, 4> c_color::get_clamped() const
 
 namespace colors
 {
-	inline const c_color black_color = c_color( 0, 0, 0, 1 );
-	inline const c_color red_color = c_color( 1, 0, 0, 1 );
-	inline const c_color green_color = c_color( 0, 1, 0, 1 );
-	inline const c_color blue_color = c_color( 0, 0, 1, 1 );
+	inline const c_color black_color = c_color( 0, 0, 0, 255 );
+	inline const c_color red_color = c_color( 255, 0, 0, 255);
+	inline const c_color green_color = c_color( 0, 255, 0, 255);
+	inline const c_color blue_color = c_color( 0, 0, 255, 255);
 }

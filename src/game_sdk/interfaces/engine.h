@@ -1,12 +1,12 @@
 #pragma once
 #include <d3d9.h>
 #include "../../math/vector.h"
+#include "i_material_system.h"
 
 struct model_t;
 struct text_message_t;
 
 class c_audio_source;
-class c_material_system;
 class i_net_channel_info;
 
 struct player_info_t
@@ -37,7 +37,7 @@ public:
 	virtual float get_sentence_len(c_audio_source* source) = 0;
 	virtual bool is_streaming(c_audio_source* source) = 0;
 	virtual void get_view_angles(c_vector& in) = 0;
-	virtual void set_view_angles(c_vector* new_ang) = 0; //20
+	virtual void set_view_angles(c_vector& new_ang) = 0; //20
 	virtual int get_max_clients(void) = 0;
 	virtual void key_lookup_binding() = 0;
 	virtual void key_binding_for_key() = 0;
@@ -66,7 +66,7 @@ public:
 	virtual void get_ambient_light_color(c_vector& color) = 0;
 	virtual int get_dx_support_level() = 0;
 	virtual bool support_hdr() = 0;
-	virtual void mat_stub(c_material_system& matsys) = 0;
+	virtual void mat_stub(i_material_system& matsys) = 0;
 	virtual void get_chapter_name(char* buf, int max_len) = 0; //50
 	virtual const char* get_level_name() = 0;
 	virtual int get_level_version() = 0;

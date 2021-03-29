@@ -1,6 +1,7 @@
 #include "bgwindow.h"
 
 #include <chrono>
+#include <iostream>
 
 #include <imgui/imgui.h>
 #include <imgui/im_tools.h>
@@ -28,74 +29,66 @@ bool show_entity_list = false;
 void draw_entity_list()
 {
 	using namespace ImGui;
-
-	auto get_all_entitys = []()
-	{
-		std::vector<std::string> out;
-		for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
-		{
-			auto ent = get_entity_by_index(i);
-			if (!ent || !ent->is_use_lua())
-				continue;
-			auto str = ent->get_class_name();
-			if (!str.empty() && (std::find(out.begin(), out.end(), str) == out.end()))
-				out.push_back(str);
-		}
-		return out;
-	};
-
-	auto is_draw = [](std::string_view ent)
-	{
-		return std::find(settings::visuals::entitys_to_draw.begin(), settings::visuals::entitys_to_draw.end(),
-		                 ent.data()) != settings::visuals::entitys_to_draw.end();
-	};
 	
-	static auto is_inited = false;
-	static std::vector<std::string> ents;
-	
-	if (interfaces::engine->is_in_game() && !is_inited)
-	{
-		ents = get_all_entitys();
-		is_inited = true;
-	}
+	int w, h;
+	interfaces::engine->get_screen_size(w, h);
+	ImGui::SetNextWindowSizeConstraints({ 0, 0 }, { w / 2.f, h / 2.f });
 	
 	Begin("Entity list##SUBWINDOW");
 
+	static ImGuiTextFilter filter;
+	filter.Draw();
+	
 	if (ImGui::BeginTable("entitys_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
 	{
+		
 		ImGui::TableSetupColumn("Name");
 		ImGui::TableSetupColumn("ESP");
 		ImGui::TableHeadersRow();
+
+		std::vector<std::string> ents;
 		
-		for (auto i : ents)
+		for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
 		{
+			auto* ent = get_entity_by_index(i);
+			if (!ent || !ent->is_use_lua() || interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) != nullptr)
+				continue;
+			
+			auto class_name = ent->get_class_name();
+
+			auto in_vector = [&]()
+			{
+				for (auto j : ents)
+					if (j == class_name)
+						return true;
+				return false;
+			};
+			
+			if (!filter.PassFilter(class_name.c_str()) || in_vector())
+				continue;
+			
+			ents.push_back(class_name);
+
+			std::cout << class_name << std::endl;
+			
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			ImGui::Text("%s", i.c_str());
+			ImGui::Text("%s", class_name.c_str());
 			ImGui::TableNextColumn();
-			if (ImGui::Button(is_draw(i) ? (std::string("Remove##ENTS_TABLE") + i).c_str() : (std::string("Add##ENTS_TABLE") + i).c_str()))
-			{
-				auto get_idx = [](std::string_view str)
-				{
-					return std::find(settings::visuals::entitys_to_draw.begin(), settings::visuals::entitys_to_draw.end(),
-						str.data());
-				};
-				
-				if (is_draw(i))
-					settings::visuals::entitys_to_draw.erase(get_idx(i));
+			if (ImGui::Button(settings::visuals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
+			{				
+				if (settings::visuals::entitys_to_draw.exist(class_name))
+					settings::visuals::entitys_to_draw.remove(settings::visuals::entitys_to_draw.find(class_name));
 				else
-					settings::visuals::entitys_to_draw.push_back(i);
+					settings::visuals::entitys_to_draw.push_back(class_name);
 			}
 			
-			//ImGui::Text("%s", is_draw(i) ? "true" : "false");
 		}
 		ImGui::EndTable();
+
+		std::cout << std::endl;
 	}
 
-	if (ImGui::Button("Refresh##ENTS_TABLE") && interfaces::engine->is_in_game())
-		ents = get_all_entitys();
-	
-	
 	End();
 }
 
@@ -133,7 +126,7 @@ void bg_window::draw()
 		//auto text_size = ImGui::CalcTextSize(text.c_str());
 
 		//ImGui::GetWindowDrawList()->AddText({ImGui::GetWindowSize().x - 10 - text_size.x, ImGui::GetWindowSize().y / 2 - text_size.y / 2 },
-		//                                    ImGui::GetColorU32({ 0.7f, 0.7f, 0.7f, 1.f }), text.c_str());
+		//ImGui::GetColorU32({ 0.7f, 0.7f, 0.7f, 1.f }), text.c_str());
 		//ImGui::SetCursorPos({ImGui::GetWindowSize().x - 10 - text_size.x - 10, 0 });
 		//ImGui::Dummy({ImGui::GetWindowSize().x - (ImGui::GetWindowSize().x - 10 - text_size.x - 10), ImGui::GetWindowSize().y });
 		
