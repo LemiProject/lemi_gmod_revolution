@@ -75,8 +75,6 @@ void draw_entity_list()
 		return true;
 	};
 
-
-
 	
 	int w, h;
 	interfaces::engine->get_screen_size(w, h);

@@ -179,14 +179,14 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
 
-	original(interfaces::client_mode, frame_time, cmd);
+	auto ret = original(interfaces::client_mode, frame_time, cmd);
 
 	if (!cmd)
-		return false;
+		return ret;
 
 	auto* const lp = get_local_player();
 	if (!lp || !lp->is_alive())
-		return false;
+		return ret;
 
 	const auto old_cmd = *cmd;
 
@@ -198,14 +198,11 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	}
 	
 	aim::run_aimbot(cmd);
-
-	if (render_system::vars::is_screen_grab)
-		std::cout << cmd->buttons << std::endl;
 	
 	cmd->viewangles.normalize();
 	cmd->viewangles.clamp();
 	
-	return false;
+	return ret;
 }
 
 void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, int y, int w, int h, uint8_t* data,
