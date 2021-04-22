@@ -79,6 +79,12 @@ public:
 			return {};
 		push_entity();
 
+		if (!glua->is_type(-1, (int)e_lua_type::type_entity))
+		{
+			glua->pop(1);
+			return get_lua_script_name();
+		}
+		
 		glua->get_field(-1, "PrintName");
 		if (!glua->is_type(-1, (int)e_lua_type::type_string))
 		{
@@ -101,11 +107,17 @@ public:
 			return {};
 		push_entity();
 
+		if (!glua->is_type(-1, (int)e_lua_type::type_entity))
+		{
+			glua->pop(1);
+			return get_lua_script_name();
+		}
+		
 		glua->get_field(-1, "GetClass");
 		if (!glua->is_type(-1, (int)e_lua_type::type_string))
 		{
 			glua->pop(2);
-			return this->get_lua_script_name();
+			return get_lua_script_name();
 		}
 
 		std::string out = glua->get_string(-1);

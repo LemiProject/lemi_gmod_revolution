@@ -50,6 +50,10 @@ namespace settings
 			int find(const std::string& c);
 			void exchange(std::vector<std::string>& c);
 			bool empty();
+			void clear();
+
+			size_t size();
+			std::vector<std::string> data();
 		};
 		
 		inline auto esp = true;

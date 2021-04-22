@@ -172,7 +172,6 @@ void override_view_hook::hook(c_view_setup& setup)
 
 bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 {
-	
 	static auto choked_packets = 0;
 	choked_packets++;
 
@@ -285,7 +284,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	auto* ent = get_entity_by_index(render_info.entity_index);
 
-	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name())) && ent != get_local_player())
+	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_print_name())) && ent != get_local_player())
 	{
 		force_mat(settings::visuals::ignore_z, settings::colors::colors_map["chams_color_modulation"].data(), material);
 	}

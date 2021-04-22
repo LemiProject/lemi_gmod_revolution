@@ -69,14 +69,10 @@ inline void draw_box(c_base_entity* ent, math::box_t& box)
 	}
 	else if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::bounding))
 	{
-		//draw_list->AddRect(ImVec2(box.x - 1.f, box.y - 1.f), ImVec2(box.x + box.w + 1.f, box.y + box.h + 1.f), c_color(0, 0, 0, 255).get_u32(), 0, ImDrawCornerFlags_All, 1);
-		//draw_list->AddRect(ImVec2(box.x + 1.f, box.y + 1.f), ImVec2(box.x + box.w - 1.f, box.y + box.h - 1.f), c_color(0, 0, 0, 255).get_u32(), 0, ImDrawCornerFlags_All, 1);
-
 		surface_render::bordered_rect(math::create_box({ box.x - 1.f, box.y - 1.f }, { box.x + box.w + 1.f, box.y + box.h + 1.f }), colors::black_color);
 		surface_render::bordered_rect(math::create_box({ box.x + 1.f, box.y + 1.f }, { box.x + box.w - 1.f, box.y + box.h - 1.f }), colors::black_color);
 
 		surface_render::bordered_rect(math::create_box({ box.x, box.y }, { box.x + box.w, box.y + box.h }), color);
-		//draw_list->AddRect(ImVec2(box.x, box.y), ImVec2(box.x + box.w, box.y + box.h), color, 0, ImDrawCornerFlags_All, 2);
 	}
 	else if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::corners))
 	{
@@ -96,7 +92,7 @@ void visuals::esp::run_esp()
 		if (!ent || !ent->is_alive() || ent->is_dormant())
 			continue;
 		
-		const auto is_draw = settings::visuals::entitys_to_draw.exist(ent->get_class_name()) || ent->is_player();
+		const auto is_draw = settings::visuals::entitys_to_draw.exist(ent->get_print_name()) || ent->is_player();
 
 		const auto has_owner = interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) ? true : false;
 		

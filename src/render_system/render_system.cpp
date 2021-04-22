@@ -14,7 +14,7 @@
 
 #include "../utils/hack_utils.h"
 
-#include <d3dx9.h>
+#include <d3d9.h>
 
 IDirect3DDevice9* device;
 

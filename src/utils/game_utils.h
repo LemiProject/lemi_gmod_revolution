@@ -70,24 +70,7 @@ namespace game_utils
 		const auto min = ent->get_collidable_ptr()->mins() + origin;
 		const auto max = ent->get_collidable_ptr()->maxs() + origin;
 
-		//auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
-		//if (glua)
-		//{
-		//	glua->push_special((int)e_special::glob);
-		//	glua->get_field(-1, "cam");
-		//	glua->get_field(-1, "Start3D");
-		//	glua->call(0, 1);
-		//	glua->pop();
-		//}
-
 		const auto& world_matrix = interfaces::engine->get_world_to_screen_matrix();
-
-		//if (glua)
-		//{
-		//	glua->get_field(-1, "End3D");
-		//	glua->call(0, 1);
-		//	glua->pop(3);
-		//}
 		
 		c_vector points[] = {
 			c_vector(min.x, min.y, min.z),

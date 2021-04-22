@@ -102,6 +102,21 @@ bool settings::visuals::c_entity_list::empty()
 	return classes.empty();
 }
 
+void settings::visuals::c_entity_list::clear()
+{
+	classes.clear();
+}
+
+size_t settings::visuals::c_entity_list::size()
+{
+	return classes.size();
+}
+
+std::vector<std::string> settings::visuals::c_entity_list::data()
+{
+	return classes;
+}
+
 void settings::parse_settings_from_string(std::string_view string)
 {
 	auto j = json::parse(string.data());

@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 #include "../../math/math.h"
-#include <d3dx9.h>
+//#include <d3dx9.h>
+#include <d3d9.h>
 
 class i_material_var;
 class key_values;

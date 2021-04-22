@@ -144,9 +144,6 @@
     <ClInclude Include="src\features\menu\styles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\imgui\misc\fonts\lemi_main_font.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\render_system\fonts\lemi_main_font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -291,12 +288,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="deps\include\minpp\c_min_hook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\fmt-7.1.3\src\format.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\fmt-7.1.3\src\os.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="deps\include\fmt\os.cc">
