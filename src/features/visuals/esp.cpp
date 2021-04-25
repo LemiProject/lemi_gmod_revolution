@@ -18,7 +18,7 @@ void draw_health(c_base_entity* ent, math::box_t box)
 {
 	if (ent->is_alive())
 	{
-		const auto health = std::clamp(ent->get_health(), 0, ent->get_max_health());
+		const auto health = std::clamp(ent->get_health(), 0, 100);
 		const auto pos = ImVec2(box.x - 6.f, box.y);
 
 		const math::box_t void_box{ pos.x, pos.y, 3, box.h };
@@ -92,7 +92,7 @@ void visuals::esp::run_esp()
 		if (!ent || !ent->is_alive() || ent->is_dormant())
 			continue;
 		
-		const auto is_draw = settings::visuals::entitys_to_draw.exist(ent->get_print_name()) || ent->is_player();
+		const auto is_draw =  ent->is_player() || settings::visuals::entitys_to_draw.exist(ent->get_class_name());
 
 		const auto has_owner = interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) ? true : false;
 		

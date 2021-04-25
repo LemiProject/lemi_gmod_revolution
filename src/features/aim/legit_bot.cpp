@@ -57,21 +57,22 @@ bool get_target(target_t& target)
 
 void aim::legit_bot(c_user_cmd* cmd)
 {
-	//if (/*!settings::aim::legit_bot_enabled ||*/ !interfaces::engine->is_in_game())
-	//	return;
+	if (/*!settings::aim::legit_bot_enabled ||*/ !interfaces::engine->is_in_game())
+		return;
 
-	//auto* const lp = get_local_player();
+	auto* const lp = get_local_player();
 
-	//if (!cmd|| !lp || !lp->is_alive() || !lp->is_alive())
-	//	return;
+	if (!cmd|| !lp || !lp->is_alive() || !lp->is_alive())
+		return;
 
-	//target_t target;
+	target_t target;
 
-	////if (!(cmd->buttons & IN_ATTACK))
-	////	return;
-	//
-	//if (!get_target(target))
-	//	return;
-	//
-	//cmd->viewangles = target.angle;
+	if (!(cmd->buttons & IN_ATTACK))
+		return;
+	
+	if (!get_target(target))
+		return;
+	
+	cmd->viewangles = target.angle;
+	interfaces::engine->set_view_angles(cmd->viewangles);
 }

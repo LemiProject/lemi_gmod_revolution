@@ -2,6 +2,7 @@
 #include "../utils/memory_utils.h"
 
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx9.h>
 
@@ -16,7 +17,18 @@
 
 #include <d3d9.h>
 
+#include <mutex>
+
+
 IDirect3DDevice9* device;
+std::mutex render_mutex;
+
+namespace directx_render
+{
+	inline ImDrawList* draw_list;
+	inline ImDrawList* render_draw_list;
+	inline ImDrawList* current_draw_list;
+}
 
 void render_system::init()
 {
@@ -44,6 +56,7 @@ void render_system::init()
 	}
 
 	surface_render::init_surface_render();
+	directx_render::init_directx_render();
 	
 	menu::init();
 }
@@ -52,21 +65,6 @@ void render_system::shutdown()
 {
 
 }
-
-//void clear_screen_for_menu()
-//{
-//	if (menu::menu_is_open())
-//	{
-//		//const auto rect_color = D3DCOLOR_XRGB(255, 0, 0);
-//		//D3DRECT bar_rect = { 1, 1, 1, 1 };
-//
-//		//device->Clear(1, &bar_rect, D3DCLEAR_TARGET | D3DCLEAR_TARGET, rect_color, 0, 0);
-//		device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
-//		device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
-//		device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
-//		
-//	}
-//}
 
 void render_system::on_scene_end()
 {
@@ -91,16 +89,17 @@ void render_system::on_scene_end()
 	
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
+
 	ImGui::NewFrame();
-
+	directx_render::get_render_draw_list();
+	
 	menu::draw();
-
-	//visuals::run_visuals();
 	
 	ImGui::EndFrame();
+
 	ImGui::Render();
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-
+	
 	device->SetRenderState(D3DRS_COLORWRITEENABLE, state1);
 	device->SetRenderState(D3DRS_COLORWRITEENABLE, state2);
 	device->SetRenderState(D3DRS_SRGBWRITEENABLE, state3);
@@ -115,6 +114,43 @@ IDirect3DDevice9* render_system::get_device()
 {
 	return device;
 }
+
+void directx_render::init_directx_render()
+{
+	draw_list = new ImDrawList(ImGui::GetDrawListSharedData());
+	current_draw_list = new ImDrawList(ImGui::GetDrawListSharedData());
+	render_draw_list = new ImDrawList(ImGui::GetDrawListSharedData());
+}
+
+ImDrawList* directx_render::get_render_draw_list()
+{
+	if (render_mutex.try_lock())
+	{
+		*render_draw_list = *current_draw_list;
+		render_mutex.unlock();
+	}
+	
+	return render_draw_list;
+}
+
+void directx_render::clear_draw_list()
+{
+	std::lock_guard<std::mutex> g(render_mutex);
+	current_draw_list->_ResetForNewFrame();
+}
+
+void directx_render::begin_draw()
+{
+	draw_list->_ResetForNewFrame();
+	draw_list->PushClipRectFullScreen();
+}
+
+void directx_render::end_draw()
+{
+	std::lock_guard<std::mutex> g(render_mutex);
+	*current_draw_list = *draw_list;
+}
+
 
 void surface_render::init_surface_render()
 {

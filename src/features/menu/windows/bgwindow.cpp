@@ -26,91 +26,97 @@ bool show_style_editor = false;
 bool show_colors_editor = false;
 bool show_entity_list = false;
 
-void draw_entity_list()
-{
-	using namespace ImGui;
-	static settings::visuals::c_entity_list ent_list;
-	static auto update_time_stamp = 0.f;
+auto entity_list_update_time_stamp = 0.f;
+settings::visuals::c_entity_list ent_list;
 
+void bg_window::update_entity_list()
+{
 	auto is_update = [&]()
-	{
-		if (update_time_stamp == 0.f)
+	{		
+		if (entity_list_update_time_stamp == 0.f)
 			return true;
 
 		const auto current_time_stamp = interfaces::engine->get_time_stamp_from_start();
 
-		if (roundf(current_time_stamp) - roundf(update_time_stamp) < 5)
+		if (roundf(current_time_stamp) - roundf(entity_list_update_time_stamp) < 1)
 			return false;
 
 		return true;
 	};
+
+	if (!is_update())
+		return;
+
+	is_entlist_updating = true;
+
+	entity_list_update_time_stamp = interfaces::engine->get_time_stamp_from_start();
+
+	if (!interfaces::engine->is_in_game())
+		return;
 	
-	auto update = [&]()
+	ent_list.clear();
+
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
 	{
-		if (!is_update())
-			return false;
+		auto* ent = get_entity_by_index(i);
+		if (!ent || interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) != nullptr)
+			continue;
 
-		bg_window::is_entlist_updating = true;
+		auto class_name = ent->get_class_name();
+
+		if (ent_list.exist(class_name))
+			continue;
+
+		if (class_name.empty())
+			continue;
 		
-		update_time_stamp = interfaces::engine->get_time_stamp_from_start();
-		
-		ent_list.clear();
-	
-		for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
-		{
-			auto* ent = get_entity_by_index(i);
-			if (!ent || interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) != nullptr)
-				continue;
+		ent_list.push_back(class_name);
+	}
 
-			auto print_name = ent->get_print_name();
+	is_entlist_updating = false;
+}
 
-			if (ent_list.exist(print_name))
-				continue;
 
-			ent_list.push_back(print_name);
-		}
-
-		bg_window::is_entlist_updating = false;
-		
-		return true;
-	};
-
+void draw_entity_list()
+{
+	using namespace ImGui;
 	
 	int w, h;
 	interfaces::engine->get_screen_size(w, h);
-	ImGui::SetNextWindowSizeConstraints({ 0, 0 }, { w / 2.f, h / 2.f });
+	ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
 	Begin("Entity list##SUBWINDOW");
 
 	static ImGuiTextFilter filter;
 	filter.Draw();
 
-	Text("%f and %f", interfaces::engine->get_time_stamp_from_start(), update_time_stamp);
-	
-	update();
+	//Text("%f and %f", interfaces::engine->get_time_stamp_from_start(), entity_list_update_time_stamp);
 	
 	if (ImGui::BeginTable("entitys_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
 	{	
 		ImGui::TableSetupColumn("Name");
 		ImGui::TableSetupColumn("ESP");
 		ImGui::TableHeadersRow();
-		
-		for (auto print_name : ent_list.data())
+
+		if (!bg_window::is_entlist_updating)
 		{
-			if (!filter.PassFilter(print_name.c_str()))
-				continue;
-		
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGui::Text("%s", print_name.c_str());
-			ImGui::TableNextColumn();
-			if (ImGui::Button(settings::visuals::entitys_to_draw.exist(print_name) ? (std::string("Remove##ENTS_TABLE") + print_name).c_str() : (std::string("Add##ENTS_TABLE") + print_name).c_str()))
-			{				
-				if (settings::visuals::entitys_to_draw.exist(print_name))
-					settings::visuals::entitys_to_draw.remove(settings::visuals::entitys_to_draw.find(print_name));
-				else
-					settings::visuals::entitys_to_draw.push_back(print_name);
+			for (auto class_name : ent_list.data())
+			{
+				if (!filter.PassFilter(class_name.c_str()))
+					continue;
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("%s", class_name.c_str());
+				ImGui::TableNextColumn();
+				if (ImGui::Button(settings::visuals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
+				{
+					if (settings::visuals::entitys_to_draw.exist(class_name))
+						settings::visuals::entitys_to_draw.remove(settings::visuals::entitys_to_draw.find(class_name));
+					else
+						settings::visuals::entitys_to_draw.push_back(class_name);
+				}
+
 			}
-			
 		}
 		ImGui::EndTable();
 	}

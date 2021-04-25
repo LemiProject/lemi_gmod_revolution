@@ -28,6 +28,8 @@
 #include <intrin.h>
 #include <iostream>
 
+
+#include "../features/menu/windows/bgwindow.h"
 #include "../settings/settings.h"
 
 inline unsigned int get_virtual(void* _class, const unsigned int index) { return static_cast<unsigned int>((*static_cast<int**>(_class))[index]); }
@@ -190,12 +192,12 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 
 	const auto old_cmd = *cmd;
 
-	auto* weapon = get_primary_weapon(lp);
-	if (weapon && cmd->buttons & IN_ATTACK)
-	{
-		auto& spread = weapon->get_bullet_spread();
-		cmd->viewangles += spread;
-	}
+	//auto* weapon = get_primary_weapon(lp);
+	//if (weapon && cmd->buttons & IN_ATTACK)
+	//{
+	//	auto& spread = weapon->get_bullet_spread();
+	//	cmd->viewangles += spread;
+	//}
 	
 	aim::run_aimbot(cmd);
 	
@@ -244,6 +246,10 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 {
 	original(self, rect);
 
+	render_system::vars::view_matrix = interfaces::engine->get_world_to_view_matrix();
+
+	bg_window::update_entity_list();
+	
 	if (render_system::vars::is_screen_grab)
 		return;
 	
@@ -281,7 +287,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	auto* ent = get_entity_by_index(render_info.entity_index);
 
-	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_print_name())) && ent != get_local_player())
+	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name())) && ent != get_local_player())
 	{
 		force_mat(settings::visuals::ignore_z, settings::colors::colors_map["chams_color_modulation"].data(), material);
 	}

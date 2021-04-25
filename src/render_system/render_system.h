@@ -24,7 +24,7 @@ namespace render_system
 	namespace vars
 	{
 		inline std::atomic_bool is_screen_grab;
-		inline std::atomic<D3DMATRIX*> view_matrix;
+		inline D3DMATRIX view_matrix;
 	}
 	
 	void init();
@@ -55,4 +55,17 @@ namespace surface_render
 	void corner_box(math::box_t box, c_color color);
 
 	uint64_t create_font(std::string_view win_path, int size, int flags);
+}
+
+
+namespace directx_render
+{
+	void init_directx_render();
+
+	ImDrawList* get_render_draw_list();
+
+	void clear_draw_list();
+
+	void begin_draw();
+	void end_draw();
 }
