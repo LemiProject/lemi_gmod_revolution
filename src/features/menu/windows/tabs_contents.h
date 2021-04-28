@@ -24,7 +24,7 @@ namespace menu_tabs_content
 			return { GetWindowSize().x / 12, GetWindowSize().y / 25 };
 		}
 
-		inline void text_and_toggle_button(std::string text, std::string tag, bool* var)
+		inline void text_and_toggle_button(const std::string& text, const std::string& tag, bool* var)
 		{
 			Text("%s", text.c_str());
 			SameLine();
@@ -34,6 +34,21 @@ namespace menu_tabs_content
 	
 	inline void draw_legit_bot()
 	{
+		constexpr auto panels_in_visuals_count = 3;
+		BeginGroupPanel("Legitbot##LEGITBOT_MAIN", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			internal::text_and_toggle_button("Enabled", "##LEGITBOT_MAIN_ENABLED", &aim::legit_bot_enabled);
+			SliderFloat("Legitbot fov##LEGITBOT_MAIN_FOV", &aim::legit_bot_fov, 1.f, 360.f);
+		}
+		EndGroupPanel();
+
+		SameLine();
+
+		BeginGroupPanel("Accuracy##LEGITBOT_ACCURACY", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			internal::text_and_toggle_button("RCS", "##LEGITBOT_ACCURACY_RCS", &aim::rcs_standalone);
+		}
+		EndGroupPanel();
 	}
 
 	inline void draw_rage_bot()
@@ -79,6 +94,13 @@ namespace menu_tabs_content
 			internal::text_and_toggle_button("Entity chams", "##VISUALS_CHAMS_ENTITY", &visuals::entity_chams);
 
 			InputText("Material##VISUALS_CHAMS_MATERIAL", &visuals::chams_material);
+		}
+		EndGroupPanel();
+
+
+		BeginGroupPanel("Overlay##VISUALS_OVERLAY", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			internal::text_and_toggle_button("Draw fov", "##VISUALS_OVERLAY_DRAW_FOV", &visuals::draw_fov);
 		}
 		EndGroupPanel();
 	}

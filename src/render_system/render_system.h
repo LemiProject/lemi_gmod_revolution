@@ -6,6 +6,7 @@
 
 #include "../math/math.h"
 #include <color.h>
+#include <functional>
 
 namespace render_system
 {
@@ -31,6 +32,7 @@ namespace render_system
 	void shutdown();
 
 	void on_scene_end();
+	void on_present();
 	
 	IDirect3DDevice9* get_device();
 }
@@ -60,12 +62,27 @@ namespace surface_render
 
 namespace directx_render
 {
+	enum e_font_flags
+	{
+		font_none = 0,
+		font_centered_x = (1 << 0),
+		font_centered_y = (1 << 1),
+		font_centered = font_centered_x | font_centered_y,
+		font_drop_shadow = (1 << 2),
+		font_outline = (1 << 3)
+	};
+	
 	void init_directx_render();
 
-	ImDrawList* get_render_draw_list();
+	void render_surface(std::function<void()> draw_surface);
+	
+	void filled_rect(math::box_t box, c_color color, float round = 0.f);
+	void bordered_rect(math::box_t box, c_color color, float round = 0.f);
+	void line(const ImVec2& pos1, const ImVec2& pos2, c_color color, float t = 1.f);
+	void text(ImFont* font, const std::string& text, const ImVec2& pos, float size, c_color color, int flags);
 
-	void clear_draw_list();
-
-	void begin_draw();
-	void end_draw();
+	void outlined_circle(const ImVec2& pos, int radius, c_color color, int segments = 120, int t = 1);
+	void filled_circle(const ImVec2& pos, int radius, c_color color, int segments = 120, int t = 1);
+	
+	void corner_box(math::box_t box, c_color color);
 }

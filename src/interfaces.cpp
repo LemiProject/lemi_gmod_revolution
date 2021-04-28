@@ -25,6 +25,9 @@ void interfaces::init_interfaces()
 	render_context = material_system->get_render_context();
 	
 	do { client_mode = **reinterpret_cast<i_client_mode***>((*reinterpret_cast<uintptr_t**>(client))[10] + 0x5); } while (!client_mode);
-	
+
+	global_vars = **reinterpret_cast<c_global_vars***>((*reinterpret_cast<uintptr_t**>(client))[0] + 0x55);
+
+	view_render = **reinterpret_cast<i_view_render***>((*reinterpret_cast<uintptr_t**>(client))[27] + 0x5);
 }
 

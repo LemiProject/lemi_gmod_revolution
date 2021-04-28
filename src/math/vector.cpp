@@ -144,31 +144,31 @@ c_vector c_vector::operator/(const c_vector& left) const
 c_vector& c_vector::operator+=(const c_vector& left)
 {
 	x += left.x;
-	y += left.x;
-	z += left.x;
+	y += left.y;
+	z += left.z;
 	return *this;
 }
 
 c_vector& c_vector::operator-=(const c_vector& left)
 {
 	x -= left.x;
-	y -= left.x;
-	z -= left.x;
+	y -= left.y;
+	z -= left.z;
 	return *this;
 }
 
 c_vector& c_vector::operator*=(const c_vector& left)
 {
 	x *= left.x;
-	y *= left.x;
-	z *= left.x;
+	y *= left.y;
+	z *= left.z;
 	return *this;
 }
 
 c_vector& c_vector::operator/=(const c_vector& left)
 {
 	x /= left.x;
-	y /= left.x;
-	z /= left.x;
+	y /= left.y;
+	z /= left.z;
 	return *this;
 }

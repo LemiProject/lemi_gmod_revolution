@@ -82,6 +82,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -95,7 +98,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\VSP\cpp\lemi_gmod_revolution\packages\freetype.2.8.0.1\build\native\lib\Win32\v141\static\Release;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3dx9.lib;d3d9.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -116,7 +119,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;D:\ProgramsData\DXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\VSP\cpp\lemi_gmod_revolution\packages\freetype.2.8.0.1\build\native\lib\Win32\v141\static\Release;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;D:\ProgramsData\DXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3dx9.lib;d3d9.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -165,6 +168,7 @@
     <ClInclude Include="deps\include\fnv.h" />
     <ClInclude Include="deps\include\imgui\imconfig.h" />
     <ClInclude Include="deps\include\imgui\imgui.h" />
+    <ClInclude Include="deps\include\imgui\imgui_freetype.h" />
     <ClInclude Include="deps\include\imgui\imgui_impl_dx9.h" />
     <ClInclude Include="deps\include\imgui\imgui_impl_win32.h" />
     <ClInclude Include="deps\include\imgui\imgui_internal.h" />
@@ -195,6 +199,7 @@
     <ClInclude Include="src\game_sdk\entitys\c_base_weapon.h" />
     <ClInclude Include="src\game_sdk\entitys\i_client_entity.h" />
     <ClInclude Include="src\game_sdk\interfaces\client.h" />
+    <ClInclude Include="src\game_sdk\interfaces\c_global_vars.h" />
     <ClInclude Include="src\game_sdk\interfaces\engine.h" />
     <ClInclude Include="src\game_sdk\interfaces\iv_model_render.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_app_system.h" />
@@ -202,6 +207,7 @@
     <ClInclude Include="src\game_sdk\interfaces\i_input_system.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_material_system.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_render_view.h" />
+    <ClInclude Include="src\game_sdk\interfaces\i_view_render.h" />
     <ClInclude Include="src\game_sdk\interfaces\lua_shared.h" />
     <ClInclude Include="src\game_sdk\interfaces\surface.h" />
     <ClInclude Include="src\game_sdk\interfaces\v_client_entity_list.h" />
@@ -210,6 +216,7 @@
     <ClInclude Include="src\game_sdk\misc\c_user_cmd.h" />
     <ClInclude Include="src\game_sdk\misc\c_view_setup.h" />
     <ClInclude Include="src\game_sdk\misc\recv_props.h" />
+    <ClInclude Include="src\globals.h" />
     <ClInclude Include="src\hooks_manager\hooks_manager.h" />
     <ClInclude Include="src\interfaces.h" />
     <ClInclude Include="src\math\math.h" />
@@ -217,6 +224,7 @@
     <ClInclude Include="src\render_system\fonts\lemi_main_font.h" />
     <ClInclude Include="src\render_system\img\img_loader.h" />
     <ClInclude Include="src\render_system\img\logo.h" />
+    <ClInclude Include="src\render_system\render_helpers.h" />
     <ClInclude Include="src\render_system\render_system.h" />
     <ClInclude Include="src\settings\settings.h" />
     <ClInclude Include="src\utils\game_utils.h" />
@@ -230,6 +238,7 @@
     <ClCompile Include="deps\include\imgui\imgui.cpp" />
     <ClCompile Include="deps\include\imgui\imgui_demo.cpp" />
     <ClCompile Include="deps\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="deps\include\imgui\imgui_freetype.cpp" />
     <ClCompile Include="deps\include\imgui\imgui_impl_dx9.cpp" />
     <ClCompile Include="deps\include\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="deps\include\imgui\imgui_stdlib.cpp" />
@@ -247,16 +256,30 @@
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />
     <ClCompile Include="src\features\visuals\esp.cpp" />
+    <ClCompile Include="src\features\visuals\overlay.cpp" />
     <ClCompile Include="src\hooks_manager\hooks_manager.cpp" />
     <ClCompile Include="src\interfaces.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\math\math.cpp" />
     <ClCompile Include="src\math\vector.cpp" />
     <ClCompile Include="src\render_system\img\img_loader.cpp" />
     <ClCompile Include="src\render_system\render_system.cpp" />
     <ClCompile Include="src\settings\settings.cpp" />
     <ClCompile Include="src\utils\netvars.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets" Condition="Exists('packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets')" />
+    <Import Project="packages\freetype.2.8.0.1\build\native\freetype.targets" Condition="Exists('packages\freetype.2.8.0.1\build\native\freetype.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets'))" />
+    <Error Condition="!Exists('packages\freetype.2.8.0.1\build\native\freetype.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\freetype.2.8.0.1\build\native\freetype.targets'))" />
+  </Target>
 </Project>

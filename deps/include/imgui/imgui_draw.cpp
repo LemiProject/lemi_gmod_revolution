@@ -35,7 +35,7 @@ Index of this file:
 
 #include "imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
-#include "misc/freetype/imgui_freetype.h"
+#include "imgui_freetype.h"
 #endif
 
 #include <stdio.h>      // vsnprintf, sscanf, printf
@@ -1631,6 +1631,17 @@ void ImDrawList::AddTextOutlined(const ImFont* font, const ImVec2& pos, ImU32 co
     AddText(font, 0.0f, ImVec2(pos.x, pos.y + outline_size), outline_col, text_begin, text_end);
 
     AddText(font, 0.0f, pos, col, text_begin, text_end);
+}
+
+void ImDrawList::AddTextOutlined(const ImFont* font, const ImVec2& pos, float size, ImU32 col, ImU32 outline_col,
+	const char* text_begin, const char* text_end, float outline_size)
+{
+    AddText(font, size, ImVec2(pos.x - outline_size, pos.y), outline_col, text_begin, text_end);
+    AddText(font, size, ImVec2(pos.x, pos.y - outline_size), outline_col, text_begin, text_end);
+    AddText(font, size, ImVec2(pos.x + outline_size, pos.y), outline_col, text_begin, text_end);
+    AddText(font, size, ImVec2(pos.x, pos.y + outline_size), outline_col, text_begin, text_end);
+
+    AddText(font, size, pos, col, text_begin, text_end);
 }
 
 void ImDrawList::AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end)

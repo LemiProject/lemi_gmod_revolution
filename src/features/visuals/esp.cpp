@@ -30,8 +30,8 @@ void draw_health(c_base_entity* ent, math::box_t box)
 		const auto health_color = c_color(settings::colors::colors_map["esp_health_color_hp"]);
 		const auto void_color = c_color(settings::colors::colors_map["esp_health_color_void"]);
 
-		surface_render::filled_rect(void_box, void_color);
-		surface_render::filled_rect(health_box, health_color);
+		directx_render::filled_rect(void_box, void_color);
+		directx_render::filled_rect(health_box, health_color);
 	}
 }
 
@@ -39,16 +39,14 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 {
 	const auto text = ent->is_player() ? static_cast<c_base_player*>(ent)->get_name() : ent->get_print_name();
 
-
-	int w, h;
-	interfaces::surface->get_text_size(surface_render::fonts::in_game_font, get_wc_t(text.c_str()), w,h);
-	const math::vec2_t text_size = {(float)w, (float)h};
+	auto ts = render_system::fonts::in_game_font->CalcTextSizeA(12, FLT_MAX, 0.f, text.c_str());
+	const math::vec2_t text_size = {ts.x, ts.y};
 	
-	const auto position = math::vec2_t{ box.x + box.w * 0.5f, box.y + box.h};
+	const auto position = math::vec2_t{ box.x + box.w * 0.5f, box.y + box.h + text_size.y / 2};
 	
 	const auto color = ent->is_player() ? static_cast<c_base_player*>(ent)->get_team_color() : c_color(settings::colors::colors_map["esp_health_color_hp"]);
 
-	surface_render::text(position, surface_render::fonts::in_game_font, text, color);
+	directx_render::text(render_system::fonts::in_game_font, text, position.get_im_vec2(), 12, color, directx_render::font_centered | directx_render::font_outline);
 }
 
 inline void draw_box(c_base_entity* ent, math::box_t& box)
@@ -65,18 +63,18 @@ inline void draw_box(c_base_entity* ent, math::box_t& box)
 	
 	if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::flat))
 	{
-		surface_render::bordered_rect(box, color);
+		directx_render::bordered_rect(box, color);
 	}
 	else if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::bounding))
 	{
-		surface_render::bordered_rect(math::create_box({ box.x - 1.f, box.y - 1.f }, { box.x + box.w + 1.f, box.y + box.h + 1.f }), colors::black_color);
-		surface_render::bordered_rect(math::create_box({ box.x + 1.f, box.y + 1.f }, { box.x + box.w - 1.f, box.y + box.h - 1.f }), colors::black_color);
+		directx_render::bordered_rect(math::create_box({ box.x - 1.f, box.y - 1.f }, { box.x + box.w + 1.f, box.y + box.h + 1.f }), colors::black_color);
+		directx_render::bordered_rect(math::create_box({ box.x + 1.f, box.y + 1.f }, { box.x + box.w - 1.f, box.y + box.h - 1.f }), colors::black_color);
 
-		surface_render::bordered_rect(math::create_box({ box.x, box.y }, { box.x + box.w, box.y + box.h }), color);
+		directx_render::bordered_rect(math::create_box({ box.x, box.y }, { box.x + box.w, box.y + box.h }), color);
 	}
 	else if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::corners))
 	{
-		surface_render::corner_box(box, color);
+		directx_render::corner_box(box, color);
 	}
 }
 

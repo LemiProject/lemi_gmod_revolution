@@ -4438,7 +4438,7 @@ void ImGui::EndFrame()
     CallContextHooks(&g, ImGuiContextHookType_EndFramePost);
 }
 
-void ImGui::Render()
+void ImGui::Render(ImDrawList* custom_draw_list)
 {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(g.Initialized);
@@ -4450,6 +4450,18 @@ void ImGui::Render()
 
     CallContextHooks(&g, ImGuiContextHookType_RenderPre);
 
+    // Add custom ImDrawList (for each active viewport)
+    //if (custom_draw_list != nullptr)
+    //{
+    //    for (int n = 0; n != g.Viewports.Size; n++)
+    //    {
+    //        ImGuiViewportP* viewport = g.Viewports[n];
+    //        viewport->DrawDataBuilder.Clear();
+    //        if (!custom_draw_list->VtxBuffer.empty())
+    //            AddDrawListToDrawData(&viewport->DrawDataBuilder.Layers[0], custom_draw_list);
+    //    }
+    //}
+	
     // Add background ImDrawList (for each active viewport)
     for (int n = 0; n != g.Viewports.Size; n++)
     {

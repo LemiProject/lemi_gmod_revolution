@@ -13,10 +13,15 @@ namespace visuals
 		
 	}
 
+	namespace overlay
+	{
+		void run_overlay();
+	}
 	
 	__forceinline void run_visuals()
 	{
 		esp::run_esp();
+		overlay::run_overlay();
 	}
 }
 

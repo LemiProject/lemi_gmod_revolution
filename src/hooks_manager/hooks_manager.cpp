@@ -29,6 +29,8 @@
 #include <iostream>
 
 
+
+#include "../globals.h"
 #include "../features/menu/windows/bgwindow.h"
 #include "../settings/settings.h"
 
@@ -47,6 +49,15 @@ struct end_scene_hook
 	using fn = long(__stdcall*)(IDirect3DDevice9*);
 	static inline fn original = nullptr;
 	static long __stdcall hook(IDirect3DDevice9* device);
+};
+
+struct present_hook //17
+{
+	static inline constexpr uint32_t idx = 17;
+
+	using fn = long(__stdcall*)(IDirect3DDevice9*, RECT*, RECT*, HWND, RGNDATA*);
+	static inline fn original = nullptr;
+	static long __stdcall hook(IDirect3DDevice9* device, RECT* src_rect, RECT* dest_rect, HWND dest_wnd_override, RGNDATA* dirty_region);
 };
 
 struct reset_hook
@@ -71,9 +82,9 @@ struct override_view_hook
 {
 	static inline constexpr uint32_t idx = 16;
 
-	using fn = void(__thiscall*)(i_client_mode*, c_view_setup&);
+	using fn = void(__thiscall*)(i_client_mode*, c_view_setup*);
 	static inline fn original = nullptr;
-	static void __stdcall hook(c_view_setup& setup);
+	static void __stdcall hook(c_view_setup* setup);
 };
 
 struct create_move_hook
@@ -103,6 +114,15 @@ struct view_render_hook
 	static void __fastcall hook(void* self, void* edx, void* rect);
 };
 
+struct render_view_hook
+{
+	static inline constexpr uint32_t idx = 6;
+
+	using fn = void(__thiscall*)(void*, c_view_setup&, int, int);
+	static inline fn original = nullptr;
+	static void __fastcall hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags, int what_to_draw);
+};
+
 struct draw_model_execute_hook
 {
 	static inline constexpr uint32_t idx = 20;
@@ -124,14 +144,23 @@ void hooks_manager::init()
 {
 	minpp = std::make_shared<min_hook_pp::c_min_hook>();
 
+	uintptr_t present = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ?? ?? ?? ?? 8B F8 85 DB") + 2;
+	uintptr_t reset = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 2;
+	
 	CREATE_HOOK(render_system::get_device(), end_scene_hook::idx, end_scene_hook::hook, end_scene_hook::original);
-	CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
+	//CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
+	//CREATE_HOOK(render_system::get_device(), present_hook::idx, present_hook::hook, present_hook::original);
+	create_hook(**reinterpret_cast<void***>(present), (void*)present_hook::hook, reinterpret_cast<void**>(&present_hook::original));
+	create_hook(**reinterpret_cast<void***>(reset), reset_hook::hook, reinterpret_cast<void**>(&reset_hook::original));
+
+	
 	CREATE_HOOK(interfaces::surface, lock_cursor_hook::idx, lock_cursor_hook::hook, lock_cursor_hook::original);
 	CREATE_HOOK(interfaces::client_mode, override_view_hook::idx, override_view_hook::hook, override_view_hook::original);
 	CREATE_HOOK(interfaces::client_mode, create_move_hook::idx, create_move_hook::hook, create_move_hook::original);
 	CREATE_HOOK(interfaces::render_context, read_pixels_hook::idx, read_pixels_hook::hook, read_pixels_hook::original);
 	CREATE_HOOK(interfaces::client, view_render_hook::idx, view_render_hook::hook, view_render_hook::original);
 	CREATE_HOOK(interfaces::model_render, draw_model_execute_hook::idx, draw_model_execute_hook::hook, draw_model_execute_hook::original);
+	//CREATE_HOOK(interfaces::render_view, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
@@ -161,13 +190,15 @@ void hooks_manager::create_hook(void* target, void* detour, void** original)
 			reinterpret_cast<uintptr_t>(*original)).c_str());
 }
 
-void override_view_hook::hook(c_view_setup& setup)
+void override_view_hook::hook(c_view_setup* setup)
 {
 	if (!interfaces::engine->is_connected() || !interfaces::engine->is_in_game())
 		return original(interfaces::client_mode, setup);
-
+	
 	if (game_utils::matrix_offset == 0x0)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
+
+	globals::view::last_view_setup = *setup;
 	
 	original(interfaces::client_mode, setup);
 }
@@ -191,15 +222,15 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 		return ret;
 
 	const auto old_cmd = *cmd;
-
-	//auto* weapon = get_primary_weapon(lp);
-	//if (weapon && cmd->buttons & IN_ATTACK)
-	//{
-	//	auto& spread = weapon->get_bullet_spread();
-	//	cmd->viewangles += spread;
-	//}
 	
 	aim::run_aimbot(cmd);
+
+	auto* weapon = get_primary_weapon(lp);
+	if (settings::aim::rcs_standalone && weapon && cmd->buttons & IN_ATTACK && weapon->can_shoot())
+	{
+		auto pred = weapon->get_kick_up() > weapon->get_kick_down() ? weapon->get_kick_up() : weapon->get_kick_down();
+		cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);
+	}
 	
 	cmd->viewangles.normalize();
 	cmd->viewangles.clamp();
@@ -255,10 +286,23 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	
 	interfaces::surface->start_drawing();
 
-	visuals::run_visuals();
+	//visuals::run_visuals();
 		
 	interfaces::surface->finish_drawing();
+
+	directx_render::render_surface([]()
+	{
+			visuals::run_visuals();
+	});
 }
+
+//void __fastcall render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
+//	int what_to_draw)
+//{
+//	globals::view::last_view_setup = setup;
+//	
+//	return original(view_render, setup, clear_flags, what_to_draw);
+//}
 
 void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_info_t& render_info, void* bone)
 {
@@ -303,7 +347,7 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 		hack_utils::shutdown_hack();
 		return true;
 	}
-
+	
 	if (message_type == WM_KEYDOWN)
 		if (w_param == VK_INSERT)
 			menu::toggle_menu();
@@ -320,8 +364,15 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 
 long end_scene_hook::hook(IDirect3DDevice9* device)
 {
-	render_system::on_scene_end();
+	//render_system::on_scene_end();
 	return original(device);
+}
+
+long present_hook::hook(IDirect3DDevice9* device, RECT* src_rect, RECT* dest_rect, HWND dest_wnd_override,
+	RGNDATA* dirty_region)
+{
+	render_system::on_present();
+	return original(device, src_rect, dest_rect, dest_wnd_override, dirty_region);
 }
 
 long reset_hook::hook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* present_parameters)

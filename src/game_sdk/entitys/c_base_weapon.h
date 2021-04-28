@@ -36,6 +36,58 @@ public:
 		lua->pop(2);
 		return out;
 	}
+
+	float get_kick_up()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+		lua->get_field(-1, "Primary"); //2
+		if (!lua->is_type(-1, (int)e_lua_type::type_table))
+		{
+			lua->pop(2);
+			return 0.f;
+		}
+		lua->get_field(-1, "KickUp"); //3
+
+		auto r = (float)lua->get_number(-1);
+		
+		lua->pop(3);
+
+		return r;
+	}
+
+	float get_kick_down()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+		lua->get_field(-1, "Primary"); //2
+		if (!lua->is_type(-1, (int)e_lua_type::type_table))
+		{
+			lua->pop(2);
+			return 0.f;
+		}
+		lua->get_field(-1, "KickDown"); //3
+
+		auto r = (float)lua->get_number(-1);
+
+		lua->pop(3);
+
+		return r;
+	}
+
+	bool empty()
+	{
+		if (!this)
+			return false;
+		return get_clip1() <= 0;
+	}
+
+	bool can_shoot()
+	{
+		if (!this)
+			return false;
+		return/* (get_next_primary_attack() <= interfaces::engine->get_last_time_stamp()) &&*/ !empty();
+	}
 };
 
 __forceinline c_base_combat_weapon* get_primary_weapon(c_base_player* ply)

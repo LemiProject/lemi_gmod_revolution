@@ -3,6 +3,7 @@
 #include "aim.h"
 
 #include "../../game_sdk/entitys/c_base_player.h"
+#include "../../game_sdk/entitys/c_base_weapon.h"
 
 #include "../../utils/game_utils.h"
 
@@ -57,7 +58,7 @@ bool get_target(target_t& target)
 
 void aim::legit_bot(c_user_cmd* cmd)
 {
-	if (/*!settings::aim::legit_bot_enabled ||*/ !interfaces::engine->is_in_game())
+	if (!settings::aim::legit_bot_enabled || !interfaces::engine->is_in_game())
 		return;
 
 	auto* const lp = get_local_player();
@@ -65,6 +66,10 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!cmd|| !lp || !lp->is_alive() || !lp->is_alive())
 		return;
 
+	auto* weapon = get_primary_weapon(lp);
+	if (!weapon || !weapon->can_shoot())
+		return;
+	
 	target_t target;
 
 	if (!(cmd->buttons & IN_ATTACK))

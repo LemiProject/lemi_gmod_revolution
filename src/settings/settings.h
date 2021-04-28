@@ -71,6 +71,8 @@ namespace settings
 		inline auto entity_chams = true;
 		inline auto ignore_z = true;
 		inline std::string chams_material = "debug/debugambientcube";
+
+		inline bool draw_fov = false;
 	}
 
 	namespace aim
@@ -78,6 +80,7 @@ namespace settings
 		inline bool legit_bot_enabled = false;
 		inline float legit_bot_fov = 30.f;
 
+		inline bool rcs_standalone = true;
 		
 	}
 	

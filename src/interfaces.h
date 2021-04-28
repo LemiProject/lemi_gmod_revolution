@@ -11,6 +11,8 @@
 #include "game_sdk/interfaces/i_material_system.h"
 #include "game_sdk/interfaces/iv_model_render.h"
 #include "game_sdk/interfaces/i_render_view.h"
+#include "game_sdk/interfaces/c_global_vars.h"
+#include "game_sdk/interfaces/i_view_render.h"
 
 namespace interfaces
 {
@@ -25,6 +27,8 @@ namespace interfaces
 	inline i_mat_render_context* render_context;
 	inline iv_model_render* model_render;
 	inline iv_render_view* render_view;
+	inline c_global_vars* global_vars;
+	inline i_view_render* view_render;
 	
 	void init_interfaces();
 }
