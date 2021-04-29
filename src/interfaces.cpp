@@ -21,6 +21,10 @@ void interfaces::init_interfaces()
 	model_render = memory_utils::capture_interface<iv_model_render>("engine.dll", "VEngineModel016");
 
 	render_view = memory_utils::capture_interface<iv_render_view>("engine.dll", "VEngineRenderView014");
+
+	prediction = memory_utils::capture_interface<i_prediction>("client.dll", "VClientPrediction001");
+
+	engine_trace = memory_utils::capture_interface<i_engine_trace>("engine.dll", "EngineTraceClient003");
 	
 	render_context = material_system->get_render_context();
 	
@@ -29,5 +33,10 @@ void interfaces::init_interfaces()
 	global_vars = **reinterpret_cast<c_global_vars***>((*reinterpret_cast<uintptr_t**>(client))[0] + 0x55);
 
 	view_render = **reinterpret_cast<i_view_render***>((*reinterpret_cast<uintptr_t**>(client))[27] + 0x5);
+	
+	void(*random_seed)(int);
+	*(void**)&random_seed = GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomSeed");
+	if (random_seed)
+		random = **(c_uniform_random_stream***)((uintptr_t)random_seed + 0x5);
 }
 

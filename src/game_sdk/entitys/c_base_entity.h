@@ -5,8 +5,6 @@
 
 #include "i_client_entity.h"
 
-
-
 class c_collidable
 {
 public:
@@ -123,6 +121,55 @@ public:
 		std::string out = glua->get_string(-1);
 		glua->pop(2);
 		return out;
+	}
+
+	bool is_visible_by(c_base_entity* from)
+	{
+		ray_t ray;
+		trace_t tr;
+		c_trace_filter filter;
+		filter.pSkip = from;
+
+		c_vector eye_pos = from->get_eye_pos();
+		c_vector end_pos = this->get_eye_pos();
+
+		ray.init(eye_pos, end_pos);
+
+		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+
+
+		if (tr.m_pEnt == this || tr.fraction >= 0.98f)
+			return true;
+		return false;
+	}
+
+	uint32_t get_bone_by_name(const std::string& name) const
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		if (!lua)
+			return 0;
+		
+		lua->push_special((int)e_special::glob); //1
+		lua->get_field(-1, "Entity");
+		lua->push_number(get_index()); //2
+		lua->call(1, 1); // 2 - 1 = 1 + 1 = 2
+		
+		lua->get_field(-1, "LookupBone");
+		lua->push(-2); //3
+		lua->push_string(name.c_str()); //4
+		lua->call(2, 1); // 4 - 2 = 2 + 1 = 3
+		uint32_t id = lua->get_number(-1);
+		lua->pop(3);
+		return id;
+	}
+
+	c_vector get_bone(int bone)
+	{
+		matrix3x4_t bone_matrix[128];
+		if (!setup_bones(bone_matrix, 128, 0x00000100, interfaces::engine->get_last_time_stamp()))
+			return {};
+		auto hitbox = bone_matrix[bone];
+		return { hitbox[0][3], hitbox[1][3], hitbox[2][3] };
 	}
 };
 

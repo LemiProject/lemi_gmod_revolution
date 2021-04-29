@@ -72,9 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\binary</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -113,6 +115,11 @@
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(SolutionDir)deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ModuleOutputFile>$(IntDir)</ModuleOutputFile>
+      <ModuleDependenciesFile>$(IntDir)</ModuleDependenciesFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -205,8 +212,10 @@
     <ClInclude Include="src\game_sdk\interfaces\iv_model_render.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_app_system.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_client_mode.h" />
+    <ClInclude Include="src\game_sdk\interfaces\i_engine_trace.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_input_system.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_material_system.h" />
+    <ClInclude Include="src\game_sdk\interfaces\i_prediction.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_render_view.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_view_render.h" />
     <ClInclude Include="src\game_sdk\interfaces\lua_shared.h" />
@@ -230,6 +239,7 @@
     <ClInclude Include="src\settings\settings.h" />
     <ClInclude Include="src\utils\game_utils.h" />
     <ClInclude Include="src\utils\hack_utils.h" />
+    <ClInclude Include="src\utils\md5_check_sum.h" />
     <ClInclude Include="src\utils\memory_utils.h" />
     <ClInclude Include="src\utils\netvars.h" />
   </ItemGroup>
@@ -259,6 +269,9 @@
     <ClCompile Include="src\features\movement\movement.cpp" />
     <ClCompile Include="src\features\visuals\esp.cpp" />
     <ClCompile Include="src\features\visuals\overlay.cpp" />
+    <ClCompile Include="src\game_sdk\interfaces\random.h">
+      <FileType>CppHeader</FileType>
+    </ClCompile>
     <ClCompile Include="src\hooks_manager\hooks_manager.cpp" />
     <ClCompile Include="src\interfaces.cpp" />
     <ClCompile Include="src\main.cpp" />

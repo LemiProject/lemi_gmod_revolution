@@ -41,7 +41,7 @@ public:
 	NETVAR("DT_BasePlayer", "m_hVehicle", get_vehicle_handle, uintptr_t);
 	NETVAR("DT_BasePlayer", "m_iObserverMode", get_observer_mode, int);
 	NETVAR("DT_BasePlayer", "m_hObserverTarget", get_observer_target_handle, uintptr_t);
-
+	
 	[[nodiscard]] std::string get_name() const
 	{
 		auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
@@ -49,14 +49,14 @@ public:
 		if (!glua)
 			return {};
 
-		glua->push_special(static_cast<int>(e_special::glob));
-		glua->get_field(-1, "Entity");
-		glua->push_number(this->get_index());
-		glua->call(1, 1);
+		glua->push_special(static_cast<int>(e_special::glob)); //1
+		glua->get_field(-1, "Entity"); //2
+		glua->push_number(this->get_index()); //3
+		glua->call(1, 1); // 3 - 1 = 2 + 1 = 3
 
-		glua->get_field(-1, "Name");
-		glua->push(-2);
-		glua->call(1, 1);
+		glua->get_field(-1, "Name"); //4
+		glua->push(-2); //5
+		glua->call(1, 1); // 5 - 1 = 4 + 1 = 5
 
 		std::string name = glua->get_string(-1);
 		glua->pop(3);
@@ -64,6 +64,38 @@ public:
 		return name;
 	}
 
+	q_angle get_view_punch_angles()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		lua->push_special((int)e_special::glob); //1
+		lua->get_field(-1, "Entity");
+		lua->push_number(get_index()); //2
+		lua->call(1, 1); //2 - 1 = 1 + 1 = 2  AJFHA FUCKING LUA AAKSJDKSADJLKASJDLKAJSDLKJASD
+
+		lua->get_field(-1, "GetViewPunchAngles");
+		lua->push(-2);
+		lua->call(1, 1);
+
+		lua->push_string("x");
+		lua->get_table(-2);
+		float x = lua->get_number(-1);
+		lua->pop();
+
+		lua->push_string("y");
+		lua->get_table(-2);
+		float y = lua->get_number(-1);
+		lua->pop();
+
+		lua->push_string("z");
+		lua->get_table(-2);
+		float z = lua->get_number(-1);
+		lua->pop();
+
+		lua->pop(3);
+
+		return {x, y, z};
+	}
+	
 	c_color get_team_color()
 	{
 		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);

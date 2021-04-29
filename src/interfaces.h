@@ -13,6 +13,9 @@
 #include "game_sdk/interfaces/i_render_view.h"
 #include "game_sdk/interfaces/c_global_vars.h"
 #include "game_sdk/interfaces/i_view_render.h"
+#include "game_sdk/interfaces/random.h"
+#include "game_sdk/interfaces/i_prediction.h"
+#include "game_sdk/interfaces/i_engine_trace.h"
 
 namespace interfaces
 {
@@ -29,6 +32,9 @@ namespace interfaces
 	inline iv_render_view* render_view;
 	inline c_global_vars* global_vars;
 	inline i_view_render* view_render;
+	inline c_uniform_random_stream* random;
+	inline i_prediction* prediction;
+	inline i_engine_trace* engine_trace;
 	
 	void init_interfaces();
 }

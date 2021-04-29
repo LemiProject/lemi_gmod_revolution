@@ -6,7 +6,8 @@
 
 c_vector::c_vector()
 {
-	make_inf();
+	float i = (unsigned long)0x7FC00000;
+	float val = *reinterpret_cast<float*>(&i);
 }
 
 c_vector::c_vector(const c_vector&& left) noexcept : x(left.x), y(left.y), z(left.z)
@@ -31,9 +32,14 @@ c_vector::c_vector(float* ptr) : x(ptr[0]), y(ptr[1]), z(ptr[2])
 {
 }
 
+c_vector::c_vector(float val) : x(val), y(val), z(val)
+{
+	
+}
+
 void c_vector::init(float _x, float _y, float _z)
 {
-	x = _x; _y = y; _z = z;
+	x = _x; y = _y; z = _z;
 }
 
 void c_vector::make_inf()

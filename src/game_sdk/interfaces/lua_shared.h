@@ -61,6 +61,126 @@ enum class e_lua_type
 };
 
 
+class _i_lua_object
+{
+public:
+	virtual ~_i_lua_object() = default;
+	virtual void			set(_i_lua_object* obj) = 0;
+	virtual void			set_from_stack(int i) = 0;
+	virtual void			un_reference() = 0;
+
+	virtual int				get_type(void) = 0;
+
+	virtual const char* get_string(void) = 0;
+	virtual float			get_float(void) = 0;
+	virtual int				get_int(void) = 0;
+
+	virtual void* get_user_data(void) = 0;
+
+	virtual void			set_member(const char* name) = 0;
+	virtual void			set_member(const char* name, _i_lua_object* obj) = 0; // ( This is also used to set nil by passing NULL )
+	virtual void			set_member(const char* name, float val) = 0;
+	virtual void			set_member(const char* name, bool val) = 0;
+	virtual void			set_member(const char* name, const char* val) = 0;
+	virtual void			set_member(const char* name, void* f) = 0;
+
+	virtual bool			get_member_bool(const char* name, bool b = true) = 0;
+	virtual int				get_member_int(const char* name, int i = 0) = 0;
+	virtual float			get_member_float(const char* name, float f = 0.0f) = 0;
+	virtual const char* get_member_str(const char* name, const char* = "") = 0;
+	virtual void* get_member_user_data(const char* name, void* = 0) = 0;
+	virtual void* get_member_user_data(float name, void* = 0) = 0;
+	virtual _i_lua_object* get_member(const char* name) = 0;
+	virtual _i_lua_object* get_member(_i_lua_object*) = 0;
+
+	virtual void			set_meta_table(_i_lua_object* obj) = 0;
+	virtual void			set_user_data(void* obj) = 0;
+
+	virtual void			push(void) = 0;
+
+	virtual bool			is_nil() = 0;
+	virtual bool			is_table() = 0;
+	virtual bool			is_string() = 0;
+	virtual bool			is_number() = 0;
+	virtual bool			is_function() = 0;
+	virtual bool			is_user_data() = 0;
+
+	virtual _i_lua_object* get_member(float fKey) = 0;
+
+	virtual void* remove_me_1(const char* name, void* = 0) = 0;
+
+	virtual void			set_member(float fKey) = 0;
+	virtual void			set_member(float fKey, _i_lua_object* obj) = 0;
+	virtual void			set_member(float fKey, float val) = 0;
+	virtual void			set_member(float fKey, bool val) = 0;
+	virtual void			set_member(float fKey, const char* val) = 0;
+	virtual void			set_member(float fKey, void* f) = 0;
+
+	virtual const char* get_member_str(float name, const char* = "") = 0;
+
+	virtual void			set_member(_i_lua_object* k, _i_lua_object* v) = 0;
+	virtual bool			get_bool(void) = 0;
+
+	// Push members to table from stack
+	virtual bool			push_member_fast(int iStackPos) = 0;
+	virtual void			set_member_fast(int iKey, int iValue) = 0;
+
+	virtual void			set_float(float val) = 0;
+	virtual void			set_string(const char* val) = 0;
+	virtual double			get_double(void) = 0;
+
+	virtual void			set_member_fix_key(char  const*, float) = 0;
+	virtual void			set_member_fix_key(char  const*, char  const*) = 0;
+	virtual void			set_member_fix_key(char  const*, _i_lua_object*) = 0;
+
+	virtual bool			is_bool(void) = 0;
+	virtual void			set_member_double(char  const*, double) = 0;
+	virtual void			set_member_nil(char  const*) = 0;
+	virtual void			set_member_nil(float) = 0;
+
+	virtual bool			debug_is_unreferenced() = 0;
+
+	virtual void			init(void) = 0;
+	virtual void			set_from_global(char  const*) = 0;
+
+	virtual void			set_member(char  const*, unsigned long long) = 0;
+	virtual void			set_reference(int i) = 0;
+
+	virtual void			remove_member(char  const*) = 0;
+	virtual void			remove_member(float) = 0;
+	virtual bool			member_is_nil(char  const*) = 0;
+
+	virtual void			set_member_double(float, double) = 0;
+	virtual double			get_member_double(char  const*, double) = 0;
+};
+
+class i_lua_object : public _i_lua_object
+{
+public:
+	virtual bool			push_member_fast(int iStackPos) = 0;
+	virtual void			set_member_fast(int iKey, int iValue) = 0;
+
+	virtual void			set_float(float val) = 0;
+	virtual void			set_string(const char* val) = 0;
+
+	virtual void* get_members(void) = 0;
+
+	// Set member 'pointer'. No GC, no metatables. 
+	virtual void			set_member_user_data_lite(const char* strKeyName, void* pData) = 0;
+	virtual void* get_member_user_data_lite(const char* strKeyName) = 0;
+};
+
+class c_lua_interface;
+
+class c_lua_object : public i_lua_object
+{
+public:
+	int						_unk1;				//0004
+	int						_unk2;				//0008
+	int						_unk3;				//000C
+	c_lua_interface* lua;				//0010
+};
+
 using number_t = double;
 
 class c_lua_interface
@@ -125,7 +245,7 @@ public:
 	virtual void shutdown(void) = 0;
 	virtual void cycle(void) = 0;
 	virtual void global(void) = 0;
-	virtual void* get_object(int) = 0;
+	virtual i_lua_object* get_object(int) = 0;
 	virtual void push_lua_object(void*) = 0;
 	virtual void push_lua_function() = 0;
 	virtual void lua_error(char const*, int) = 0;

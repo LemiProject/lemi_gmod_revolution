@@ -133,6 +133,14 @@ struct draw_model_execute_hook
 	static void __stdcall hook(draw_model_state_t& draw_state, model_render_info_t& render_info, void* bone);
 };
 
+struct run_command_hook
+{
+	static inline constexpr uint32_t idx = 17;
+
+	using fn = void(__fastcall*)(i_prediction*, void*, c_base_entity*, c_user_cmd*, i_move_helper*);
+	static inline fn original = nullptr;
+	static void __fastcall hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper);
+};
 
 struct wndproc_hook
 {
@@ -161,6 +169,7 @@ void hooks_manager::init()
 	CREATE_HOOK(interfaces::render_context, read_pixels_hook::idx, read_pixels_hook::hook, read_pixels_hook::original);
 	CREATE_HOOK(interfaces::client, view_render_hook::idx, view_render_hook::hook, view_render_hook::original);
 	CREATE_HOOK(interfaces::model_render, draw_model_execute_hook::idx, draw_model_execute_hook::hook, draw_model_execute_hook::original);
+	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
 	//CREATE_HOOK(interfaces::render_view, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
@@ -199,6 +208,10 @@ void override_view_hook::hook(c_view_setup* setup)
 	if (game_utils::matrix_offset == 0x0)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
 
+	if (get_local_player() && get_local_player()->is_alive())
+		if (settings::aim::rcs_standalone)
+			setup->angles -= get_local_player()->get_view_punch_angles();
+	
 	globals::view::last_view_setup = *setup;
 	
 	original(interfaces::client_mode, setup);
@@ -223,17 +236,16 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 		return ret;
 
 	const auto old_cmd = *cmd;
+
+	//auto* weapon = get_primary_weapon(lp);
+	//if (settings::aim::rcs_standalone && weapon && cmd->buttons & IN_ATTACK && weapon->can_shoot())
+	//{
+	//	/*auto pred = weapon->get_kick_up();
+	//	cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);*/
+	//	aim::anti_recoil_and_spread(cmd);
+	//}		
 	
 	aim::run_aimbot(cmd);
-
-	auto* weapon = get_primary_weapon(lp);
-	if (settings::aim::rcs_standalone && weapon && cmd->buttons & IN_ATTACK && weapon->can_shoot())
-	{
-		auto pred = weapon->get_kick_up();
-		cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);
-		//pred = weapon->get_kick_down();
-		//cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);
-	}
 
 	movement::run_movement(*cmd);
 	
@@ -281,7 +293,7 @@ void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, in
 void view_render_hook::hook(void* self, void* edx, void* rect)
 {
 	original(self, rect);
-
+	
 	render_system::vars::view_matrix = interfaces::engine->get_world_to_view_matrix();
 
 	bg_window::update_entity_list();
@@ -343,6 +355,21 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	original(interfaces::model_render, draw_state, render_info, bone);
 	interfaces::model_render->forced_material_override(nullptr);
+}
+
+void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper)
+{
+	if (settings::aim::rcs_standalone)
+	{
+		q_angle angle;
+		interfaces::engine->get_view_angles(angle);
+		original(pred, edx, player, ucmd, move_helper);
+		interfaces::engine->set_view_angles(angle);
+	}
+	else
+	{
+		original(pred, edx, player, ucmd, move_helper);
+	}
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)

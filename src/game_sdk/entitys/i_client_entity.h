@@ -67,7 +67,7 @@ public:
 	virtual int						get_fx_blend() = 0;
 	virtual void					GetColorModulation(float* color) = 0;
 	virtual bool					lod_test() = 0;
-	virtual bool					setup_bones(D3DMATRIX* p_bone_to_world_out, int n_max_bones, int bone_mask, float current_time) = 0;
+	virtual bool					setup_bones(matrix3x4_t* p_bone_to_world_out, int n_max_bones, int bone_mask, float current_time) = 0;
 	virtual void					setup_weights(const D3DMATRIX* pBoneToWorld, int nFlexWeightCount, float* pFlexWeights, float* pFlexDelayedWeights) = 0;
 	virtual void					do_animation_events(void) = 0;
 	virtual ipvs_notify* get_pvs_notify_interface() = 0;

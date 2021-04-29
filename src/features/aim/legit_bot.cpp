@@ -8,6 +8,7 @@
 #include "../../utils/game_utils.h"
 
 #include "../../settings/settings.h"
+#include "../../utils/md5_check_sum.h"
 
 struct target_t
 {
@@ -36,16 +37,17 @@ bool get_target(target_t& target)
 			continue;
 
 		c_vector engine_angels;
+		auto hit_pos = player->get_bone(player->get_bone_by_name("ValveBiped.Bip01_Head1"));
 		interfaces::engine->get_view_angles(engine_angels);
 		const auto fov = game_utils::get_fov(engine_angels,
 		                                     game_utils::calc_angle(get_local_player()->get_eye_pos(),
-		                                                            player->get_eye_pos()));
+												 hit_pos));
 		
-		if (fov < tmp.fov && fov <= settings::aim::legit_bot_fov)
+		if (fov < tmp.fov && fov <= settings::aim::legit_bot_fov/* && player->is_visible_by(get_local_player())*/)
 		{
 			tmp.fov = fov;
 			tmp.ply = player;
-			tmp.angle = game_utils::calc_angle(get_local_player()->get_eye_pos(), player->get_eye_pos());
+			tmp.angle = math::get_angle(get_local_player()->get_eye_pos(), hit_pos);
 		}
 	}
 
@@ -81,3 +83,66 @@ void aim::legit_bot(c_user_cmd* cmd)
 	cmd->viewangles = target.angle;
 	interfaces::engine->set_view_angles(cmd->viewangles);
 }
+
+void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
+{
+	auto* local_player = get_local_player();
+	if (!local_player || !local_player->is_alive())
+		return;
+
+	auto* weapon = get_primary_weapon(local_player);
+	if (!weapon)
+		return;
+
+	//auto cone = weapon->get_spread().x;
+	//interfaces::random->set_seed(ucmd->command_number);
+
+	//float cone_rng1 = interfaces::random->random_float(-cone, cone);
+	//float cone_rng2 = interfaces::random->random_float(-cone, cone);
+	//q_angle punch = weapon->get_bullet_spread();
+	//q_angle angles = ucmd->viewangles;
+
+	
+}
+
+
+//const auto spread_cone = weapon->get_spread();
+//const auto spread = -((spread_cone.x + spread_cone.y + spread_cone.z) / 3.f);
+//
+//float random[2];
+//const auto seed = md5_pseudo_random(ucmd->command_number) & 0xFF;
+//interfaces::random->set_seed(seed);
+//
+//random[0] = interfaces::random->random_float(-0.5f, 0.5f)
+//+ interfaces::random->random_float(-0.5f, 0.5f);
+//
+//random[1] = interfaces::random->random_float(-0.5f, 0.5f)
+//+ interfaces::random->random_float(-0.5f, 0.5f);
+//
+//auto dir = c_vector(1.0f, 0.0f, 0.0f) + (c_vector(0.0f, -1.0f, 0.0f) * spread * random[0]) + (c_vector(0.0f, 0.0f, 1.0f) * spread * random[1]);
+//
+//q_angle out = math::get_angle(q_angle(0.f, 0.f, 0.f), dir);
+//out = math::fix_angles(out);
+//
+//ucmd->viewangles += out;
+
+//QAngle SpreadAngle(CUserCmd* cmd)
+//{
+//	C_GMOD_Player* LocalPlayer = (C_GMOD_Player*)cliententitylist()->GetClientEntity(engine()->GetLocalPlayer());
+//
+//	Vector SpreadCone = LocalPlayer->GetActiveWeapon()->GetBulletSpread();
+//	float Spread = FloatNegate((SpreadCone.x + SpreadCone.y + SpreadCone.z) / 3);
+//
+//	float Random[2];
+//	unsigned int seed = MD5_PseudoRandom(cmd->command_number) & 0xFF;
+//	Interfaces::Random()->SetSeed(seed);
+//
+//	Random[0] = Interfaces::Random()->RandomFloat(-0.5f, 0.5f) + Interfaces::Random()->RandomFloat(-0.5f, 0.5f);
+//	Random[1] = Interfaces::Random()->RandomFloat(-0.5f, 0.5f) + Interfaces::Random()->RandomFloat(-0.5f, 0.5f);
+//
+//	Vector ShootDirection = Vector(1.0f, 0.0f, 0.0f) + (Vector(0.0f, -1.0f, 0.0f) * Spread * Random[0]) + (Vector(0.0f, 0.0f, 1.0f) * Spread * Random[1]); // 0,0,0
+//
+//	QAngle out = H::Util::Math::GetAngle(Vector(0, 0, 0), ShootDirection);
+//	out = H::Util::Math::FixAngles(out);
+//	return out;
+//}

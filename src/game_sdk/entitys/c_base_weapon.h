@@ -75,6 +75,41 @@ public:
 		return r;
 	}
 
+	float get_primary_value(const std::string& var)
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+		lua->get_field(-1, "Primary"); //2
+		if (!lua->is_type(-1, (int)e_lua_type::type_table))
+		{
+			lua->pop(2);
+			return 0.f;
+		}
+		lua->get_field(-1, var.c_str()); //3
+
+		auto r = (float)lua->get_number(-1);
+
+		lua->pop(3);
+
+		return r;
+	}
+
+	void set_primary_value(const std::string& var, float val)
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+		lua->get_field(-1, "Primary"); //2
+		if (!lua->is_type(-1, (int)e_lua_type::type_table))
+		{
+			lua->pop(2);
+			return;
+		}
+
+		lua->push_number((double)val); //3
+		lua->set_field(-2, var.c_str());
+		lua->pop(4);
+	}
+	
 	bool empty()
 	{
 		if (!this)
@@ -86,8 +121,47 @@ public:
 	{
 		if (!this)
 			return false;
-		return/* (get_next_primary_attack() <= interfaces::engine->get_last_time_stamp()) &&*/ !empty();
+		return /* (get_next_primary_attack() <= interfaces::engine->get_last_time_stamp()) &&*/ !empty();
 	}
+
+	c_vector get_spread()
+	{
+		if (!this)
+			return { 0.f };
+
+		if (is_use_lua())
+		{
+			auto lua_spread_cone = get_primary_value("Spread");
+			if (get_weapon_base().find("weapon_tttbase") != std::string::npos)
+				lua_spread_cone = get_primary_value("Cone");
+
+			if (lua_spread_cone != 0.f)
+				return { lua_spread_cone };
+
+			auto just_spread = [&]() -> float
+			{
+				auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+				push_entity(); //1
+				lua->get_field(-1, "Spread"); //2
+				if (!lua->is_type(-1, (int)e_lua_type::type_number))
+				{
+					lua->pop(2);
+					return -1.f;
+				}
+				auto r = (float)lua->get_number(-1);
+				lua->pop(2);
+
+				return r;
+			};
+			
+			lua_spread_cone = just_spread();
+			if (lua_spread_cone != -1.f)
+				return { lua_spread_cone };
+		}
+
+		return get_bullet_spread();
+	}
+	
 };
 
 __forceinline c_base_combat_weapon* get_primary_weapon(c_base_player* ply)
