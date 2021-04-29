@@ -32,6 +32,7 @@
 
 #include "../globals.h"
 #include "../features/menu/windows/bgwindow.h"
+#include "../features/movement/movement.h"
 #include "../settings/settings.h"
 
 inline unsigned int get_virtual(void* _class, const unsigned int index) { return static_cast<unsigned int>((*static_cast<int**>(_class))[index]); }
@@ -228,9 +229,13 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	auto* weapon = get_primary_weapon(lp);
 	if (settings::aim::rcs_standalone && weapon && cmd->buttons & IN_ATTACK && weapon->can_shoot())
 	{
-		auto pred = weapon->get_kick_up() > weapon->get_kick_down() ? weapon->get_kick_up() : weapon->get_kick_down();
+		auto pred = weapon->get_kick_up();
 		cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);
+		//pred = weapon->get_kick_down();
+		//cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);
 	}
+
+	movement::run_movement(*cmd);
 	
 	cmd->viewangles.normalize();
 	cmd->viewangles.clamp();

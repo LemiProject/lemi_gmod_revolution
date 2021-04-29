@@ -74,7 +74,7 @@ namespace draw_types
 			list->PushTextureID(font->ContainerAtlas->TexID);
 
 			if (flags & font_drop_shadow) list->AddText(font, size, text_pos, c_color(color.a, color.a, color.a, color.a).get_u32(), text.c_str());
-			flags& font_outline ? list->AddTextOutlined(font, text_pos, color.get_u32(), colors::black_color.get_u32(), text.c_str()) :
+			flags& font_outline ? list->AddTextOutlined(font, text_pos, size, color.get_u32(), colors::black_color.get_u32(), text.c_str()) :
 				list->AddText(font, size, text_pos, color.get_u32(), text.c_str());
 
 			list->PopTextureID();

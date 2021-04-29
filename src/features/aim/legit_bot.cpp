@@ -72,7 +72,7 @@ void aim::legit_bot(c_user_cmd* cmd)
 	
 	target_t target;
 
-	if (!(cmd->buttons & IN_ATTACK))
+	if (!(cmd->buttons & IN_ATTACK) || weapon->get_next_primary_attack() <= interfaces::global_vars->interval_per_tick)
 		return;
 	
 	if (!get_target(target))

@@ -83,6 +83,12 @@ namespace settings
 		inline bool rcs_standalone = true;
 		
 	}
+
+	namespace misc
+	{
+		inline bool bunny_hop = true;
+		
+	}
 	
 	namespace colors
 	{

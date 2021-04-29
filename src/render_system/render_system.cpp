@@ -69,7 +69,7 @@ void render_system::init()
             lemi_fonts::lemi_main_font_compressed_size, 26, &font_config,
             ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
         fonts::in_game_font = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(lemi_fonts::lemi_main_font_compressed_data,
-            lemi_fonts::lemi_main_font_compressed_size, 16, &font_config,
+            lemi_fonts::lemi_main_font_compressed_size, 60.f, &font_config,
             ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
 
         ImGuiFreeType::BuildFontAtlas(ImGui::GetIO().Fonts);

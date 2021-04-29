@@ -193,6 +193,7 @@
     <ClInclude Include="src\features\menu\windows\bgwindow.h" />
     <ClInclude Include="src\features\menu\windows\main_window.h" />
     <ClInclude Include="src\features\menu\windows\tabs_contents.h" />
+    <ClInclude Include="src\features\movement\movement.h" />
     <ClInclude Include="src\features\visuals\visuals.h" />
     <ClInclude Include="src\game_sdk\entitys\c_base_entity.h" />
     <ClInclude Include="src\game_sdk\entitys\c_base_player.h" />
@@ -255,6 +256,7 @@
     <ClCompile Include="src\features\menu\menu.cpp" />
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />
+    <ClCompile Include="src\features\movement\movement.cpp" />
     <ClCompile Include="src\features\visuals\esp.cpp" />
     <ClCompile Include="src\features\visuals\overlay.cpp" />
     <ClCompile Include="src\hooks_manager\hooks_manager.cpp" />

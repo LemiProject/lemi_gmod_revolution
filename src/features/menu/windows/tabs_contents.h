@@ -109,36 +109,12 @@ namespace menu_tabs_content
 	{
 		constexpr auto panels_in_visuals_count = 3;
 		
-		BeginGroupPanel("ESP##VISUALS_ESP", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		BeginGroupPanel("Movement##MOVEMENT", { GetWindowSize().x / panels_in_visuals_count, -1 });
 		{
-			if (Button("Get all entitys"))
-			{
-				if (interfaces::engine->is_in_game())
-				{	
-					std::vector<std::string> out;
-					for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
-					{
-						auto ent = get_entity_by_index(i);
-						if (!ent/* || !ent->is_use_lua()*/)
-							continue;
-						out.push_back(
-							"Print name:     " + ent->get_print_name() + "    class name: " + ent->get_class_name() +
-							"     lua script_name: " + ent->get_lua_script_name() + "    network class: " + ent->
-							get_client_class()->network_name);
-					}
-					
-					std::cout << "\n\n";
-					for (auto i : out)
-						std::cout << i << "\n";
-					std::cout << "Total size: " << out.size();
-					std::cout << "\n";
-				}
-			}
-
-			if (Button("Reload fonts"))
-				surface_render::reload_fonts();
+			internal::text_and_toggle_button("Bunny Hop", "##MOVEMENT_BHOP", &misc::bunny_hop);
 		}
 		EndGroupPanel();
+		
 	}
 
 	inline void draw_setting()
