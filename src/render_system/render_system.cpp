@@ -136,7 +136,6 @@ void render_system::on_present()
     device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
     device->GetVertexDeclaration(&vertex_declaration);
     device->GetVertexShader(&vertex_shader);
-    device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
 
     DWORD state1;
     DWORD state2;
@@ -146,7 +145,6 @@ void render_system::on_present()
     device->GetRenderState(D3DRS_SRGBWRITEENABLE, &state3);
 
     device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
-    device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
     device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
 
     ImGui_ImplDX9_NewFrame();
@@ -155,17 +153,7 @@ void render_system::on_present()
     
     auto* list = ImGui::GetOverlayDrawList();
     directx_render::add_temp_to_draw_list(list);
-
-    //list->AddTextOutlined(render_system::fonts::in_game_font, { 400, 100 }, colors::red_color.get_u32(), colors::black_color.get_u32(), "TESTTESTTESTTEST");
-    //draw_types::text_draw_type_t t {};
-    //t.font = render_system::fonts::in_game_font;
-    //t.color = colors::red_color;
-    //t.text = "TESTTESTTESTTEST";
-    //t.size = 100;
-    //t.pos = { 400, 100 };
-    //t.flags = directx_render::font_outline;
-    //t.draw(list);
-    
+  
     menu::draw();
     
     ImGui::EndFrame();

@@ -46,7 +46,7 @@ namespace menu_tabs_content
 
 		BeginGroupPanel("Accuracy##LEGITBOT_ACCURACY", { GetWindowSize().x / panels_in_visuals_count, -1 });
 		{
-			internal::text_and_toggle_button("RCS", "##LEGITBOT_ACCURACY_RCS", &aim::rcs_standalone);
+			internal::text_and_toggle_button("NoRecoil", "##LEGITBOT_ACCURACY_NORECOIL", &aim::no_recoil);
 		}
 		EndGroupPanel();
 	}
@@ -114,10 +114,22 @@ namespace menu_tabs_content
 			internal::text_and_toggle_button("Bunny Hop", "##MOVEMENT_BHOP", &misc::bunny_hop);
 		}
 		EndGroupPanel();
+
+		BeginGroupPanel("Exploits##EXPLOITS", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			Hotkey("Wallpush##EXPLOITS_WALLPUSH", &misc::exploits::wallpush, {0, 0});
+		}
+		EndGroupPanel();
 		
 	}
 
 	inline void draw_setting()
 	{
+		constexpr auto panels_in_visuals_count = 3;
+		BeginGroupPanel("Main##SETTINGS_PANEL", { GetWindowSize().x / panels_in_visuals_count, -1 });
+		{
+			Hotkey("Menu key##SETTINGS_PANEL", &other::menu_key, {0 ,0}, VK_INSERT, "Insert");
+		}
+		EndGroupPanel();
 	}
 }

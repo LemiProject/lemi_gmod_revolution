@@ -31,6 +31,7 @@
 
 
 #include "../globals.h"
+#include "../features/lua_features/lua_features.h"
 #include "../features/menu/windows/bgwindow.h"
 #include "../features/movement/movement.h"
 #include "../settings/settings.h"
@@ -209,7 +210,7 @@ void override_view_hook::hook(c_view_setup* setup)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
 
 	if (get_local_player() && get_local_player()->is_alive())
-		if (settings::aim::rcs_standalone)
+		if (settings::aim::no_recoil)
 			setup->angles -= get_local_player()->get_view_punch_angles();
 	
 	globals::view::last_view_setup = *setup;
@@ -226,6 +227,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
 
+	if (settings::aim::no_recoil)
+		aim::anti_recoil_and_spread(cmd);
+	
 	auto ret = original(interfaces::client_mode, frame_time, cmd);
 
 	if (!cmd)
@@ -235,15 +239,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	if (!lp || !lp->is_alive())
 		return ret;
 
-	const auto old_cmd = *cmd;
-
-	//auto* weapon = get_primary_weapon(lp);
-	//if (settings::aim::rcs_standalone && weapon && cmd->buttons & IN_ATTACK && weapon->can_shoot())
-	//{
-	//	/*auto pred = weapon->get_kick_up();
-	//	cmd->viewangles += c_vector(pred * (interfaces::global_vars->interval_per_tick * 2.f), 0.f, 0.f);*/
-	//	aim::anti_recoil_and_spread(cmd);
-	//}		
+	const auto old_cmd = *cmd;	
 	
 	aim::run_aimbot(cmd);
 
@@ -251,6 +247,14 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	cmd->viewangles.normalize();
 	cmd->viewangles.clamp();
+
+	[]()
+	{
+		static auto spawn_time = interfaces::engine->get_time_scale();
+		if (GetAsyncKeyState(settings::misc::exploits::wallpush) && settings::misc::exploits::wallpush != 0 && interfaces::engine->get_time_scale() > spawn_time + 1.f)
+			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo");
+	}();
+
 	
 	return ret;
 }
@@ -297,6 +301,7 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	render_system::vars::view_matrix = interfaces::engine->get_world_to_view_matrix();
 
 	bg_window::update_entity_list();
+	lua_features::run_all_code();
 	
 	if (render_system::vars::is_screen_grab)
 		return;
@@ -359,7 +364,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper)
 {
-	if (settings::aim::rcs_standalone)
+	if (settings::aim::no_recoil)
 	{
 		q_angle angle;
 		interfaces::engine->get_view_angles(angle);
@@ -379,9 +384,13 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 		hack_utils::shutdown_hack();
 		return true;
 	}
+
+	auto mk = VK_INSERT;
+	if (settings::other::menu_key > 0)
+		mk = settings::other::menu_key;
 	
 	if (message_type == WM_KEYDOWN)
-		if (w_param == VK_INSERT)
+		if (w_param == mk)
 			menu::toggle_menu();
 
 	//ImGui_ImplWin32_WndProcHandler(window, message_type, w_param, l_param);

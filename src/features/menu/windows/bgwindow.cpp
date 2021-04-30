@@ -1,14 +1,23 @@
 #include "bgwindow.h"
 
 #include <chrono>
+#include <future>
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 
 #include <imgui/imgui.h>
 #include <imgui/im_tools.h>
+#include <imgui/TextEditor.h>
+#include <imgui/imgui_stdlib.h>
 
+
+
+#include "main_window.h"
 #include "../../../interfaces.h"
 #include "../../../settings/settings.h"
 #include "../../../utils/hack_utils.h"
+#include "../../lua_features/lua_features.h"
 
 std::string current_date_time()
 {
@@ -25,6 +34,7 @@ std::string current_date_time()
 bool show_style_editor = false;
 bool show_colors_editor = false;
 bool show_entity_list = false;
+bool show_glua_loader = false;
 
 auto entity_list_update_time_stamp = 0.f;
 settings::visuals::c_entity_list ent_list;
@@ -124,6 +134,126 @@ void draw_entity_list()
 	End();
 }
 
+void draw_glua_loader()
+{
+	using namespace ImGui;
+
+	static TextEditor* editor = nullptr;
+	static auto load_file_show = false;
+	if (load_file_show)
+	[]()
+	{
+		static std::string str;
+		
+		Begin("Load file##SUBWINDOW");
+
+		InputText("Path##LOADFILE_SUBWINDOW", &str);
+		if (Button("Run##LOADFILE_SUBWINDOW") && !str.empty() && std::filesystem::exists(str)) auto as2 = std::async(std::launch::async, []()
+			{
+				std::string code;
+				{
+					std::ifstream stream(str);
+					code = std::string((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+				}
+				lua_features::add_code_to_run(code);
+			});
+		
+		End();
+	}();
+	
+	if (!editor)
+	{
+		editor = new TextEditor();
+		editor->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+		editor->SetShowWhitespaces(false);
+	}
+	
+	int w, h;
+	interfaces::engine->get_screen_size(w, h);
+	SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
+	auto cpos = editor->GetCursorPosition();
+	Begin("Glua loader##SUBWINDOW", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			
+			MenuItem("Load file", 0, &load_file_show);
+				
+			
+			ImGui::EndMenu();
+		}
+		
+		if (ImGui::BeginMenu("Edit"))
+		{
+			bool ro = editor->IsReadOnly();
+			if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
+				editor->SetReadOnly(ro);
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor->CanUndo()))
+				editor->Undo();
+			if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor->CanRedo()))
+				editor->Redo();
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor->HasSelection()))
+				editor->Copy();
+			if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor->HasSelection()))
+				editor->Cut();
+			if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor->HasSelection()))
+				editor->Delete();
+			if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
+				editor->Paste();
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Select all", nullptr, nullptr))
+				editor->SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor->GetTotalLines(), 0));
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("View"))
+		{
+			if (ImGui::MenuItem("Dark palette"))
+				editor->SetPalette(TextEditor::GetDarkPalette());
+			if (ImGui::MenuItem("Light palette"))
+				editor->SetPalette(TextEditor::GetLightPalette());
+			if (ImGui::MenuItem("Retro blue palette"))
+				editor->SetPalette(TextEditor::GetRetroBluePalette());
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
+	ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor->GetTotalLines(),
+		editor->IsOverwrite() ? "Ovr" : "Ins",
+		editor->CanUndo() ? "*" : " ",
+		editor->GetLanguageDefinition().mName.c_str());
+
+	editor->Render("TextEditor", {
+					   ImGui::GetContentRegionAvail().x,
+					   ImGui::GetContentRegionAvail().y - (ImGui::CalcTextSize("Run").y + ImGui::CalcTextSize("Run").y / 2)
+		});
+
+	//VERY VERY ("VERY" * 30) BAD CODE TODO: FIX IT
+	if (Button("Run##RUN_SCRIPT")) auto as = std::async(std::launch::async, []()
+	{
+			std::string code;
+			auto lines = editor->GetTextLines();
+			std::for_each(lines.begin(), lines.end(), [&](const std::string& n)
+			{
+					code.append(" " + n);
+			});
+			lua_features::add_code_to_run(code);
+	});
+	
+	End();
+}
+
 void bg_window::draw()
 {
 	int w, h;
@@ -146,10 +276,12 @@ void bg_window::draw()
 
 		if (ImGui::BeginMenu("Windows"))
 		{
+			ImGui::MenuItem("Main window", 0, &main_window::show_main_window);
 			ImGui::MenuItem("Imgui style editor", 0, &show_style_editor);
 			ImGui::MenuItem("Colors editor", 0, &show_colors_editor);
 			ImGui::MenuItem("Entity list", 0, &show_entity_list);
-				
+			ImGui::MenuItem("Glua loader", 0, &show_glua_loader);
+			
 			ImGui::EndMenu();
 		}
 
@@ -208,5 +340,8 @@ void bg_window::draw()
 	if (show_entity_list)
 		draw_entity_list();
 
+	if (show_glua_loader)
+		draw_glua_loader();
+	
 	//ImGui::ShowDemoWindow();
 }

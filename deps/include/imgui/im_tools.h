@@ -63,4 +63,6 @@ namespace ImGui
 	IMGUI_API void EndGroupPanel();
 
 	IMGUI_API void ToggleButton(const char* str_id, bool* v, const ImVec2& size = ImVec2(0, 0));
+
+	IMGUI_API bool Hotkey(const char* id, uint32_t* key, const ImVec2& size_arg = {0, 0}, uint32_t none_key = 0, const char* none_str = "None");
 }

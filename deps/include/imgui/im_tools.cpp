@@ -1,8 +1,9 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "im_tools.h"
 #include <stack>
-
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui_internal.h>
+
+#include <Windows.h>
 
 void ImGui::BorderPrevItem(const ImVec4& color)
 {
@@ -330,4 +331,293 @@ void ImGui::ToggleButton(const char* str_id, bool* v, const ImVec2& size)
 	draw_list->AddRect(p, ImVec2(p.x + width, p.y + height), GetColorU32(ImGuiCol_Border), height * 0.5f);
 	draw_list->AddCircleFilled(ImVec2(p.x + radius + t * (width - radius * 2.0f), p.y + radius), radius - 1.5f, slider_color);
 
+}
+
+constexpr const char* const key_names[] = {
+	"Unknown",
+	"Left Button",
+	"Right Button",
+	"Cancel",
+	"Middle Button",
+	"MButton 1",
+	"MButton 2",
+	"Unknown",
+	"Back",
+	"Tab",
+	"Unknown",
+	"Unknown",
+	"Clear",
+	"Return",
+	"Unknown",
+	"Unknown",
+	"Shift",
+	"Control",
+	"Menu",
+	"Pause",
+	"Capital",
+	"Kana",
+	"Unknown",
+	"Junja",
+	"Final",
+	"Kanji",
+	"Unknown",
+	"Escape",
+	"Convert",
+	"Nonconvert",
+	"Accept",
+	"Modechange",
+	"Space",
+	"Prior",
+	"Next",
+	"End",
+	"Home",
+	"Left",
+	"Up",
+	"Right",
+	"Down",
+	"Select",
+	"Print",
+	"Execute",
+	"Snapshot",
+	"Insert",
+	"Delete",
+	"Help",
+	"0",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"A",
+	"B",
+	"C",
+	"D",
+	"E",
+	"F",
+	"G",
+	"H",
+	"I",
+	"J",
+	"K",
+	"L",
+	"M",
+	"N",
+	"O",
+	"P",
+	"Q",
+	"R",
+	"S",
+	"T",
+	"U",
+	"V",
+	"W",
+	"X",
+	"Y",
+	"Z",
+	"LWIN",
+	"RWIN",
+	"APPS",
+	"Unknown",
+	"Sleep",
+	"NUMPAD0",
+	"NUMPAD1",
+	"NUMPAD2",
+	"NUMPAD3",
+	"NUMPAD4",
+	"NUMPAD5",
+	"NUMPAD6",
+	"NUMPAD7",
+	"NUMPAD8",
+	"NUMPAD9",
+	"MULTIPLY",
+	"ADD",
+	"SEPARATOR",
+	"SUBTRACT",
+	"DECIMAL",
+	"DIVIDE",
+	"F1",
+	"F2",
+	"F3",
+	"F4",
+	"F5",
+	"F6",
+	"F7",
+	"F8",
+	"F9",
+	"F10",
+	"F11",
+	"F12",
+	"F13",
+	"F14",
+	"F15",
+	"F16",
+	"F17",
+	"F18",
+	"F19",
+	"F20",
+	"F21",
+	"F22",
+	"F23",
+	"F24",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"NUMLOCK",
+	"SCROLL",
+	"OEM_NEC_EQUAL",
+	"OEM_FJ_MASSHOU",
+	"OEM_FJ_TOUROKU",
+	"OEM_FJ_LOYA",
+	"OEM_FJ_ROYA",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"LShift",
+	"RShift",
+	"LControl",
+	"RControl",
+	"LALT",
+	"RALT"
+};
+
+bool ImGui::Hotkey(const char* label, uint32_t* k, const ImVec2& size_arg, uint32_t none_key, const char* none_str)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext& g = *GImGui;
+	ImGuiIO& io = g.IO;
+	const ImGuiStyle& style = g.Style;
+
+	const ImGuiID id = window->GetID(label);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+	ImVec2 size = ImGui::CalcItemSize(size_arg, ImGui::CalcItemWidth(), label_size.y + style.FramePadding.y * 2.0f);
+	const ImRect frame_bb(window->DC.CursorPos + ImVec2(label_size.x + style.ItemInnerSpacing.x, 0.0f), window->DC.CursorPos + size);
+	const ImRect total_bb(window->DC.CursorPos, frame_bb.Max);
+
+	ImGui::ItemSize(total_bb, style.FramePadding.y);
+	if (!ImGui::ItemAdd(total_bb, id))
+		return false;
+
+	const bool focus_requested = ImGui::FocusableItemRegister(window, id);
+
+	const bool hovered = ImGui::ItemHoverable(frame_bb, id);
+
+	if (hovered) {
+		ImGui::SetHoveredID(id);
+		g.MouseCursor = ImGuiMouseCursor_TextInput;
+	}
+
+	const bool user_clicked = hovered && io.MouseClicked[0];
+
+	if (focus_requested || user_clicked) {
+		if (g.ActiveId != id) {
+			// Start edition
+			memset(io.MouseDown, 0, sizeof(io.MouseDown));
+			memset(io.KeysDown, 0, sizeof(io.KeysDown));
+			*k = 0;
+		}
+		ImGui::SetActiveID(id, window);
+		ImGui::FocusWindow(window);
+	}
+	else if (io.MouseClicked[0]) {
+		// Release focus when we click outside
+		if (g.ActiveId == id)
+			ImGui::ClearActiveID();
+	}
+
+	bool value_changed = false;
+	int key = *k;
+
+	if (g.ActiveId == id) {
+		for (auto i = 0; i < 5; i++) {
+			if (io.MouseDown[i]) {
+				switch (i) {
+				case 0:
+					key = VK_LBUTTON;
+					break;
+				case 1:
+					key = VK_RBUTTON;
+					break;
+				case 2:
+					key = VK_MBUTTON;
+					break;
+				case 3:
+					key = VK_XBUTTON1;
+					break;
+				case 4:
+					key = VK_XBUTTON2;
+					break;
+				}
+				value_changed = true;
+				ImGui::ClearActiveID();
+			}
+		}
+		if (!value_changed) {
+			for (auto i = VK_BACK; i <= VK_RMENU; i++) {
+				if (io.KeysDown[i]) {
+					key = i;
+					value_changed = true;
+					ImGui::ClearActiveID();
+				}
+			}
+		}
+
+		if (IsKeyPressedMap(ImGuiKey_Escape)) {
+			*k = none_key;
+			ImGui::ClearActiveID();
+		}
+		else {
+			*k = key;
+		}
+	}
+
+	// Render
+	// Select which buffer we are going to display. When ImGuiInputTextFlags_NoLiveEdit is Set 'buf' might still be the old value. We Set buf to NULL to prevent accidental usage from now on.
+
+	char buf_display[64] = "None";
+	strcpy_s(buf_display, none_str);
+
+	ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, /*ImGui::GetColorU32(ImVec4(0.20f, 0.25f, 0.30f, 1.0f)*/ ImGui::GetColorU32(ImGuiCol_Button), true, style.FrameRounding);
+
+	if (*k != 0 && g.ActiveId != id) {
+		strcpy_s(buf_display, key_names[*k]);
+	}
+	else if (g.ActiveId == id) {
+		strcpy_s(buf_display, "<Press a key>");
+	}
+
+	const ImRect clip_rect(frame_bb.Min.x, frame_bb.Min.y, frame_bb.Min.x + size.x, frame_bb.Min.y + size.y); // Not using frame_bb.Max because we have adjusted size
+	ImVec2 render_pos = frame_bb.Min + style.FramePadding;
+	ImGui::RenderTextClipped(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding, buf_display, NULL, NULL, style.ButtonTextAlign, &clip_rect);
+	//RenderTextClipped(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding, buf_display, NULL, NULL, GetColorU32(ImGuiCol_Text), style.ButtonTextAlign, &clip_rect);
+	//draw_window->DrawList->AddText(g.Font, g.FontSize, render_pos, GetColorU32(ImGuiCol_Text), buf_display, NULL, 0.0f, &clip_rect);
+
+	if (label_size.x > 0)
+		ImGui::RenderText(ImVec2(total_bb.Min.x, frame_bb.Min.y + style.FramePadding.y), label);
+
+	return value_changed;
 }

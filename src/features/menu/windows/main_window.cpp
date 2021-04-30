@@ -116,6 +116,9 @@ void draw_tab_top()
 
 void main_window::draw()
 {
+	if (!show_main_window)
+		return;
+	
 	static auto calc_window_size = []()
 	{
 		int x, y;

@@ -107,25 +107,21 @@
 
 struct ray_t
 {
+	ray_t() {}
 	c_vector_aligned  m_start;    // starting point, centered within the extents
 	c_vector_aligned  m_delta;    // direction + length of the ray
 	c_vector_aligned  m_start_offset;    // Add this to m_Start to get the actual ray start
 	c_vector_aligned  m_extents;    // Describes an axis aligned box extruded along a ray
-	//const matrix3x4_t *m_pWorldAxisTransform;
 	bool    m_is_ray;    // are the extents zero?
 	bool    m_is_swept;    // is delta != 0?
 
 	void init(c_vector& vecStart, c_vector& vecEnd)
 	{
 		m_delta = vecEnd - vecStart;
-
 		m_is_swept = (m_delta.length() != 0);
-
 		m_extents[0] = m_extents[1] = m_extents[2] = 0.0f;
 		m_is_ray = true;
-
 		m_start_offset[0] = m_start_offset[1] = m_start_offset[2] = 0.0f;
-
 		m_start = vecStart;
 	}
 private:
@@ -168,7 +164,7 @@ struct trace_t
 	csurface_t	surface;
 	int hitgroup;
 	short physicsbone;
-	c_base_entity* m_pEnt;
+	void* m_pEnt;
 	int hitbox;
 };
 
@@ -183,7 +179,6 @@ enum trace_type_t
 class i_trace_filter
 {
 public:
-	virtual ~i_trace_filter() = default;
 	virtual bool			should_hit_entity(void* pEntity, int mask) = 0;
 	virtual trace_type_t            get_trace_type() const = 0;
 };

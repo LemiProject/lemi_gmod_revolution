@@ -98,16 +98,31 @@ public:
 	{
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		push_entity(); //1
-		lua->get_field(-1, "Primary"); //2
-		if (!lua->is_type(-1, (int)e_lua_type::type_table))
-		{
-			lua->pop(2);
-			return;
-		}
+			lua->get_field(-1, "Primary"); //2
+			if (!lua->is_type(-1, (int)e_lua_type::type_table))
+			{
+				lua->pop(2);
+				return;
+			}
 
-		lua->push_number((double)val); //3
-		lua->set_field(-2, var.c_str());
-		lua->pop(4);
+			lua->push_number((double)val); //3
+			lua->set_field(-2, var.c_str());
+		lua->pop(2);
+	}
+
+	void set_recoil(float val)
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+			lua->push_number(0); //2
+			lua->set_field(-2, "Recoil");
+		lua->pop();
+		
+		set_primary_value("Recoil", 0.f);
+		set_primary_value("KickDown", 0.f);
+		set_primary_value("KickUp", 0.f);
+		set_primary_value("KickHorizontal", 0.f);
+		
 	}
 	
 	bool empty()

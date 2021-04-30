@@ -184,6 +184,7 @@
     <ClInclude Include="deps\include\imgui\imstb_textedit.h" />
     <ClInclude Include="deps\include\imgui\imstb_truetype.h" />
     <ClInclude Include="deps\include\imgui\im_tools.h" />
+    <ClInclude Include="deps\include\imgui\TextEditor.h" />
     <ClInclude Include="deps\include\lemi_utils.h" />
     <ClInclude Include="deps\include\minpp\c_min_hook.h" />
     <ClInclude Include="deps\include\minpp\minhook\buffer.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="deps\include\minpp\minhook\minhook.h" />
     <ClInclude Include="deps\include\minpp\minhook\trampoline.h" />
     <ClInclude Include="src\features\aim\aim.h" />
+    <ClInclude Include="src\features\lua_features\lua_features.h" />
     <ClInclude Include="src\features\menu\menu.h" />
     <ClInclude Include="src\features\menu\styles.h" />
     <ClInclude Include="src\features\menu\windows\bgwindow.h" />
@@ -256,6 +258,7 @@
     <ClCompile Include="deps\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="deps\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="deps\include\imgui\im_tools.cpp" />
+    <ClCompile Include="deps\include\imgui\TextEditor.cpp" />
     <ClCompile Include="deps\include\minpp\c_min_hook.cpp" />
     <ClCompile Include="deps\include\minpp\minhook\buffer.c" />
     <ClCompile Include="deps\include\minpp\minhook\hde\hde32.c" />
@@ -263,6 +266,7 @@
     <ClCompile Include="deps\include\minpp\minhook\hook.c" />
     <ClCompile Include="deps\include\minpp\minhook\trampoline.c" />
     <ClCompile Include="src\features\aim\legit_bot.cpp" />
+    <ClCompile Include="src\features\lua_features\lua_features.cpp" />
     <ClCompile Include="src\features\menu\menu.cpp" />
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />

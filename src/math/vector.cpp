@@ -6,8 +6,7 @@
 
 c_vector::c_vector()
 {
-	float i = (unsigned long)0x7FC00000;
-	float val = *reinterpret_cast<float*>(&i);
+	make_inf();
 }
 
 c_vector::c_vector(const c_vector&& left) noexcept : x(left.x), y(left.y), z(left.z)

@@ -80,14 +80,24 @@ namespace settings
 		inline bool legit_bot_enabled = false;
 		inline float legit_bot_fov = 30.f;
 
-		inline bool rcs_standalone = true;
+		inline bool no_recoil = true;
 		
 	}
 
 	namespace misc
 	{
 		inline bool bunny_hop = true;
+
+		namespace exploits
+		{
+			inline uint32_t wallpush = 0;
+		}
 		
+	}
+
+	namespace other
+	{
+		inline uint32_t menu_key = 0;
 	}
 	
 	namespace colors

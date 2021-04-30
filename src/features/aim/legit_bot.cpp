@@ -43,7 +43,7 @@ bool get_target(target_t& target)
 		                                     game_utils::calc_angle(get_local_player()->get_eye_pos(),
 												 hit_pos));
 		
-		if (fov < tmp.fov && fov <= settings::aim::legit_bot_fov/* && player->is_visible_by(get_local_player())*/)
+		if (fov < tmp.fov && fov <= settings::aim::legit_bot_fov && player->is_visible_by(get_local_player()))
 		{
 			tmp.fov = fov;
 			tmp.ply = player;
@@ -94,15 +94,7 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 	if (!weapon)
 		return;
 
-	//auto cone = weapon->get_spread().x;
-	//interfaces::random->set_seed(ucmd->command_number);
-
-	//float cone_rng1 = interfaces::random->random_float(-cone, cone);
-	//float cone_rng2 = interfaces::random->random_float(-cone, cone);
-	//q_angle punch = weapon->get_bullet_spread();
-	//q_angle angles = ucmd->viewangles;
-
-	
+	weapon->set_recoil(0.f);
 }
 
 
