@@ -248,13 +248,12 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	cmd->viewangles.normalize();
 	cmd->viewangles.clamp();
 
-	[]()
 	{
-		static auto spawn_time = interfaces::engine->get_time_scale();
+		static auto spawn_time = 0.f;
 		if (GetAsyncKeyState(settings::misc::exploits::wallpush) && settings::misc::exploits::wallpush != 0 && interfaces::engine->get_time_scale() > spawn_time + 1.f)
-			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo");
-	}();
-
+			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
+				spawn_time = interfaces::engine->get_time_scale();
+	}
 	
 	return ret;
 }
@@ -306,11 +305,11 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	if (render_system::vars::is_screen_grab)
 		return;
 	
-	interfaces::surface->start_drawing();
+	//interfaces::surface->start_drawing();
 
 	//visuals::run_visuals();
 		
-	interfaces::surface->finish_drawing();
+	//interfaces::surface->finish_drawing();
 
 	directx_render::render_surface([]()
 	{
