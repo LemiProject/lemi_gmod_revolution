@@ -25,8 +25,12 @@
 #include <mutex>
 
 #include <ft2build.h>
+#include <intrin.h>
+
 #include FT_FREETYPE_H
 #include <freetype/freetype.h>
+
+#include "../settings/settings.h"
 #pragma comment(lib,"freetype28.lib")
 
 
@@ -85,8 +89,21 @@ void render_system::shutdown()
 
 }
 
-void render_system::on_scene_end()
+void render_system::on_scene_end(uintptr_t ret_address)
 {
+    static uintptr_t game_overlay_return_address = 0;
+    if (!game_overlay_return_address)
+    {
+        MEMORY_BASIC_INFORMATION mi;
+        VirtualQuery((LPVOID)ret_address, &mi, sizeof(MEMORY_BASIC_INFORMATION));
+        char mn[MAX_PATH];
+        GetModuleFileName((HMODULE)mi.AllocationBase, mn, MAX_PATH);
+        if (strstr(mn, "gameoverlay"))
+            game_overlay_return_address = ret_address;
+    }
+    if (game_overlay_return_address != (uintptr_t)ret_address && settings::other::anti_obs)
+        return;
+	
     IDirect3DStateBlock9* pixel_state = NULL;
     IDirect3DVertexDeclaration9* vertex_declaration;
     IDirect3DVertexShader9* vertex_shader;
@@ -105,23 +122,25 @@ void render_system::on_scene_end()
     device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
     device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
     device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
-    
+
+
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
-
     ImGui::NewFrame();
-    
+	
     menu::draw();
-    
-    ImGui::EndFrame();
 
-    ImGui::Render(nullptr);
+    auto* list = ImGui::GetBackgroundDrawList();
+    directx_render::add_temp_to_draw_list(list);
+	
+    ImGui::EndFrame();
+    ImGui::Render(list);
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-    
+
     device->SetRenderState(D3DRS_COLORWRITEENABLE, state1);
     device->SetRenderState(D3DRS_COLORWRITEENABLE, state2);
     device->SetRenderState(D3DRS_SRGBWRITEENABLE, state3);
-    
+
     pixel_state->Apply();
     pixel_state->Release();
     device->SetVertexDeclaration(vertex_declaration);
@@ -130,22 +149,26 @@ void render_system::on_scene_end()
 
 void render_system::on_present()
 {
-    IDirect3DStateBlock9* pixel_state = NULL;
-    IDirect3DVertexDeclaration9* vertex_declaration;
-    IDirect3DVertexShader9* vertex_shader;
-    device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
-    device->GetVertexDeclaration(&vertex_declaration);
-    device->GetVertexShader(&vertex_shader);
-
-    DWORD state1;
-    DWORD state2;
-    DWORD state3;
-    device->GetRenderState(D3DRS_COLORWRITEENABLE, &state1);
-    device->GetRenderState(D3DRS_COLORWRITEENABLE, &state2);
-    device->GetRenderState(D3DRS_SRGBWRITEENABLE, &state3);
+    DWORD colorwrite, srgbwrite;
+    IDirect3DVertexDeclaration9* vert_dec = nullptr;
+    IDirect3DVertexShader9* vert_shader = nullptr;
+    DWORD dwOld_D3DRS_COLORWRITEENABLE = NULL;
+    device->GetRenderState(D3DRS_COLORWRITEENABLE, &colorwrite);
+    device->GetRenderState(D3DRS_SRGBWRITEENABLE, &srgbwrite);
 
     device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
+    //removes the source engine color correction
     device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
+
+    device->GetRenderState(D3DRS_COLORWRITEENABLE, &dwOld_D3DRS_COLORWRITEENABLE);
+    device->GetVertexDeclaration(&vert_dec);
+    device->GetVertexShader(&vert_shader);
+    device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
+    device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
+    device->SetSamplerState(NULL, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+    device->SetSamplerState(NULL, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+    device->SetSamplerState(NULL, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
+    device->SetSamplerState(NULL, D3DSAMP_SRGBTEXTURE, NULL);
 
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -160,14 +183,12 @@ void render_system::on_present()
     ImGui::Render(list);
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-    device->SetRenderState(D3DRS_COLORWRITEENABLE, state1);
-    device->SetRenderState(D3DRS_COLORWRITEENABLE, state2);
-    device->SetRenderState(D3DRS_SRGBWRITEENABLE, state3);
-
-    pixel_state->Apply();
-    pixel_state->Release();
-    device->SetVertexDeclaration(vertex_declaration);
-    device->SetVertexShader(vertex_shader);
+    device->SetRenderState(D3DRS_COLORWRITEENABLE, colorwrite);
+    device->SetRenderState(D3DRS_SRGBWRITEENABLE, srgbwrite);
+    device->SetRenderState(D3DRS_COLORWRITEENABLE, dwOld_D3DRS_COLORWRITEENABLE);
+    device->SetRenderState(D3DRS_SRGBWRITEENABLE, true);
+    device->SetVertexDeclaration(vert_dec);
+    device->SetVertexShader(vert_shader);
 }
 
 IDirect3DDevice9* render_system::get_device()

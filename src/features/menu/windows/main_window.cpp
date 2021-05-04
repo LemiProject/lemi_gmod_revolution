@@ -7,8 +7,11 @@
 #include <imgui/im_tools.h>
 #include <imgui/imgui_internal.h>
 
+#include "tabs_contents.h"
+
 #include "../../../interfaces.h"
 #include "../../../render_system/render_system.h"
+
 
 
 
@@ -31,13 +34,6 @@ enum e_tabs {
 };
 
 e_tabs current_tab = e_tabs_visual;
-
-
-//VERY BAD CODE
-#include "tabs_contents.h"
-
-
-
 
 void draw_top_bar()
 {

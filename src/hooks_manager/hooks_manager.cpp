@@ -143,6 +143,15 @@ struct run_command_hook
 	static void __fastcall hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper);
 };
 
+struct paint_traverse_hook
+{
+	static inline constexpr uint32_t idx = 41;
+
+	using fn = void(__thiscall*)(i_panel*, uint32_t, bool, bool );
+	static inline fn original = nullptr;
+	static void __fastcall hook(i_panel* self, void*, unsigned int panel, bool force_repaint, bool allow_force);
+};
+
 struct wndproc_hook
 {
 	static LRESULT STDMETHODCALLTYPE hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param);
@@ -171,6 +180,7 @@ void hooks_manager::init()
 	CREATE_HOOK(interfaces::client, view_render_hook::idx, view_render_hook::hook, view_render_hook::original);
 	CREATE_HOOK(interfaces::model_render, draw_model_execute_hook::idx, draw_model_execute_hook::hook, draw_model_execute_hook::original);
 	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
+	CREATE_HOOK(interfaces::panel, paint_traverse_hook::idx, paint_traverse_hook::hook, paint_traverse_hook::original);
 	//CREATE_HOOK(interfaces::render_view, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
@@ -254,6 +264,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
 				spawn_time = interfaces::engine->get_time_scale();
 	}
+
+	bg_window::update_entity_list();
+	lua_features::run_all_code();
 	
 	return ret;
 }
@@ -296,25 +309,25 @@ void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, in
 void view_render_hook::hook(void* self, void* edx, void* rect)
 {
 	original(self, rect);
-	
-	render_system::vars::view_matrix = interfaces::engine->get_world_to_view_matrix();
 
-	bg_window::update_entity_list();
-	lua_features::run_all_code();
-	
 	if (render_system::vars::is_screen_grab)
 		return;
 	
-	//interfaces::surface->start_drawing();
-
-	//visuals::run_visuals();
-		
-	//interfaces::surface->finish_drawing();
-
-	directx_render::render_surface([]()
+	interfaces::surface->start_drawing();
 	{
-			visuals::run_visuals();
-	});
+		auto lua = interfaces::lua_shared->get_interface((int)e_type::client);
+		if (lua)
+		{
+			lua->push_special((int)e_special::glob); //1
+			lua->get_field(-1, "hook"); //2
+			lua->get_field(-1, "Call"); //2
+			lua->push_string("ASGHudPaint"); //3
+			lua->call(1, 0); // 3 - 1 = 2
+			lua->pop(2);
+			
+		}
+	}	
+	interfaces::surface->finish_drawing();
 }
 
 //void __fastcall render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
@@ -376,6 +389,31 @@ void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player
 	}
 }
 
+void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool force_repaint, bool allow_force)
+{
+	original(self, panel, force_repaint, allow_force);
+
+	if (render_system::vars::is_screen_grab)
+		return;
+
+	const std::string panel_name = interfaces::panel->get_name(panel);
+	
+	if (interfaces::engine->is_in_game())
+	{
+		auto mat = interfaces::engine->get_world_to_view_matrix();
+		render_system::vars::view_matrix = mat;
+	}
+	
+	if (panel_name == "FocusOverlayPanel")
+	{
+		directx_render::render_surface([]()
+			{
+				visuals::run_visuals();
+			});
+	}
+	
+}
+
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)
 {
 	if (message_type == WM_CLOSE)
@@ -404,14 +442,16 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 
 long end_scene_hook::hook(IDirect3DDevice9* device)
 {
-	//render_system::on_scene_end();
-	return original(device);
+	auto ret = original(device);
+	render_system::on_scene_end((uintptr_t)_ReturnAddress());
+	return ret;
 }
 
 long present_hook::hook(IDirect3DDevice9* device, RECT* src_rect, RECT* dest_rect, HWND dest_wnd_override,
 	RGNDATA* dirty_region)
 {
-	render_system::on_present();
+	//auto ret = original(device, src_rect, dest_rect, dest_wnd_override, dirty_region);
+	//render_system::on_present();
 	return original(device, src_rect, dest_rect, dest_wnd_override, dirty_region);
 }
 

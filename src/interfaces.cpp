@@ -25,6 +25,8 @@ void interfaces::init_interfaces()
 	prediction = memory_utils::capture_interface<i_prediction>("client.dll", "VClientPrediction001");
 
 	engine_trace = memory_utils::capture_interface<i_engine_trace>("engine.dll", "EngineTraceClient003");
+
+	panel = memory_utils::capture_interface<i_panel>("vgui2.dll", "VGUI_Panel009");
 	
 	render_context = material_system->get_render_context();
 	

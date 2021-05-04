@@ -79,7 +79,9 @@ namespace settings
 	{
 		inline bool legit_bot_enabled = false;
 		inline float legit_bot_fov = 30.f;
-
+		
+		inline float legit_bot_smooth_val = 0.f;
+		
 		inline bool no_recoil = true;
 		
 	}
@@ -87,7 +89,7 @@ namespace settings
 	namespace misc
 	{
 		inline bool bunny_hop = true;
-
+		
 		namespace exploits
 		{
 			inline uint32_t wallpush = 0;
@@ -98,6 +100,7 @@ namespace settings
 	namespace other
 	{
 		inline uint32_t menu_key = 0;
+		inline bool anti_obs = false;
 	}
 	
 	namespace colors

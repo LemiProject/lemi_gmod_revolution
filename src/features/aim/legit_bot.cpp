@@ -58,6 +58,17 @@ bool get_target(target_t& target)
 	return true;
 }
 
+
+q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val)
+{
+	auto delta = to - from;
+	delta.normalize();
+	delta /= q_angle(smooth_val, smooth_val, 0);
+	auto out = to - delta;
+	out.normalize();
+	return out;
+}
+
 void aim::legit_bot(c_user_cmd* cmd)
 {
 	if (!settings::aim::legit_bot_enabled || !interfaces::engine->is_in_game())
@@ -79,6 +90,9 @@ void aim::legit_bot(c_user_cmd* cmd)
 	
 	if (!get_target(target))
 		return;
+
+	if (settings::aim::legit_bot_smooth_val > 0.f)
+		target.angle = do_smooth(target.angle, cmd->viewangles, settings::aim::legit_bot_smooth_val);
 	
 	cmd->viewangles = target.angle;
 	interfaces::engine->set_view_angles(cmd->viewangles);

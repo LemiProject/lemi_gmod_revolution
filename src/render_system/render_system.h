@@ -31,7 +31,7 @@ namespace render_system
 	void init();
 	void shutdown();
 
-	void on_scene_end();
+	void on_scene_end(uintptr_t ret_address);
 	void on_present();
 	
 	IDirect3DDevice9* get_device();

@@ -16,6 +16,7 @@
 #include "game_sdk/interfaces/random.h"
 #include "game_sdk/interfaces/i_prediction.h"
 #include "game_sdk/interfaces/i_engine_trace.h"
+#include "game_sdk/interfaces/i_panel.h"
 
 namespace interfaces
 {
@@ -35,6 +36,7 @@ namespace interfaces
 	inline c_uniform_random_stream* random;
 	inline i_prediction* prediction;
 	inline i_engine_trace* engine_trace;
+	inline i_panel* panel;
 	
 	void init_interfaces();
 }

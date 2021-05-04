@@ -4,11 +4,13 @@
 
 #include "../game_sdk/entitys/c_base_player.h"
 
+#include "../render_system/render_system.h"
+
 namespace game_utils
 {
 	inline DWORD matrix_offset = 0x0;
 	
-	inline bool screen_transform(const D3DMATRIX& world_matrix, const c_vector& in, c_vector& out)	//We are rendering using imgui, so we need to normalize view_matrix
+	inline bool screen_transform(const c_vector& in, c_vector& out)	//We are rendering using imgui, so we need to normalize view_matrix
 	{
 		auto exception_filter = [](int code, PEXCEPTION_POINTERS ex)
 		{
@@ -19,6 +21,8 @@ namespace game_utils
 		{
 			if (!interfaces::engine->is_in_game())
 				return false;
+
+			const D3DMATRIX& world_matrix = interfaces::engine->get_world_to_screen_matrix();
 			
 			const auto w = world_matrix.m[3][0] * in.x + world_matrix.m[3][1] * in.y + world_matrix.m[3][2] * in.z + world_matrix.m[3][3];
 			if (w < 0.001f)
@@ -45,12 +49,9 @@ namespace game_utils
 		}
 	}
 
-	inline bool world_to_screen(const D3DMATRIX& matrix, const c_vector& in, c_vector& out)
+	inline bool world_to_screen(const c_vector& in, c_vector& out)
 	{
-		if (matrix_offset == 0x0)
-			return false;
-
-		if (!screen_transform(matrix, in, out))
+		if (!screen_transform(in, out))
 			return false;
 
 		int w, h;
@@ -69,8 +70,6 @@ namespace game_utils
 		const auto& origin = ent->get_render_origin();
 		const auto min = ent->get_collidable_ptr()->mins() + origin;
 		const auto max = ent->get_collidable_ptr()->maxs() + origin;
-
-		const auto& world_matrix = interfaces::engine->get_world_to_screen_matrix();
 		
 		c_vector points[] = {
 			c_vector(min.x, min.y, min.z),
@@ -83,10 +82,10 @@ namespace game_utils
 			c_vector(max.x, min.y, max.z)
 		};
 
-		if (!world_to_screen(world_matrix, points[3], flb) || !world_to_screen(world_matrix, points[5], brt)
-			|| !world_to_screen(world_matrix, points[0], blb) || !world_to_screen(world_matrix, points[4], frt)
-			|| !world_to_screen(world_matrix, points[2], frb) || !world_to_screen(world_matrix, points[1], brb)
-			|| !world_to_screen(world_matrix, points[6], blt) || !world_to_screen(world_matrix, points[7], flt))
+		if (!world_to_screen(points[3], flb) || !world_to_screen(points[5], brt)
+			|| !world_to_screen(points[0], blb) || !world_to_screen(points[4], frt)
+			|| !world_to_screen(points[2], frb) || !world_to_screen(points[1], brb)
+			|| !world_to_screen(points[6], blt) || !world_to_screen(points[7], flt))
 			return false;
 
 		c_vector arr[] = { flb, brt, blb, frt, frb, brb, blt, flt };

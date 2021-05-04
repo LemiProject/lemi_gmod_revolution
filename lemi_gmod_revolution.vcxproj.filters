@@ -270,6 +270,9 @@
     <ClInclude Include="src\features\lua_features\lua_features.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\game_sdk\interfaces\i_panel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\interfaces.cpp">
@@ -381,6 +384,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\features\lua_features\lua_features.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\menu\windows\tabs_contents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

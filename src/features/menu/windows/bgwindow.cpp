@@ -180,8 +180,6 @@ void draw_glua_loader()
 		{
 			
 			MenuItem("Load file", 0, &load_file_show);
-				
-			
 			ImGui::EndMenu();
 		}
 		
@@ -240,17 +238,10 @@ void draw_glua_loader()
 		});
 
 	//VERY VERY ("VERY" * 30) BAD CODE TODO: FIX IT
-	if (Button("Run##RUN_SCRIPT")) auto as = std::async(std::launch::async, []()
+	if (Button("Run##RUN_SCRIPT"))
 	{
-			std::string code;
-			auto lines = editor->GetTextLines();
-			std::for_each(lines.begin(), lines.end(), [&](const std::string& n)
-			{
-					code.append(" " + n);
-			});
-			lua_features::add_code_to_run(code);
-	});
-	
+		lua_features::add_code_to_run(editor->GetText());
+	}
 	End();
 }
 

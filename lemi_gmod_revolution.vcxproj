@@ -217,6 +217,7 @@
     <ClInclude Include="src\game_sdk\interfaces\i_engine_trace.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_input_system.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_material_system.h" />
+    <ClInclude Include="src\game_sdk\interfaces\i_panel.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_prediction.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_render_view.h" />
     <ClInclude Include="src\game_sdk\interfaces\i_view_render.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="src\features\menu\menu.cpp" />
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />
+    <ClCompile Include="src\features\menu\windows\tabs_contents.cpp" />
     <ClCompile Include="src\features\movement\movement.cpp" />
     <ClCompile Include="src\features\visuals\esp.cpp" />
     <ClCompile Include="src\features\visuals\overlay.cpp" />
