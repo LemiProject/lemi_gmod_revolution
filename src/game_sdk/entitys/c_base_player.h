@@ -32,7 +32,7 @@ public:
 	NETVAR("DT_BasePlayer", "m_Local", get_local, uintptr_t);
 	NETVAR("DT_BasePlayer", "m_iAmmo", get_ammo, int);
 	NETVAR("DT_BasePlayer", "m_fOnTarget", get_on_target, int);
-	NETVAR("DT_BasePlayer", "m_nTickBase", get_tick_base, float);
+	NETVAR("DT_BasePlayer", "m_nTickBase", get_tick_base, int);
 	NETVAR("DT_BasePlayer", "m_nNextThinkTick", get_next_think_tick, float);
 	NETVAR("DT_BasePlayer", "m_flFriction", get_friction, float);
 	NETVAR("DT_BasePlayer", "flDeathTime", get_death_time, float);

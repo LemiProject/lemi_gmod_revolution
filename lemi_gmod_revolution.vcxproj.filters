@@ -273,6 +273,15 @@
     <ClInclude Include="src\game_sdk\interfaces\i_panel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\game_sdk\misc\c_move_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_sdk\interfaces\i_game_movement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\prediction_system\prediction_system.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\interfaces.cpp">
@@ -387,6 +396,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\features\menu\windows\tabs_contents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\prediction_system\prediction_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\md5_check_sum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

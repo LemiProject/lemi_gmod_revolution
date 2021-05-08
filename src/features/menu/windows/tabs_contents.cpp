@@ -37,6 +37,8 @@ void menu_tabs_content::draw_legit_bot()
 		SliderFloat("Legitbot fov##LEGITBOT_MAIN_FOV", &aim::legit_bot_fov, 1.f, 360.f);
 
 		SliderFloat("Legitbot smooth##LEGITBOT_MAIN_SMOOTH_VAL", &aim::legit_bot_smooth_val, 0.f, 100.f);
+		
+		SliderFloat("Legitbot delay##LEGITBOT_MAIN_DELAY", &aim::legit_bot_delay_before_aiming, 0.f, 10000.f, "%.0f");
 	}
 	EndGroupPanel();
 

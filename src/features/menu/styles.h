@@ -20,7 +20,8 @@ namespace imgui_styles
         style.TabRounding = 2.f;
         style.WindowTitleAlign = { 0.5f, 0.5f };
         style.ColorButtonPosition = ImGuiDir_Left;
-
+        style.FrameRounding = 12.f;
+        style.GrabRounding = 12.f;
 
         auto* const colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);

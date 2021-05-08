@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 
+#include "utils/md5_check_sum.h"
+
 #include "game_sdk/interfaces/client.h"
 #include "game_sdk/interfaces/engine.h"
 #include "game_sdk/interfaces/surface.h"
@@ -17,6 +19,7 @@
 #include "game_sdk/interfaces/i_prediction.h"
 #include "game_sdk/interfaces/i_engine_trace.h"
 #include "game_sdk/interfaces/i_panel.h"
+#include "game_sdk/interfaces/i_game_movement.h"
 
 namespace interfaces
 {
@@ -37,6 +40,8 @@ namespace interfaces
 	inline i_prediction* prediction;
 	inline i_engine_trace* engine_trace;
 	inline i_panel* panel;
+	inline i_game_movement* game_movement;
+	inline i_move_helper* move_helper;
 	
 	void init_interfaces();
 }

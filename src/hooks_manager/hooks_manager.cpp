@@ -34,6 +34,7 @@
 #include "../features/lua_features/lua_features.h"
 #include "../features/menu/windows/bgwindow.h"
 #include "../features/movement/movement.h"
+#include "../features/prediction_system/prediction_system.h"
 #include "../settings/settings.h"
 
 inline unsigned int get_virtual(void* _class, const unsigned int index) { return static_cast<unsigned int>((*static_cast<int**>(_class))[index]); }
@@ -236,39 +237,43 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	DWORD move;
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
-
-	if (settings::aim::no_recoil)
-		aim::anti_recoil_and_spread(cmd);
 	
-	auto ret = original(interfaces::client_mode, frame_time, cmd);
+	original(interfaces::client_mode, frame_time, cmd);
 
-	if (!cmd)
-		return ret;
+	if (!cmd || cmd->command_number == 0 || !interfaces::engine->is_in_game())
+		return false;
 
 	auto* const lp = get_local_player();
 	if (!lp || !lp->is_alive())
-		return ret;
-
-	const auto old_cmd = *cmd;	
+		return false;
 	
-	aim::run_aimbot(cmd);
+	const auto old_cmd = *cmd;	
 
 	movement::run_movement(*cmd);
 	
-	cmd->viewangles.normalize();
-	cmd->viewangles.clamp();
+	engine_prediction.start(cmd, lp);
+	{		
+		aim::run_aimbot(cmd);
 
+		if (settings::aim::no_recoil)
+			aim::anti_recoil_and_spread(cmd);
+	}
+	engine_prediction.end();
+	
+	cmd->viewangles.clamp();
+	cmd->viewangles.normalize();
+	
 	{
 		static auto spawn_time = 0.f;
-		if (GetAsyncKeyState(settings::misc::exploits::wallpush) && settings::misc::exploits::wallpush != 0 && interfaces::engine->get_time_scale() > spawn_time + 1.f)
+		if (GetAsyncKeyState(settings::misc::exploits::wallpush) && settings::misc::exploits::wallpush != 0 && interfaces::engine->get_last_time_stamp() > spawn_time + 1.f)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
-				spawn_time = interfaces::engine->get_time_scale();
+				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
 
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
 	
-	return ret;
+	return false;
 }
 
 void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, int y, int w, int h, uint8_t* data,

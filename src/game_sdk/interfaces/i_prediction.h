@@ -35,7 +35,7 @@ public:
 	virtual void	setup_move(c_base_entity* player, c_user_cmd* ucmd, i_move_helper* pHelper, c_move_data* move) = 0;
 	virtual void	finish_move(c_base_entity* player, c_user_cmd* ucmd, c_move_data* move) = 0;
 	virtual void	set_ideal_pitch(c_base_entity* player, const c_vector& origin, const q_angle& angles, const c_vector& viewheight) = 0;
-	virtual void	update
+	virtual void	_update
 	(
 		bool received_new_world_update,
 		bool validframe,		// Is frame data valid

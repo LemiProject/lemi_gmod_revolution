@@ -1,6 +1,5 @@
 ﻿#include "main_window.h"
 
-
 #include <chrono>
 #include <iostream>
 #include <imgui/imgui.h>
@@ -11,9 +10,6 @@
 
 #include "../../../interfaces.h"
 #include "../../../render_system/render_system.h"
-
-
-
 
 using namespace ImGui;
 

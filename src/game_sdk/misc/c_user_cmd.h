@@ -33,12 +33,12 @@ class c_user_cmd
 public:
 	int		command_number;
 	int		tick_count;
-	c_vector viewangles;
+	q_angle viewangles;
 	float	forwardmove;
 	float	sidemove;
 	float	upmove;
 	int		buttons;
-	char* impulse;
+	char impulse;
 	int		weaponselect;
 	int		weaponsubtype;
 	int		random_seed;	// For shared random functions

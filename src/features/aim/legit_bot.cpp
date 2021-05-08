@@ -8,14 +8,17 @@
 #include "../../utils/game_utils.h"
 
 #include "../../settings/settings.h"
-#include "../../utils/md5_check_sum.h"
 
 struct target_t
 {
 	c_base_player* ply;
 	float fov;
 	c_vector angle;
+	int idx;
 };
+
+int last_target_id = -1;
+float last_target_time = -1.f;
 
 bool get_target(target_t& target)
 {
@@ -48,6 +51,7 @@ bool get_target(target_t& target)
 			tmp.fov = fov;
 			tmp.ply = player;
 			tmp.angle = math::get_angle(get_local_player()->get_eye_pos(), hit_pos);
+			tmp.idx = i;
 		}
 	}
 
@@ -91,11 +95,19 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!get_target(target))
 		return;
 
+	if (settings::aim::legit_bot_delay_before_aiming > 0)
+		if (last_target_id != target.idx && interfaces::engine->get_time_stamp_from_start() <= last_target_time +
+			(settings::aim::legit_bot_delay_before_aiming / 100.f) && !get_entity_by_index(last_target_id)->is_alive())
+			return;
+	
 	if (settings::aim::legit_bot_smooth_val > 0.f)
 		target.angle = do_smooth(target.angle, cmd->viewangles, settings::aim::legit_bot_smooth_val);
+
+	last_target_id = target.idx;
+	last_target_time = interfaces::engine->get_time_stamp_from_start();
 	
-	cmd->viewangles = target.angle;
-	interfaces::engine->set_view_angles(cmd->viewangles);
+	cmd->viewangles = target.angle - (target.ply->get_view_punch_angles() * 2);
+	//interfaces::engine->set_view_angles(cmd->viewangles);
 }
 
 void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
@@ -109,6 +121,29 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 		return;
 
 	weapon->set_recoil(0.f);
+
+	if (ucmd->buttons & IN_ATTACK)
+	{
+		const auto spread_cone = weapon->get_spread();
+		const auto spread = -((spread_cone.x + spread_cone.y + spread_cone.z) / 3.f);
+
+		float random[2];
+		const auto seed = md5::md5_pseudo_random(ucmd->command_number) & 0xFF;
+		interfaces::random->set_seed(seed);
+
+		random[0] = interfaces::random->random_float(-0.5f, 0.5f)
+			+ interfaces::random->random_float(-0.5f, 0.5f);
+
+		random[1] = interfaces::random->random_float(-0.5f, 0.5f)
+			+ interfaces::random->random_float(-0.5f, 0.5f);
+
+		auto dir = c_vector(1.0f, 0.0f, 0.0f) + (c_vector(0.0f, -1.0f, 0.0f) * spread * random[0]) + (c_vector(0.0f, 0.0f, 1.0f) * spread * random[1]);
+
+		q_angle out = math::get_angle(q_angle(0.f, 0.f, 0.f), dir);
+		out = math::fix_angles(out);
+
+		ucmd->viewangles += out;
+	}
 }
 
 
