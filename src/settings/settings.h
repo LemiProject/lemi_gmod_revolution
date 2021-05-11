@@ -82,8 +82,11 @@ namespace settings
 		
 		inline float legit_bot_smooth_val = 0.f;
 		
-		inline bool no_recoil = true;
+		inline bool no_recoil = false;
+		inline bool no_spread = false;
 
+		inline bool legit_bot_silent_aim = true;
+		
 		inline float legit_bot_delay_before_aiming = 0.f;
 	}
 

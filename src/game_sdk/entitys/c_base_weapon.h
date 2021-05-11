@@ -1,4 +1,6 @@
 #pragma once
+#include <map>
+
 #include "c_base_player.h"
 
 class c_base_combat_weapon : public c_base_entity
@@ -123,6 +125,35 @@ public:
 		set_primary_value("KickUp", 0.f);
 		set_primary_value("KickHorizontal", 0.f);
 		
+	}
+
+	void set_recoil(std::map<std::string, float> vals)
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+		lua->push_number((double)vals["Recoil"]); //2
+		lua->set_field(-2, "Recoil");
+		lua->pop();
+
+		set_primary_value("Recoil", (double)vals["Primary::Recoil"]);
+		set_primary_value("KickDown", (double)vals["Primary::KickDown"]);
+		set_primary_value("KickUp", (double)vals["Primary::KickUp"]);
+		set_primary_value("KickHorizontal", (double)vals["Primary::KickHorizontal"]);
+	}
+	
+	void get_recoil(std::map<std::string, float>& out)
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+		lua->push_number(0); //2
+		lua->get_field(-2, "Recoil"); //3
+		out["Recoil"] = lua->get_number();
+		lua->pop(3);
+
+		out["Primary::Recoil"] = get_primary_value("Recoil");
+		out["Primary::KickDown"] = get_primary_value("KickDown");
+		out["Primary::KickUp"] = get_primary_value("KickUp");
+		out["Primary::KickHorizontal"] = get_primary_value("KickHorizontal");
 	}
 	
 	bool empty()

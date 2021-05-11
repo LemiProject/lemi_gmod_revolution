@@ -107,8 +107,12 @@ void aim::legit_bot(c_user_cmd* cmd)
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 	
 	cmd->viewangles = target.angle - (target.ply->get_view_punch_angles() * 2);
-	//interfaces::engine->set_view_angles(cmd->viewangles);
+
+	if (!settings::aim::legit_bot_silent_aim)
+		interfaces::engine->set_view_angles(cmd->viewangles);
 }
+
+std::map<std::string, std::map<std::string, float>> recoil_for_weapons;
 
 void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 {
@@ -120,9 +124,19 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 	if (!weapon)
 		return;
 
-	weapon->set_recoil(0.f);
+	if (recoil_for_weapons.find(weapon->get_weapon_base()) == recoil_for_weapons.end())
+	{
+		std::map<std::string, float> tmp;
+		weapon->get_recoil(tmp);
+		recoil_for_weapons.emplace(weapon->get_weapon_base(), tmp);
+	}
+	
+	if (settings::aim::no_recoil)
+		weapon->set_recoil(0.f);
+	else
+		weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
 
-	if (ucmd->buttons & IN_ATTACK)
+	if (settings::aim::no_spread && ucmd->buttons & IN_ATTACK)
 	{
 		const auto spread_cone = weapon->get_spread();
 		const auto spread = -((spread_cone.x + spread_cone.y + spread_cone.z) / 3.f);

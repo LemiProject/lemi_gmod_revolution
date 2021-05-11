@@ -41,6 +41,24 @@ public:
 	NETVAR("DT_BasePlayer", "m_hVehicle", get_vehicle_handle, uintptr_t);
 	NETVAR("DT_BasePlayer", "m_iObserverMode", get_observer_mode, int);
 	NETVAR("DT_BasePlayer", "m_hObserverTarget", get_observer_target_handle, uintptr_t);
+
+	int get_move_type()
+	{
+		auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
+		if (!glua)
+			return {};
+		push_entity(); //1
+		
+		glua->get_field(-1, "GetMoveType"); //2
+		glua->push(-2); //3
+		glua->call(1, 1); // 3 - 1 = 2 + 1 = 3
+
+		int type = static_cast<int>(glua->get_number(-1));
+		glua->pop(3);
+
+		return type;
+	}
+
 	
 	[[nodiscard]] std::string get_name() const
 	{

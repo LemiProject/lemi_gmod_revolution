@@ -231,6 +231,43 @@ void override_view_hook::hook(c_view_setup* setup)
 
 bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 {
+	auto fix_movement = [&](c_user_cmd& old_cmd)
+	{
+		c_base_player* local_player = get_local_player();
+
+		if (!local_player || !local_player->is_alive())
+			return;
+
+		if (local_player->get_move_type() == (int)e_move_type::ladder)
+			return;
+
+		float f1, f2, yaw_delta = cmd->viewangles.y - old_cmd.viewangles.y;
+		if (old_cmd.viewangles.y < 0.f)
+			f1 = 360.0f + old_cmd.viewangles.y;
+		else
+			f1 = old_cmd.viewangles.y;
+
+		if (cmd->viewangles.y < 0.0f)
+			f2 = 360.0f + cmd->viewangles.y;
+		else
+			f2 = cmd->viewangles.y;
+
+		if (f2 < f1)
+			yaw_delta = abs(f2 - f1);
+		else
+			yaw_delta = 360.0f - abs(f1 - f2);
+
+		yaw_delta = 360.0f - yaw_delta;
+
+		cmd->forwardmove = cos(math::deg2rad(yaw_delta)) * old_cmd.forwardmove + cos(math::deg2rad(yaw_delta + 90.f)) * old_cmd.sidemove;
+		cmd->sidemove = sin(math::deg2rad(yaw_delta)) * old_cmd.forwardmove + sin(math::deg2rad(yaw_delta + 90.f)) * old_cmd.sidemove;
+
+		cmd->buttons &= ~IN_MOVERIGHT;
+		cmd->buttons &= ~IN_MOVELEFT;
+		cmd->buttons &= ~IN_FORWARD;
+		cmd->buttons &= ~IN_BACK;
+	};
+	
 	static auto choked_packets = 0;
 	choked_packets++;
 
@@ -247,7 +284,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	if (!lp || !lp->is_alive())
 		return false;
 	
-	const auto old_cmd = *cmd;	
+	auto old_cmd = *cmd;	
 
 	movement::run_movement(*cmd);
 	
@@ -255,10 +292,11 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	{		
 		aim::run_aimbot(cmd);
 
-		if (settings::aim::no_recoil)
-			aim::anti_recoil_and_spread(cmd);
+		aim::anti_recoil_and_spread(cmd);
 	}
 	engine_prediction.end();
+
+	fix_movement(old_cmd);
 	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
@@ -272,6 +310,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
+
+	if (settings::aim::legit_bot_silent_aim)
+		return !settings::aim::legit_bot_silent_aim;
 	
 	return false;
 }

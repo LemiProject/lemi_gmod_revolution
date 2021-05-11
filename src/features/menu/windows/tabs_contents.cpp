@@ -39,6 +39,8 @@ void menu_tabs_content::draw_legit_bot()
 		SliderFloat("Legitbot smooth##LEGITBOT_MAIN_SMOOTH_VAL", &aim::legit_bot_smooth_val, 0.f, 100.f);
 		
 		SliderFloat("Legitbot delay##LEGITBOT_MAIN_DELAY", &aim::legit_bot_delay_before_aiming, 0.f, 10000.f, "%.0f");
+
+		internal::text_and_toggle_button("Silent", "##LEGITBOT_MAIN_SILENT", &aim::legit_bot_silent_aim);
 	}
 	EndGroupPanel();
 
@@ -47,6 +49,13 @@ void menu_tabs_content::draw_legit_bot()
 	BeginGroupPanel("Accuracy##LEGITBOT_ACCURACY", { GetWindowSize().x / panels_in_visuals_count, -1 });
 	{
 		internal::text_and_toggle_button("NoRecoil", "##LEGITBOT_ACCURACY_NORECOIL", &aim::no_recoil);
+		internal::text_and_toggle_button("NoSpread", "##LEGITBOT_ACCURACY_NOSPREAD", &aim::no_spread);
+		if (IsItemHovered())
+		{
+			BeginTooltip();
+			Text("At this time only M9K, more pack has been done in next updates");
+			EndTooltip();
+		}
 	}
 	EndGroupPanel();
 }
