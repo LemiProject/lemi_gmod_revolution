@@ -49,12 +49,12 @@ public:
 			return {};
 		push_entity(); //1
 		
-		glua->get_field(-1, "GetMoveType"); //2
-		glua->push(-2); //3
-		glua->call(1, 1); // 3 - 1 = 2 + 1 = 3
+		glua->get_field(-1, "GetMoveType");
+		glua->push(-2); //2
+		glua->call(1, 1); // 2 - 1 = 1 + 1 = 2
 
 		int type = static_cast<int>(glua->get_number(-1));
-		glua->pop(3);
+		glua->pop(2);
 
 		return type;
 	}

@@ -291,12 +291,13 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	engine_prediction.start(cmd, lp);
 	{		
 		aim::run_aimbot(cmd);
-
+		
 		aim::anti_recoil_and_spread(cmd);
 	}
 	engine_prediction.end();
 
-	fix_movement(old_cmd);
+	if (settings::misc::fix_movement)
+		fix_movement(old_cmd);
 	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();

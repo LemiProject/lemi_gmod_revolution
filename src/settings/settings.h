@@ -93,6 +93,8 @@ namespace settings
 	namespace misc
 	{
 		inline bool bunny_hop = true;
+
+		inline bool fix_movement = false;
 		
 		namespace exploits
 		{

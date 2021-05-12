@@ -87,8 +87,7 @@ public:
 			lua->pop(2);
 			return 0.f;
 		}
-		lua->get_field(-1, var.c_str()); //3
-
+		lua->get_field(-1, var.c_str()); //3		
 		auto r = (float)lua->get_number(-1);
 
 		lua->pop(3);
