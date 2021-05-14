@@ -10,6 +10,7 @@
 #include <fmt/core.h>
 
 
+#include "../../game_sdk/entitys/c_base_weapon.h"
 #include "../../render_system/render_system.h"
 #include "../../settings/settings.h"
 
@@ -47,11 +48,44 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 	auto ts = render_system::fonts::in_game_font->CalcTextSizeA(16.f, FLT_MAX, 0.f, text.c_str());
 	const math::vec2_t text_size = {ts.x, ts.y};
 	
-	const auto position = math::vec2_t{ box.x + box.w * 0.5f/* - (text_size.x / 2.f)*/, box.y + box.h + text_size.y / 2};
+	//const auto position = math::vec2_t{ box.x + box.w * 0.5f/* - (text_size.x / 2.f)*/, box.y + box.h + text_size.y / 2};
+	const auto position = math::vec2_t{ box.x + box.w * 0.5f, box.y - text_size.y / 2 };
 	
 	const auto color = ent->is_player() ? static_cast<c_base_player*>(ent)->get_team_color() : c_color(settings::colors::colors_map["esp_health_color_hp"]);
 
 	directx_render::text(render_system::fonts::in_game_font, text, position.get_im_vec2(), 16.f, color, directx_render::font_centered | directx_render::font_outline);
+
+	if (ent->is_player())
+	{
+		auto sid = static_cast<c_base_player*>(ent)->get_steam_id();
+		if (!sid.empty())
+		{
+			if (std::find(settings::other::friends.begin(), settings::other::friends.end(), sid) != settings::other::friends.end())
+			{
+				constexpr auto str = "F";
+
+				auto name_size = ts;
+				ts = render_system::fonts::in_game_font->CalcTextSizeA(16.f, FLT_MAX, 0.f, str);
+				auto pos = ImVec2(box.x + box.w + ts.y / 2.f, box.y);
+
+				directx_render::text(render_system::fonts::in_game_font, str, pos, 16.f, colors::green_color, directx_render::font_outline);
+			}
+		}
+	}
+
+	if (ent->is_player() && settings::visuals::esp_active_weapon)
+	{
+		auto ply = (c_base_player*)ent;
+		auto weapon = get_primary_weapon(ply);
+
+		if (weapon)
+		{
+			auto weapon_name = weapon->get_print_name();
+			auto ts = render_system::fonts::in_game_font->CalcTextSizeA(16.f, FLT_MAX, 0.f, weapon_name.c_str());
+			auto pos = ImVec2(box.x + box.w / 2.f, box.y + box.h + ts.y / 2.f);
+			directx_render::text(render_system::fonts::in_game_font, weapon_name, pos, 16.f, c_color(settings::colors::colors_map["esp_weapon_name_color"]), directx_render::font_centered | directx_render::font_outline);
+		}
+	}
 }
 
 inline void draw_box(c_base_entity* ent, math::box_t& box)
@@ -100,6 +134,9 @@ void visuals::esp::run_esp()
 		const auto has_owner = interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) ? true : false;
 		
 		if (!is_draw || ent == get_local_player() || has_owner)
+			continue;
+
+		if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::visuals::esp_draw_distance)
 			continue;
 		
 		math::box_t box{};

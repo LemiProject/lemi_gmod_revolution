@@ -59,8 +59,24 @@ public:
 		return type;
 	}
 
+	std::string get_team_name()
+	{
+		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
+
+		if (!glua)
+			return {};
+
+		glua->push_special((int)e_special::glob); //1
+		glua->get_field(-1, "team"); //2
+		glua->get_field(-1, "GetName"); //2
+		glua->push_number(this->get_team_num()); //3
+		glua->call(1, 1); // 3
+		std::string out = glua->get_string();
+		glua->pop(3);
+		return out;
+	}
 	
-	[[nodiscard]] std::string get_name() const
+	std::string get_name() const
 	{
 		auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
 
@@ -68,13 +84,13 @@ public:
 			return {};
 
 		glua->push_special(static_cast<int>(e_special::glob)); //1
-		glua->get_field(-1, "Entity"); //2
-		glua->push_number(this->get_index()); //3
-		glua->call(1, 1); // 3 - 1 = 2 + 1 = 3
+		glua->get_field(-1, "Entity"); //1
+		glua->push_number(this->get_index()); //2
+		glua->call(1, 1); // 2
 
-		glua->get_field(-1, "Name"); //4
-		glua->push(-2); //5
-		glua->call(1, 1); // 5 - 1 = 4 + 1 = 5
+		glua->get_field(-1, "Name"); //2
+		glua->push(-2); //3
+		glua->call(1, 1); // 3
 
 		std::string name = glua->get_string(-1);
 		glua->pop(3);
@@ -82,6 +98,33 @@ public:
 		return name;
 	}
 
+	std::string get_steam_id() const
+	{
+		auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
+
+		if (!glua)
+			return {};
+
+		glua->push_special(static_cast<int>(e_special::glob)); //1
+		glua->get_field(-1, "Entity"); //1
+		glua->push_number(this->get_index()); //2
+		glua->call(1, 1); // 2
+
+		glua->get_field(-1, "SteamID"); //2
+		glua->push(-2); //3
+		glua->call(1, 1); // 3
+		if (!glua->is_type(-1, (int)e_lua_type::type_string))
+		{
+			glua->pop(3);
+			return {};
+		}
+		
+		std::string sid = glua->get_string(-1);
+		glua->pop(3);
+
+		return sid;
+	}
+	
 	q_angle get_view_punch_angles()
 	{
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);

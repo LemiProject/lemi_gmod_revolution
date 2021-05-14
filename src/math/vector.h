@@ -25,6 +25,7 @@ public:
 	
 	float length() const;
 	float length2d() const;
+	float distance_to(const c_vector& to) const;
 	
 	[[nodiscard]] bool is_valid() const;
 

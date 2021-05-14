@@ -69,9 +69,9 @@ public:
 	
 	std::string get_print_name()
 	{
-		if (!is_use_lua())
-			return {};
-
+		/*if (!is_use_lua())
+			return {};*/
+		
 		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!glua)
 			return {};
@@ -80,43 +80,37 @@ public:
 		if (!glua->is_type(-1, (int)e_lua_type::type_entity))
 		{
 			glua->pop(1);
-			return get_lua_script_name();
+			return get_class_name();
 		}
-		
+
 		glua->get_field(-1, "PrintName");
 		if (!glua->is_type(-1, (int)e_lua_type::type_string))
 		{
 			glua->pop(2);
-			return this->get_lua_script_name();
+			return get_class_name();
 		}
 
 		std::string out = glua->get_string(-1);
 		glua->pop(2);
 		return out;
 	}
-
+	
 	std::string get_class_name()
 	{
-		if (!is_use_lua())
-			return {};
-
 		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!glua)
 			return {};
-		push_entity();
+		push_entity(); //1
 
 		if (!glua->is_type(-1, (int)e_lua_type::type_entity))
 		{
-			glua->pop(1);
+			glua->pop();
 			return get_lua_script_name();
 		}
 		
-		glua->get_field(-1, "GetClass");
-		if (!glua->is_type(-1, (int)e_lua_type::type_string))
-		{
-			glua->pop(2);
-			return get_lua_script_name();
-		}
+		glua->get_field(-1, "GetClass"); //1
+		glua->push(-2); //2
+		glua->call(1, 1); //2
 
 		std::string out = glua->get_string(-1);
 		glua->pop(2);
@@ -150,14 +144,14 @@ public:
 			return 0;
 		
 		lua->push_special((int)e_special::glob); //1
-		lua->get_field(-1, "Entity");
+		lua->get_field(-1, "Entity"); //1
 		lua->push_number(get_index()); //2
-		lua->call(1, 1); // 2 - 1 = 1 + 1 = 2
+		lua->call(1, 1); // 2
 		
-		lua->get_field(-1, "LookupBone");
+		lua->get_field(-1, "LookupBone"); //2
 		lua->push(-2); //3
 		lua->push_string(name.c_str()); //4
-		lua->call(2, 1); // 4 - 2 = 2 + 1 = 3
+		lua->call(2, 1); // 3
 		uint32_t id = lua->get_number(-1);
 		lua->pop(3);
 		return id;

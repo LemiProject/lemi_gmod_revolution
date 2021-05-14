@@ -5,16 +5,16 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <vector>
 
 #include <imgui/imgui.h>
 #include <imgui/im_tools.h>
 #include <imgui/TextEditor.h>
 #include <imgui/imgui_stdlib.h>
 
-
-
 #include "main_window.h"
 #include "../../../interfaces.h"
+#include "../../../game_sdk/entitys/c_base_player.h"
 #include "../../../settings/settings.h"
 #include "../../../utils/hack_utils.h"
 #include "../../lua_features/lua_features.h"
@@ -36,19 +36,30 @@ bool show_colors_editor = false;
 bool show_entity_list = false;
 bool show_glua_loader = false;
 
-auto entity_list_update_time_stamp = 0.f;
+auto entity_lists_update_time_stamp = 0.f;
 settings::visuals::c_entity_list ent_list;
+// <steam_id, name>
+std::map<std::string, std::string> players_list;
+
+// <id, name>
+struct team_t
+{
+	std::string name;
+	c_color color;
+};
+std::map<int, team_t> teams_list;
 
 void bg_window::update_entity_list()
 {
+	//Update every second
 	auto is_update = [&]()
 	{		
-		if (entity_list_update_time_stamp == 0.f)
+		if (entity_lists_update_time_stamp == 0.f)
 			return true;
 
 		const auto current_time_stamp = interfaces::engine->get_time_stamp_from_start();
 
-		if (roundf(current_time_stamp) - roundf(entity_list_update_time_stamp) < 1)
+		if (roundf(current_time_stamp) - roundf(entity_lists_update_time_stamp) < 1)
 			return false;
 
 		return true;
@@ -56,16 +67,21 @@ void bg_window::update_entity_list()
 
 	if (!is_update())
 		return;
+	
+	//just guard
+	is_entlists_updating = true;
 
-	is_entlist_updating = true;
-
-	entity_list_update_time_stamp = interfaces::engine->get_time_stamp_from_start();
+	entity_lists_update_time_stamp = interfaces::engine->get_time_stamp_from_start();
 
 	if (!interfaces::engine->is_in_game())
 		return;
-	
-	ent_list.clear();
 
+	//Clear lists
+	ent_list.clear();
+	players_list.clear();
+	teams_list.clear();
+	
+	//Add entitys to entity list
 	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
 	{
 		auto* ent = get_entity_by_index(i);
@@ -79,58 +95,166 @@ void bg_window::update_entity_list()
 
 		if (class_name.empty())
 			continue;
+
+		if (class_name.find("class ") != std::string::npos)
+			continue;
 		
 		ent_list.push_back(class_name);
 	}
 
-	is_entlist_updating = false;
+	//Add player to player list and jobs to teams_list
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
+	{
+		auto ply = get_player_by_index(i);
+		if (!ply || !ply->is_player())
+			continue;
+		auto sid = ply->get_steam_id();
+
+		if (sid.empty() || players_list.find(sid) != players_list.end())
+			continue;
+
+		players_list.emplace(sid, ply->get_name());
+
+		if (teams_list.find(ply->get_team_num()) != teams_list.end())
+			continue;
+
+		team_t tmp{ ply->get_team_name(), ply->get_team_color() };
+		teams_list.emplace(ply->get_team_num(), tmp);
+	}
+	
+	is_entlists_updating = false;
 }
 
 
 void draw_entity_list()
 {
 	using namespace ImGui;
+	using namespace settings::other;
 	
 	int w, h;
 	interfaces::engine->get_screen_size(w, h);
 	ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
 	Begin("Entity list##SUBWINDOW");
 
-	static ImGuiTextFilter filter;
-	filter.Draw();
+	BeginTabBar("##ENTITY_LIST_TAB_BAR");
 
-	//Text("%f and %f", interfaces::engine->get_time_stamp_from_start(), entity_list_update_time_stamp);
-	
-	if (ImGui::BeginTable("entitys_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
-	{	
-		ImGui::TableSetupColumn("Name");
-		ImGui::TableSetupColumn("ESP");
-		ImGui::TableHeadersRow();
+	if (BeginTabItem("Entitys"))
+	{
+		static ImGuiTextFilter entity_filter;
+		entity_filter.Draw();
 
-		if (!bg_window::is_entlist_updating)
+		if (ImGui::BeginTable("entitys_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
 		{
-			for (auto class_name : ent_list.data())
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableSetupColumn("ESP");
+			ImGui::TableHeadersRow();
+
+			if (!bg_window::is_entlists_updating)
 			{
-				if (!filter.PassFilter(class_name.c_str()))
-					continue;
-
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::Text("%s", class_name.c_str());
-				ImGui::TableNextColumn();
-				if (ImGui::Button(settings::visuals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
+				for (auto class_name : ent_list.data())
 				{
-					if (settings::visuals::entitys_to_draw.exist(class_name))
-						settings::visuals::entitys_to_draw.remove(settings::visuals::entitys_to_draw.find(class_name));
-					else
-						settings::visuals::entitys_to_draw.push_back(class_name);
-				}
+					if (!entity_filter.PassFilter(class_name.c_str()))
+						continue;
 
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", class_name.c_str());
+					ImGui::TableNextColumn();
+					if (ImGui::Button(settings::visuals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
+					{
+						if (settings::visuals::entitys_to_draw.exist(class_name))
+							settings::visuals::entitys_to_draw.remove(settings::visuals::entitys_to_draw.find(class_name));
+						else
+							settings::visuals::entitys_to_draw.push_back(class_name);
+					}
+
+				}
 			}
+			ImGui::EndTable();
 		}
-		ImGui::EndTable();
+
+		EndTabItem();
 	}
 
+	if (BeginTabItem("Players"))
+	{
+		static ImGuiTextFilter player_filter;
+		player_filter.Draw();
+		
+		if (BeginTable("players_table", 3, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+		{
+			TableSetupColumn("Name");
+			TableSetupColumn("STEAM-ID");
+			TableSetupColumn("FRIEND");
+			TableHeadersRow();
+
+			if (!bg_window::is_entlists_updating)
+			{
+				for (auto [steam_id, name] : players_list)
+				{
+					if (player_filter.PassFilter(steam_id.c_str()) || player_filter.PassFilter(name.c_str()))
+					{
+						TableNextRow();
+						TableNextColumn();
+						Text(name.c_str());
+						TableNextColumn();
+						Text(steam_id.c_str());
+						TableNextColumn();
+
+						
+						if (Button((std::find(friends.begin(), friends.end(), steam_id.c_str()) == friends.end()) ? 
+							("Add##" + steam_id).c_str() : 
+							("Remove##" + steam_id).c_str()))
+						{
+							if (std::find(friends.begin(), friends.end(), steam_id.c_str()) == friends.end())
+								friends.push_back(steam_id);
+							else
+								friends.erase(std::find(friends.begin(), friends.end(), steam_id.c_str()));
+						}
+					}
+				}
+			}
+			EndTable();
+		}
+		
+		EndTabItem();
+	}
+
+	if (BeginTabItem("Teams"))
+	{
+		if (BeginTable("teams_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+		{
+			TableSetupColumn("Name");
+			TableSetupColumn("Friendly");
+			TableHeadersRow();
+
+			if (!bg_window::is_entlists_updating)
+			{
+				for (auto [id, team] : teams_list)
+				{
+					TableNextRow();
+					TableNextColumn();
+					TextColored(team.color.get_vec4(), team.name.c_str());
+					TableNextColumn();
+					if (Button((std::find(friendly_teams.begin(), friendly_teams.end(), id) == friendly_teams.end()) ?
+						("Add##TEAM_" + std::to_string(id)).c_str() :
+						("Remove##TEAM_" + std::to_string(id)).c_str()))
+					{
+						if (std::find(friendly_teams.begin(), friendly_teams.end(), id) == friendly_teams.end())
+							friendly_teams.push_back(id);
+						else
+							friendly_teams.erase(std::find(friendly_teams.begin(), friendly_teams.end(), id));
+					}
+				}
+			}
+			
+			EndTable();
+		}
+		
+		EndTabItem();
+	}
+	
+	EndTabBar();
 	End();
 }
 

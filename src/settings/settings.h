@@ -60,11 +60,15 @@ namespace settings
 		inline auto esp_box = true;
 		inline auto esp_name = true;
 		inline auto esp_health = true;
-
+		inline auto esp_active_weapon = true;
+		
+		inline auto esp_draw_distance = 100000.f;
+		
 		inline auto esp_box_color_by_team = false;
 		
 		inline int esp_box_type = static_cast<int>(e_esp_box_type::bounding);
 
+		
 		inline c_entity_list entitys_to_draw;
 
 		inline auto chams = true;
@@ -107,6 +111,9 @@ namespace settings
 	{
 		inline uint32_t menu_key = 0;
 		inline bool anti_obs = false;
+
+		inline std::vector<std::string> friends;
+		inline std::vector<int> friendly_teams;
 	}
 	
 	namespace colors
@@ -117,6 +124,7 @@ namespace settings
 			{"esp_box_color", {1, 0, 0, 0.8f}},
 			{"esp_health_color_hp", {0, 1, 0, 0.8f}},
 			{"esp_health_color_void", {0, 0, 0, 0}},
+			{"esp_weapon_name_color", {1.f, 1.f, 1.f, 1.f}},
 			{"chams_color_modulation", {0, 0.7f, 0.3f, 1}}
 		};
 	}

@@ -129,3 +129,64 @@ void settings::parse_settings_from_string(std::string_view string)
 	
 	//current_settings = j;
 }
+
+//void settings::visuals::c_player_list::push_back(const player_info_t& c)
+//{
+//	players_info.push_back(c);
+//}
+//
+//void settings::visuals::c_player_list::remove(int idx)
+//{
+//	players_info.erase(players_info.begin() + idx);
+//}
+//
+//bool settings::visuals::c_player_list::exist(const player_info_t& c)
+//{
+//	return std::find(players_info.begin(), players_info.end(), c) != players_info.end();
+//}
+//
+//bool settings::visuals::c_player_list::exist(const std::string& c)
+//{
+//	return std::find_if(players_info.begin(), players_info.end(), [&](player_info_t& info)
+//	{
+//		return info.name == c || info.steam_id == c;
+//	}) != players_info.end();
+//}
+//
+//int settings::visuals::c_player_list::find(const player_info_t& c)
+//{
+//	if (!players_info.empty())
+//		for (auto i = 0; i < players_info.size(); ++i)
+//			if (players_info.at(i).steam_id == c.steam_id)
+//				return i;
+//	return -1;
+//}
+//
+//int settings::visuals::c_player_list::find(const std::string& c)
+//{
+//	if (!players_info.empty())
+//		for (auto i = 0; i < players_info.size(); ++i)
+//			if (players_info.at(i).steam_id == c)
+//				return i;
+//	return -1;
+//}
+//
+//void settings::visuals::c_player_list::exchange(std::vector<player_info_t>& c)
+//{
+//}
+//
+//bool settings::visuals::c_player_list::empty()
+//{
+//}
+//
+//void settings::visuals::c_player_list::clear()
+//{
+//}
+//
+//size_t settings::visuals::c_player_list::size()
+//{
+//}
+//
+//std::vector<settings::visuals::player_info_t> settings::visuals::c_player_list::data()
+//{
+//}

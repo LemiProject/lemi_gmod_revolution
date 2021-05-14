@@ -92,6 +92,11 @@ float c_vector::length2d() const
 	return sqrt(x * x + y * y);
 }
 
+float c_vector::distance_to(const c_vector& to) const
+{
+	return (*this - to).length();
+}
+
 bool c_vector::is_valid() const
 {
 	return std::isfinite(x) && std::isfinite(y) && std::isfinite(z);

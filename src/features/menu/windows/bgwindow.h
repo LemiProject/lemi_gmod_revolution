@@ -6,5 +6,5 @@ namespace bg_window
 
 	void update_entity_list();
 	
-	inline bool is_entlist_updating = false;
+	inline bool is_entlists_updating = false;
 }

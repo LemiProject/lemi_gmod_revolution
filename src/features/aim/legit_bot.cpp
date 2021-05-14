@@ -48,6 +48,11 @@ bool get_target(target_t& target)
 		
 		if (fov < tmp.fov && fov <= settings::aim::legit_bot_fov && player->is_visible_by(get_local_player()))
 		{
+			if (std::find(settings::other::friends.begin(), settings::other::friends.end(),player->get_steam_id()) != settings::other::friends.end())
+				continue;
+			if (std::find(settings::other::friendly_teams.begin(), settings::other::friendly_teams.end(), player->get_team_num()) != settings::other::friendly_teams.end())
+				continue;
+			
 			tmp.fov = fov;
 			tmp.ply = player;
 			tmp.angle = math::get_angle(get_local_player()->get_eye_pos(), hit_pos);

@@ -112,6 +112,10 @@ void menu_tabs_content::draw_visuals()
 		internal::set_tooltip("Draw entity name");
 		internal::text_and_toggle_button("Health", "##VISUALS_ESP_HEALTH_ENABLE", &visuals::esp_health);
 		internal::set_tooltip("Draw entity health");
+		internal::text_and_toggle_button("Active weapon", "##VISUALS_ESP_ACTIVEWEAPON_NAME", &visuals::esp_active_weapon);
+		internal::set_tooltip("Draw active weapon name");
+		SliderFloat("ESP Draw distance##VISUALS_ESP_DRAW_DISTANCE", &visuals::esp_draw_distance, 0.f, 100000.f, "%.1f", 1.f);
+		internal::set_tooltip("Distance to target on which esp will draw");
 	}
 	EndGroupPanel();
 
