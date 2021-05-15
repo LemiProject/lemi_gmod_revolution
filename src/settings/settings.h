@@ -56,24 +56,32 @@ namespace settings
 			std::vector<std::string> data();
 		};
 		
-		inline auto esp = true;
-		inline auto esp_box = true;
-		inline auto esp_name = true;
-		inline auto esp_health = true;
-		inline auto esp_active_weapon = true;
-		
-		inline auto esp_draw_distance = 100000.f;
-		
-		inline auto esp_box_color_by_team = false;
-		
-		inline int esp_box_type = static_cast<int>(e_esp_box_type::bounding);
+		// Player ESP
+		inline auto esp_player = true;
+		inline auto esp_global = false;
+		inline auto esp_box_player = true;
+		inline auto esp_name_player = true;
+		inline auto esp_health_player = true;
+		inline auto esp_active_weapon_player = true;	
+		inline auto esp_draw_distance_player = 20000.f;
+		inline auto esp_box_color_by_team_player = false;
+		inline int esp_box_type_player = static_cast<int>(e_esp_box_type::bounding);
+
+		// Entity ESP
+		inline auto esp_entity = true;
+		inline auto esp_box_entity = true;
+		inline auto esp_name_entity = true;
+		inline auto esp_health_entity = true;
+		inline auto esp_draw_distance_entity = 20000.f;
+		inline int esp_box_type_entity = static_cast<int>(e_esp_box_type::bounding);
 
 		
 		inline c_entity_list entitys_to_draw;
 
 		inline auto chams = true;
-		inline auto entity_chams = true;
-		inline auto ignore_z = true;
+		inline auto chams_obs_check = true;
+		inline auto chams_entity = true;
+		inline auto chams_ignore_z = true;
 		inline std::string chams_material = "debug/debugambientcube";
 
 		inline bool draw_fov = false;
@@ -82,6 +90,7 @@ namespace settings
 	namespace aim
 	{
 		inline bool legit_bot_enabled = false;
+		inline uint32_t legit_bot_key = 0;
 		inline float legit_bot_fov = 30.f;
 		
 		inline float legit_bot_smooth_val = 0.f;

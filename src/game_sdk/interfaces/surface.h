@@ -101,7 +101,7 @@ public:
 
 	void set_drawing_color(c_color color)
 	{
-		set_drawing_color(color.r, color.g, color.b, color.a);
+		set_drawing_color((int)color.r, (int)color.g, (int)color.b, (int)color.a);
 	}
 
 	void draw_filled_rect(int x0, int y0, int x1, int y1)
@@ -130,7 +130,7 @@ public:
 
 	void set_text_color(c_color color)
 	{
-		set_text_color(color.r, color.g, color.b, color.a);
+		set_text_color((int)color.r, (int)color.g, (int)color.b, (int)color.a);
 	}
 
 	void set_text_color(int r, int g, int b, unsigned int a = 0)

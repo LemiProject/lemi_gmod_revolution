@@ -389,12 +389,12 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 {
 	auto is_draw = [](std::string_view ent)
 	{
-		if (settings::visuals::entitys_to_draw.empty() || !settings::visuals::entity_chams)
+		if (settings::visuals::entitys_to_draw.empty() || !settings::visuals::chams_entity)
 			return false;
 		return settings::visuals::entitys_to_draw.exist(ent.data());
 	};
 	
-	if (!settings::visuals::chams || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot())
+	if (!settings::visuals::chams || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot() || (settings::other::anti_obs && settings::visuals::chams_obs_check))
 		return original(interfaces::model_render, draw_state, render_info, bone);
 
 	float color_modulation[4] = {1.f, 1.f, 0.f, 0.5f};
@@ -414,7 +414,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name())) && ent != get_local_player())
 	{
-		force_mat(settings::visuals::ignore_z, settings::colors::colors_map["chams_color_modulation"].data(), material);
+		force_mat(settings::visuals::chams_ignore_z, settings::colors::colors_map["chams_color_modulation"].data(), material);
 	}
 
 	original(interfaces::model_render, draw_state, render_info, bone);

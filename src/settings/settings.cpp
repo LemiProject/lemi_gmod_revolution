@@ -119,6 +119,7 @@ std::vector<std::string> settings::visuals::c_entity_list::data()
 
 void settings::parse_settings_from_string(std::string_view string)
 {
+	/*
 	auto j = json::parse(string.data());
 	
 	visuals::esp = j["visuals"]["esp"];
@@ -127,7 +128,8 @@ void settings::parse_settings_from_string(std::string_view string)
 	visuals::esp = j["visuals"]["esp_health"];
 	visuals::esp = j["visuals"]["esp_name"];
 	
-	//current_settings = j;
+	current_settings = j;
+	*/
 }
 
 //void settings::visuals::c_player_list::push_back(const player_info_t& c)
