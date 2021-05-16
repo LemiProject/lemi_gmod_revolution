@@ -362,17 +362,17 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	
 	interfaces::surface->start_drawing();
 	{
-		auto lua = interfaces::lua_shared->get_interface((int)e_type::client);
-		if (lua)
-		{
-			lua->push_special((int)e_special::glob); //1
-			lua->get_field(-1, "hook"); //2
-			lua->get_field(-1, "Call"); //2
-			lua->push_string("ASGHudPaint"); //3
-			lua->call(1, 0); // 3 - 1 = 2
-			lua->pop(2);
-			
-		}
+		//auto lua = interfaces::lua_shared->get_interface((int)e_type::client);
+		//if (lua)
+		//{
+		//	lua->push_special((int)e_special::glob); //1
+		//	lua->get_field(-1, "hook"); //2
+		//	lua->get_field(-1, "Call"); //2
+		//	lua->push_string("ASGHudPaint"); //3
+		//	lua->call(1, 0); // 3 - 1 = 2
+		//	lua->pop(2);
+		//	
+		//}
 	}	
 	interfaces::surface->finish_drawing();
 }
