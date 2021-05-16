@@ -221,7 +221,7 @@ void override_view_hook::hook(c_view_setup* setup)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
 
 	if (get_local_player() && get_local_player()->is_alive())
-		if (settings::aim::no_recoil)
+		if (settings::states["legit_bot::no_recoil"])
 			setup->angles -= get_local_player()->get_view_punch_angles();
 	
 	globals::view::last_view_setup = *setup;
@@ -296,7 +296,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	}
 	engine_prediction.end();
 
-	if (settings::misc::fix_movement)
+	if (settings::binds["misc::fix_movement"])
 		fix_movement(old_cmd);
 	
 	cmd->viewangles.clamp();
@@ -304,7 +304,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	{
 		static auto spawn_time = 0.f;
-		if (GetAsyncKeyState(settings::misc::exploits::wallpush) && settings::misc::exploits::wallpush != 0 && interfaces::engine->get_last_time_stamp() > spawn_time + 1.f)
+		if (GetAsyncKeyState(settings::binds["exploits::wallpush"]) && settings::binds["exploits::wallpush"] != 0 && interfaces::engine->get_last_time_stamp() > spawn_time + 1.f)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
@@ -312,8 +312,8 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
 
-	if (settings::aim::legit_bot_silent_aim)
-		return !settings::aim::legit_bot_silent_aim;
+	if (settings::states["legit_bot::legit_bot_silent_aim"])
+		return !settings::states["legit_bot::legit_bot_silent_aim"];
 	
 	return false;
 }
@@ -389,17 +389,17 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 {
 	auto is_draw = [](std::string_view ent)
 	{
-		if (settings::visuals::entitys_to_draw.empty() || !settings::visuals::entity_chams)
+		if (settings::visuals::entitys_to_draw.empty() || !settings::states["visuals::entity_chams_enabled"])
 			return false;
 		return settings::visuals::entitys_to_draw.exist(ent.data());
 	};
 	
-	if (!settings::visuals::chams || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot())
+	if (!settings::states["visuals::chams_enabled"] || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot())
 		return original(interfaces::model_render, draw_state, render_info, bone);
 
 	float color_modulation[4] = {1.f, 1.f, 0.f, 0.5f};
 
-	i_material* material = interfaces::material_system->find_material(settings::visuals::chams_material.c_str(), "Model textures");
+	i_material* material = interfaces::material_system->find_material(settings::strings["visuals::chams_material"].c_str(), "Model textures");
 	material->increment_reference_count();
 	
 	auto force_mat = [](bool ignore_z, float* color, i_material* mat)
@@ -414,7 +414,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name())) && ent != get_local_player())
 	{
-		force_mat(settings::visuals::ignore_z, settings::colors::colors_map["chams_color_modulation"].data(), material);
+		force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material);
 	}
 
 	original(interfaces::model_render, draw_state, render_info, bone);
@@ -423,7 +423,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper)
 {
-	if (settings::aim::no_recoil)
+	if (settings::states["legit_bot::no_recoil"])
 	{
 		q_angle angle;
 		interfaces::engine->get_view_angles(angle);
@@ -470,8 +470,8 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 	}
 
 	auto mk = VK_INSERT;
-	if (settings::other::menu_key > 0)
-		mk = settings::other::menu_key;
+	if (settings::binds["other::menu_key"] > 0)
+		mk = settings::binds["other::menu_key"];
 	
 	if (message_type == WM_KEYDOWN)
 		if (w_param == mk)

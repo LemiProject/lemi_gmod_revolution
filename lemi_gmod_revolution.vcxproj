@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="deps\include\color.h" />
+    <ClInclude Include="deps\include\file_tools.h" />
     <ClInclude Include="deps\include\fmt\chrono.h" />
     <ClInclude Include="deps\include\fmt\color.h" />
     <ClInclude Include="deps\include\fmt\compile.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="deps\include\minpp\minhook\hde\table64.h" />
     <ClInclude Include="deps\include\minpp\minhook\minhook.h" />
     <ClInclude Include="deps\include\minpp\minhook\trampoline.h" />
+    <ClInclude Include="deps\include\platform_folders.h" />
     <ClInclude Include="src\features\aim\aim.h" />
     <ClInclude Include="src\features\lua_features\lua_features.h" />
     <ClInclude Include="src\features\menu\menu.h" />
@@ -250,6 +252,7 @@
     <ClInclude Include="src\utils\netvars.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="deps\include\file_tools.cpp" />
     <ClCompile Include="deps\include\fmt\format.cc" />
     <ClCompile Include="deps\include\fmt\os.cc" />
     <ClCompile Include="deps\include\imgui\imgui.cpp" />
@@ -269,6 +272,7 @@
     <ClCompile Include="deps\include\minpp\minhook\hde\hde64.c" />
     <ClCompile Include="deps\include\minpp\minhook\hook.c" />
     <ClCompile Include="deps\include\minpp\minhook\trampoline.c" />
+    <ClCompile Include="deps\include\platform_folders.cpp" />
     <ClCompile Include="src\features\aim\legit_bot.cpp" />
     <ClCompile Include="src\features\lua_features\lua_features.cpp" />
     <ClCompile Include="src\features\menu\menu.cpp" />

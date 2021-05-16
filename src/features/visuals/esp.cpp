@@ -73,7 +73,7 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 		}
 	}
 
-	if (ent->is_player() && settings::visuals::esp_active_weapon)
+	if (ent->is_player() && settings::states["visuals::esp_draw_active_weapon"])
 	{
 		auto ply = (c_base_player*)ent;
 		auto weapon = get_primary_weapon(ply);
@@ -92,13 +92,13 @@ inline void draw_box(c_base_entity* ent, math::box_t& box)
 {
 	c_color color;
 	if (ent->is_player())
-		color = settings::visuals::esp_box_color_by_team
+		color = settings::states["visuals::esp_color_by_team"]
 		                   ? static_cast<c_base_player*>(ent)->get_team_color()
 		                   : c_color(settings::colors::colors_map["esp_box_color"]);
 	else
 		color = c_color(settings::colors::colors_map["esp_box_color"]);
 	
-	const auto box_type = static_cast<int>(settings::visuals::esp_box_type);
+	const auto box_type = static_cast<int>(settings::values["visuals::esp_box_type"]);
 	
 	if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::flat))
 	{
@@ -119,7 +119,7 @@ inline void draw_box(c_base_entity* ent, math::box_t& box)
 
 void visuals::esp::run_esp()
 {
-	if (!interfaces::engine->is_in_game() || !settings::visuals::esp)
+	if (!interfaces::engine->is_in_game() || !settings::states["visuals::esp_enabled"])
 		return;
 	
 	for (auto i = 0; i <= interfaces::entity_list->get_highest_entity_index(); ++i)
@@ -136,20 +136,20 @@ void visuals::esp::run_esp()
 		if (!is_draw || ent == get_local_player() || has_owner)
 			continue;
 
-		if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::visuals::esp_draw_distance)
+		if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_draw_distance"])
 			continue;
 		
 		math::box_t box{};
 		if (!game_utils::get_entity_box(ent, box))
 			continue;
 
-		if (settings::visuals::esp_box)
+		if (settings::states["visuals::esp_draw_box"])
 			draw_box(ent, box);
 
-		if (settings::visuals::esp_name)
+		if (settings::states["visuals::esp_draw_name"])
 			draw_name(ent, box);
 
-		if (settings::visuals::esp_health)
+		if (settings::states["visuals::esp_draw_health"])
 			draw_health(ent, box);
 	}
 }
