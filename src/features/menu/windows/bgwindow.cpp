@@ -411,16 +411,18 @@ void bg_window::draw()
 		
 		ImGui::EndMenuBar();
 	}
-
+	auto menu_size = ImGui::GetItemRectSize();
+	
+	
 	{
-		auto text = "LemiProject by voidptr_t#2200";
+		auto text = ("LemiProject BETA by voidptr_t#2200 and contributors on github\nhttps://github.com/Sanceilaks/lemi_gmod_revolution\nhttps://sanceilaks.github.io/LemiProject/\nBuild on " + std::string(__DATE__)).c_str();
 		auto text_size = ImGui::CalcTextSize(text);
 		auto pos = ImVec2{
 			ImGui::GetIO().DisplaySize.x - text_size.x - ImGui::GetStyle().WindowPadding.x,
-			text_size.y + ImGui::GetStyle().WindowPadding.y
+			menu_size.y /*+ ImGui::GetStyle().WindowPadding.y*/
 		};
 		ImGui::GetWindowDrawList()->AddTextOutlined(render_system::fonts::title_font, pos,
-		                                            ImGui::GetColorU32({0.f, 0.6f, 0.4f, 1.f}),
+		                                            c_color(255, 255, 255).get_u32(),
 		                                            colors::black_color.get_u32(), text);
 		//ImGui::TextColored({0.f, 0.6f, 0.4f, 1.f}, text);
 	}

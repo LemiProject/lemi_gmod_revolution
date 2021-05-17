@@ -83,8 +83,9 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!settings::states["legit_bot::legit_bot_enabled"] || !interfaces::engine->is_in_game())
 		return;
 
-	if (!GetAsyncKeyState(settings::binds["exploits::wallpush"]) || settings::binds["exploits::wallpush"] == 0)
-		return;
+	if (settings::binds["legit_bot::legit_bot_key"] != 0)
+		if (!GetAsyncKeyState(settings::binds["legit_bot::legit_bot_key"]))
+			return;
 
 	auto* const lp = get_local_player();
 
@@ -114,7 +115,7 @@ void aim::legit_bot(c_user_cmd* cmd)
 	last_target_id = target.idx;
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 	
-	cmd->viewangles = target.angle - (lp->get_view_punch_angles() * 2);
+	cmd->viewangles = target.angle;
 
 	if (!settings::states["legit_bot::legit_bot_silent_aim"])
 		interfaces::engine->set_view_angles(cmd->viewangles);
