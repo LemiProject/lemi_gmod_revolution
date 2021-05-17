@@ -85,7 +85,7 @@ public:
 		if (!lua->is_type(-1, (int)e_lua_type::type_table))
 		{
 			lua->pop(2);
-			return 0.f;
+			return -1.f;
 		}
 		lua->get_field(-1, var.c_str()); //3		
 		auto r = (float)lua->get_number(-1);
@@ -169,6 +169,27 @@ public:
 		return /* (get_next_primary_attack() <= interfaces::engine->get_last_time_stamp()) &&*/ !empty();
 	}
 
+	float get_tfa_spread()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		push_entity(); //1
+
+		lua->get_field(-1, "CalculateConeRecoil"); //2
+		if (!lua->is_type(-1, (int)e_lua_type::type_function))
+		{
+			lua->pop(2);
+			return -1;
+		}
+		lua->push(-2); //3
+		lua->call(1, 1); //2
+
+		float out = lua->get_number(-1);
+
+		lua->pop(2);
+
+		return out;
+	}
+	
 	c_vector get_spread()
 	{
 		if (!this)
@@ -179,7 +200,7 @@ public:
 			auto lua_spread_cone = get_primary_value("Spread");
 			if (get_weapon_base().find("weapon_tttbase") != std::string::npos)
 				lua_spread_cone = get_primary_value("Cone");
-
+			
 			if (lua_spread_cone != 0.f)
 				return { lua_spread_cone };
 

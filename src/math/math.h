@@ -41,6 +41,13 @@ namespace math
 
 	float float_negative(float var);
 	double double_negative(double var);
+
+	namespace lua
+	{ //TODO: IMPL THIS AND CREATE CW2 NOSPREAD
+		double rand(double min, double max);
+		double random_seed();
+		
+	}
 }
 
 using q_angle = c_vector;

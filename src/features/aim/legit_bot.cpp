@@ -8,6 +8,7 @@
 #include "../../utils/game_utils.h"
 
 #include "../../settings/settings.h"
+#include "spreads/tttbase.h"
 
 struct target_t
 {
@@ -110,7 +111,7 @@ void aim::legit_bot(c_user_cmd* cmd)
 	last_target_id = target.idx;
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 	
-	cmd->viewangles = target.angle - (target.ply->get_view_punch_angles() * 2);
+	cmd->viewangles = target.angle - (lp->get_view_punch_angles() * 2);
 
 	if (!settings::states["legit_bot::legit_bot_silent_aim"])
 		interfaces::engine->set_view_angles(cmd->viewangles);
@@ -142,25 +143,8 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 
 	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK)
 	{
-		const auto spread_cone = weapon->get_spread();
-		const auto spread = -((spread_cone.x + spread_cone.y + spread_cone.z) / 3.f);
-
-		float random[2];
-		const auto seed = md5::md5_pseudo_random(ucmd->command_number) & 0xFF;
-		interfaces::random->set_seed(seed);
-
-		random[0] = interfaces::random->random_float(-0.5f, 0.5f)
-			+ interfaces::random->random_float(-0.5f, 0.5f);
-
-		random[1] = interfaces::random->random_float(-0.5f, 0.5f)
-			+ interfaces::random->random_float(-0.5f, 0.5f);
-
-		auto dir = c_vector(1.0f, 0.0f, 0.0f) + (c_vector(0.0f, -1.0f, 0.0f) * spread * random[0]) + (c_vector(0.0f, 0.0f, 1.0f) * spread * random[1]);
-
-		q_angle out = math::get_angle(q_angle(0.f, 0.f, 0.f), dir);
-		out = math::fix_angles(out);
-
-		ucmd->viewangles += out;
+		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos)
+			calc_spread_ttt(weapon, ucmd);
 	}
 }
 

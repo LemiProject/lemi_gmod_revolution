@@ -216,6 +216,7 @@ void menu_tabs_content::draw_setting()
 			last_configs = get_configs();
 		
 		InputText("Name##NEW_CFG_NAME", &new_cfg_name);
+		auto its = GetItemRectSize();
 		SameLine();
 		if (Button("Add##SETTINGS_ADD"))
 		{
@@ -231,6 +232,9 @@ void menu_tabs_content::draw_setting()
 				current_cfg = std::distance(last_configs.begin(), std::find(last_configs.begin(), last_configs.end(), new_cfg_name + ".vpcfg"));
 			}
 		}
+
+		if (Button("Open directory##OPEN_DIRECTORY"))
+			system(("explorer " + config_directory()).c_str());
 	}
 	EndGroupPanel();
 	

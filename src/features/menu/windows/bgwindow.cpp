@@ -412,6 +412,18 @@ void bg_window::draw()
 		ImGui::EndMenuBar();
 	}
 
+	{
+		auto text = "LemiProject by voidptr_t#2200";
+		auto text_size = ImGui::CalcTextSize(text);
+		auto pos = ImVec2{
+			ImGui::GetIO().DisplaySize.x - text_size.x - ImGui::GetStyle().WindowPadding.x,
+			text_size.y + ImGui::GetStyle().WindowPadding.y
+		};
+		ImGui::GetWindowDrawList()->AddTextOutlined(render_system::fonts::title_font, pos,
+		                                            ImGui::GetColorU32({0.f, 0.6f, 0.4f, 1.f}),
+		                                            colors::black_color.get_u32(), text);
+		//ImGui::TextColored({0.f, 0.6f, 0.4f, 1.f}, text);
+	}
 	ImGui::End();
 
 	if (show_style_editor)
