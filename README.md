@@ -1,3 +1,3 @@
-# lemi_gmod_revolution aka LemiGmodv3
+# lemi_gmod_revolution aka LemiGmodv3 aka VoidProject
 
 In developing...
