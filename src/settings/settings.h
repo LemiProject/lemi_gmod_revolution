@@ -85,7 +85,6 @@ namespace settings
 		{"visuals::chams_enabled", true},
 		{"visuals::entity_chams_enabled", true},
 		{"visuals::ignore_z", true},
-		{"visuals::draw_fov", false},
 		{"visuals::chams_obs_check", true},
 		
 		// Legitbot
@@ -93,6 +92,8 @@ namespace settings
 		{"legit_bot::legit_bot_silent_aim", false},
 		{"legit_bot::no_recoil", false},
 		{"legit_bot::no_spread", false},
+		{"visuals::draw_fov", false},
+		{"visuals::draw_line_to_target", false},
 		
 		// Misc
 		{"misc::bunny_hop", true},

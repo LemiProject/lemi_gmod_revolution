@@ -5,7 +5,7 @@
 
 inline void calc_spread_ttt(c_base_combat_weapon* weapon, c_user_cmd* ucmd)
 {
-	const auto spread_cone = q_angle(weapon->get_primary_value("Cone"));
+	const auto spread_cone = weapon->get_spread();
 	if (spread_cone == q_angle(-1.f))
 		return;
 	

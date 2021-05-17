@@ -54,7 +54,7 @@ void menu_tabs_content::draw_legit_bot()
 		internal::text_and_toggle_button("Enabled", "##LEGITBOT_MAIN_ENABLED", &states["legit_bot::legit_bot_enabled"]);
 		internal::set_tooltip("Enable legitbot");
 
-		Hotkey("Keybind##LEGITBOT_MAIN_TOGGLEKEY", &binds["legit_bot::legit_bot_enabled"], { 0, 0 });
+		Hotkey("Keybind##LEGITBOT_MAIN_TOGGLEKEY", &binds["legit_bot::legit_bot_key"], { 0, 0 });
 		internal::set_tooltip("Key to toggle aimbotting");
 		
 		SliderFloat("Legitbot fov##LEGITBOT_MAIN_FOV", &values["legit_bot::legit_bot_fov"], 1.f, 360.f);
@@ -185,6 +185,8 @@ void menu_tabs_content::draw_visuals()
 	{
 		internal::text_and_toggle_button("Draw fov", "##VISUALS_OVERLAY_DRAW_FOV", &states["visuals::draw_fov"]);
 		internal::set_tooltip("Draw aimbot fov");
+		//internal::text_and_toggle_button("Line to target", "##VISUALS_OVERLAY_DRAW_LINE_TO_LB_TARGET", &states["visuals::draw_line_to_target"]);
+		//internal::set_tooltip("Draw line to legitbot target");
 	}
 	EndGroupPanel();
 }
