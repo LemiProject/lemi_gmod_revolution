@@ -119,6 +119,16 @@ void aim::legit_bot(c_user_cmd* cmd)
 
 	if (!settings::states["legit_bot::legit_bot_silent_aim"])
 		interfaces::engine->set_view_angles(cmd->viewangles);
+
+	if (settings::states["visuals::draw_line_to_target"])
+		directx_render::render_surface([&]()
+		{
+			int x, y;
+			interfaces::engine->get_screen_size(x, y);
+			c_vector origin_position;
+			if (game_utils::world_to_screen(target.ply->get_origin(), origin_position))
+				directx_render::line({ x / 2.f, (float)y }, { origin_position.x, origin_position.y}, c_color(0, 190, 60));
+		});
 }
 
 std::map<std::string, std::map<std::string, float>> recoil_for_weapons;
@@ -147,7 +157,7 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 
 	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK)
 	{
-		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos)
+		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos || weapon->get_weapon_base().find("bobs_gun_base") != std::string::npos)
 			calc_spread_ttt(weapon, ucmd);
 	}
 }
