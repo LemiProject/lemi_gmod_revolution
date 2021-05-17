@@ -54,7 +54,7 @@ void menu_tabs_content::draw_legit_bot()
 		internal::text_and_toggle_button("Enabled", "##LEGITBOT_MAIN_ENABLED", &states["legit_bot::legit_bot_enabled"]);
 		internal::set_tooltip("Enable legitbot");
 
-		Hotkey("Keybind##LEGITBOT_MAIN_TOGGLEKEY", &aim::legit_bot_key, { 0, 0 });
+		Hotkey("Keybind##LEGITBOT_MAIN_TOGGLEKEY", &binds["legit_bot::legit_bot_enabled"], { 0, 0 });
 		internal::set_tooltip("Key to toggle aimbotting");
 		
 		SliderFloat("Legitbot fov##LEGITBOT_MAIN_FOV", &values["legit_bot::legit_bot_fov"], 1.f, 360.f);
@@ -99,7 +99,7 @@ void menu_tabs_content::draw_visuals()
 		internal::set_tooltip("ESP settings for entities and players");
 		internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_PLAYER_BOX_ENABLE", &states["visuals::esp_draw_box"]);
 		internal::set_tooltip("Draw box");
-		if (visuals::esp_box_player)
+		if (settings::states["esp_draw_box"])
 		{
 			internal::text_and_toggle_button("Box team color", "##VISUALS_ESP_PLAYER_COLOR_BY_TEAM", &states["visuals::esp_color_by_team"]);
 			internal::set_tooltip("Use the player's team color for rendering");
@@ -135,7 +135,7 @@ void menu_tabs_content::draw_visuals()
 	{
 		internal::text_and_toggle_button("Enabled", "##VISUALS_CHAMS_ENABLED", &states["visuals::chams_enabled"]);
 		internal::set_tooltip("Draw model with custom material");
-		internal::text_and_toggle_button("Anti-OBS Check", "##VISUALS_CHAMS_OBSCHECK", &visuals::chams_obs_check);
+		internal::text_and_toggle_button("Anti-OBS Check", "##VISUALS_CHAMS_OBSCHECK", &states["visuals::chams_obs_check"]);
 		internal::set_tooltip("Disable chams when Anti-OBS is enabled");
 		internal::text_and_toggle_button("IgnoreZ", "##VISUALS_CHAMS_IGNOREZ",  &states["visuals::ignore_z"]);
 		internal::set_tooltip("Draw models thru walls");
@@ -147,23 +147,23 @@ void menu_tabs_content::draw_visuals()
 	}
 	EndGroupPanel();
 
-	if (!visuals::esp_global)
+	if (!settings::states["esp_global"])
 	{
 		BeginGroupPanel("Entity ESP##VISUALS_ESP_ENTITY", { GetWindowSize().x / panels_in_visuals_count, -1 });
 		{
-			internal::text_and_toggle_button("Enabled", "##VISUALS_ESP_ENTITY_ENABLED", &visuals::esp_entity);
+			internal::text_and_toggle_button("Enabled", "##VISUALS_ESP_ENTITY_ENABLED", &states["visuals::esp_enabled_entity"]);
 			internal::set_tooltip("Esp enabled");
-			internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_ENTITY_BOX_ENABLE", &visuals::esp_box_entity);
+			internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_ENTITY_BOX_ENABLE", &states["visuals::esp_box_entity"]);
 			internal::set_tooltip("Draw box");
-			if (visuals::esp_box_entity)
+			if (states["visuals::esp_box_entity"])
 			{
-				if (BeginCombo("##VISUALS_ESP_ENTITY_BOX_TYPE_COMBO", fmt::format("Box type: {}", to_string(static_cast<visuals::e_esp_box_type>(visuals::esp_box_type_entity))).c_str(), internal::combo_flags))
+				if (BeginCombo("##VISUALS_ESP_ENTITY_BOX_TYPE_COMBO", fmt::format("Box type: {}", to_string(static_cast<visuals::e_esp_box_type>(values["visuals::esp_box_type_entity"]))).c_str(), internal::combo_flags))
 				{
 					for (auto i = 0; i < static_cast<int>(visuals::e_esp_box_type::iter_last); ++i)
 					{
-						const auto is_selected = (visuals::esp_box_type_entity == i);
+						const auto is_selected = (values["visuals::esp_box_type_entity"] == i);
 						if (Selectable(to_string(static_cast<visuals::e_esp_box_type>(i)), is_selected))
-							visuals::esp_box_type_entity = i;
+							values["visuals::esp_box_type_entity"] = i;
 						if (is_selected)
 							SetItemDefaultFocus();
 					}
@@ -171,11 +171,11 @@ void menu_tabs_content::draw_visuals()
 				}
 			}
 
-			internal::text_and_toggle_button("Name", "##VISUALS_ESP_ENTITY_NAME_ENABLE", &visuals::esp_name_entity);
+			internal::text_and_toggle_button("Name", "##VISUALS_ESP_ENTITY_NAME_ENABLE", &states["visuals::esp_name_entity"]);
 			internal::set_tooltip("Draw entity's name");
-			internal::text_and_toggle_button("Health", "##VISUALS_ESP_ENTITY_HEALTH_ENABLE", &visuals::esp_health_entity);
+			internal::text_and_toggle_button("Health", "##VISUALS_ESP_ENTITY_HEALTH_ENABLE", &states["visuals::esp_health_entity"]);
 			internal::set_tooltip("Draw entity's health");
-			SliderFloat("ESP Draw distance##VISUALS_ESP_ENTITY_DRAW_DISTANCE", &visuals::esp_draw_distance_entity, 0.f, 20000.f, "%.1f", 1.f);
+			SliderFloat("ESP Draw distance##VISUALS_ESP_ENTITY_DRAW_DISTANCE", &values["visuals::esp_distance_entity"], 0.f, 20000.f, "%.1f", 1.f);
 			internal::set_tooltip("Distance from target until ESP stops rendering");
 		}
 		EndGroupPanel();

@@ -82,7 +82,7 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!settings::states["legit_bot::legit_bot_enabled"] || !interfaces::engine->is_in_game())
 		return;
 
-	if (!GetAsyncKeyState(settings::misc::exploits::wallpush) || settings::misc::exploits::wallpush == 0)
+	if (!GetAsyncKeyState(settings::binds["exploits::wallpush"]) || settings::binds["exploits::wallpush"] == 0)
 		return;
 
 	auto* const lp = get_local_player();
