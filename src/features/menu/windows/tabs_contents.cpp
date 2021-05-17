@@ -99,7 +99,7 @@ void menu_tabs_content::draw_visuals()
 		internal::set_tooltip("ESP settings for entities and players");
 		internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_PLAYER_BOX_ENABLE", &states["visuals::esp_draw_box"]);
 		internal::set_tooltip("Draw box");
-		if (settings::states["esp_draw_box"])
+		if (settings::states["visuals::esp_draw_box"])
 		{
 			internal::text_and_toggle_button("Box team color", "##VISUALS_ESP_PLAYER_COLOR_BY_TEAM", &states["visuals::esp_color_by_team"]);
 			internal::set_tooltip("Use the player's team color for rendering");
@@ -147,7 +147,7 @@ void menu_tabs_content::draw_visuals()
 	}
 	EndGroupPanel();
 
-	if (!settings::states["esp_global"])
+	if (!settings::states["visuals::esp_global"])
 	{
 		BeginGroupPanel("Entity ESP##VISUALS_ESP_ENTITY", { GetWindowSize().x / panels_in_visuals_count, -1 });
 		{
