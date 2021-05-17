@@ -46,7 +46,7 @@ bool get_target(target_t& target)
 		                                     game_utils::calc_angle(get_local_player()->get_eye_pos(),
 												 hit_pos));
 		
-		if (fov < tmp.fov && fov <= settings::aim::legit_bot_fov && player->is_visible_by(get_local_player()))
+		if (fov < tmp.fov && fov <= settings::values["legit_bot::legit_bot_fov"] && player->is_visible_by(get_local_player()))
 		{
 			if (std::find(settings::other::friends.begin(), settings::other::friends.end(),player->get_steam_id()) != settings::other::friends.end())
 				continue;
@@ -67,7 +67,6 @@ bool get_target(target_t& target)
 	return true;
 }
 
-
 q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val)
 {
 	auto delta = to - from;
@@ -80,7 +79,7 @@ q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val)
 
 void aim::legit_bot(c_user_cmd* cmd)
 {
-	if (!settings::aim::legit_bot_enabled || !interfaces::engine->is_in_game())
+	if (!settings::states["legit_bot::legit_bot_enabled"] || !interfaces::engine->is_in_game())
 		return;
 
 	if (!GetAsyncKeyState(settings::misc::exploits::wallpush) || settings::misc::exploits::wallpush == 0)
@@ -103,20 +102,20 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!get_target(target))
 		return;
 
-	if (settings::aim::legit_bot_delay_before_aiming > 0)
+	if (settings::values["legit_bot::legit_bot_delay_before_aiming"] > 0)
 		if (last_target_id != target.idx && interfaces::engine->get_time_stamp_from_start() <= last_target_time +
-			(settings::aim::legit_bot_delay_before_aiming / 100.f) && !get_entity_by_index(last_target_id)->is_alive())
+			(settings::values["legit_bot::legit_bot_delay_before_aiming"] / 100.f) && !get_entity_by_index(last_target_id)->is_alive())
 			return;
 	
-	if (settings::aim::legit_bot_smooth_val > 0.f)
-		target.angle = do_smooth(target.angle, cmd->viewangles, settings::aim::legit_bot_smooth_val);
+	if (settings::values["legit_bot::legit_bot_smooth_value"] > 0.f)
+		target.angle = do_smooth(target.angle, cmd->viewangles, settings::values["legit_bot::legit_bot_smooth_value"]);
 
 	last_target_id = target.idx;
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 	
 	cmd->viewangles = target.angle - (target.ply->get_view_punch_angles() * 2);
 
-	if (!settings::aim::legit_bot_silent_aim)
+	if (!settings::states["legit_bot::legit_bot_silent_aim"])
 		interfaces::engine->set_view_angles(cmd->viewangles);
 }
 
@@ -139,12 +138,12 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 		recoil_for_weapons.emplace(weapon->get_weapon_base(), tmp);
 	}
 	
-	if (settings::aim::no_recoil)
+	if (settings::states["legit_bot::no_recoil"])
 		weapon->set_recoil(0.f);
 	else
 		weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
 
-	if (settings::aim::no_spread && ucmd->buttons & IN_ATTACK)
+	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK)
 	{
 		const auto spread_cone = weapon->get_spread();
 		const auto spread = -((spread_cone.x + spread_cone.y + spread_cone.z) / 3.f);

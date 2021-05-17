@@ -19,10 +19,10 @@ void visuals::overlay::run_overlay()
 {
 	auto local_player = get_local_player();
 	
-	if (settings::visuals::draw_fov && interfaces::engine->is_in_game() && local_player)
+	if (settings::states["visuals::draw_fov"] && interfaces::engine->is_in_game() && local_player)
 	{
 		auto ply_fov = globals::view::last_view_setup.fov;
-		auto fov = settings::aim::legit_bot_fov;
+		auto fov = settings::values["legit_bot::legit_bot_fov"];
 		fov = fov > 180 ? 180 : fov;
 
 		auto sw = 1920;

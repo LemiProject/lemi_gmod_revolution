@@ -73,7 +73,7 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 		}
 	}
 
-	if (ent->is_player() && settings::visuals::esp_active_weapon_player)
+	if (ent->is_player() && settings::states["visuals::esp_draw_active_weapon"])
 	{
 		auto ply = (c_base_player*)ent;
 		auto weapon = get_primary_weapon(ply);
@@ -93,15 +93,15 @@ inline void draw_box(c_base_entity* ent, math::box_t& box)
 	c_color color;
 	int box_type;
 		if (ent->is_player()) {
-			color = settings::visuals::esp_box_color_by_team_player
+			color = settings::states["visuals::esp_color_by_team"]
 				? static_cast<c_base_player*>(ent)->get_team_color()
 				: c_color(settings::colors::colors_map["esp_box_color"]);
 
-			box_type = static_cast<int>(settings::visuals::esp_box_type_player);
+			box_type = static_cast<int>(settings::values["visuals::esp_box_type"]);
 		}
 		else {
 			color = c_color(settings::colors::colors_map["esp_box_color"]);
-			box_type = static_cast<int>(settings::visuals::esp_box_type_entity);
+			box_type = static_cast<int>(settings::values["visuals::esp_box_type"]);
 		}
 	
 	if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::flat))
@@ -151,13 +151,13 @@ void visuals::esp::run_esp()
 				if (!game_utils::get_entity_box(ent, box))
 					continue;
 
-				if (settings::visuals::esp_box_player)
+				if (settings::states["visuals::esp_draw_box"])
 					draw_box(ent, box);
 
-				if (settings::visuals::esp_name_player)
+				if (settings::states["visuals::esp_draw_name"])
 					draw_name(ent, box);
 
-				if (settings::visuals::esp_health_player)
+				if (settings::states["visuals::esp_draw_health"])
 					draw_health(ent, box);
 			}
 

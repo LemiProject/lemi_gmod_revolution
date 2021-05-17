@@ -2,10 +2,10 @@
 
 #include <fstream>
 
+#include <file_tools.h>
+
 settings::json json_settings;
 std::vector<settings::c_config_item> config_items;
-
-
 
 std::string get_file_content(std::string_view path)
 {
@@ -15,37 +15,51 @@ std::string get_file_content(std::string_view path)
 	return file_content;
 }
 
-void settings::parse_settings_from_file(std::string_view path)
+void settings::parse_settings_from_file(const std::string& s)
 {
-	parse_settings_from_string(get_file_content(path));
+	parse_settings_from_string(get_file_content(s));
 }
 
 std::string settings::parse_setting_in_string()
 {
-	return { };
-	//return current_settings.dump();
+	json j;
+	j["states"] = states;
+	j["values"] = values;
+	j["strings"] = strings;
+	j["binds"] = binds;
+	
+	return j.dump();
 }
 
-void settings::parse_settings_in_file(std::string_view path)
+void settings::parse_settings_in_file(const std::string& path)
 {
-	//std::ofstream file_s;
-	//file_s.open(path.data(), std::ios::app);
-	//file_s.clear();
-	//file_s << current_settings.dump();
+	std::ofstream s(path.data());
+	s.clear();
+	s << parse_setting_in_string();
+}
+
+std::string settings::config_directory()
+{
+	auto path = file_tools::get_hack_directory_path();
+	path.append("configs");
+	if (!file_tools::exist(path.string()))
+		file_tools::create_directory(path.string());
+	return path.string();
+}
+
+std::vector<std::string> settings::get_configs()
+{
+	auto path = config_directory();
+	std::vector<std::string> out;
+	for (auto& p : std::filesystem::directory_iterator(path))
+		if (!p.is_directory())
+			if (p.path().filename().string().find(".vpcfg") != std::string::npos)
+				out.push_back(p.path().filename().string());
+	return out;
 }
 
 void settings::init_config_system()
 {
-	
-}
-
-void settings::update_settings()
-{
-	/*current_settings["visuals"]["esp"] = visuals::esp;
-	current_settings["visuals"]["esp_box"] = visuals::esp_box;
-	current_settings["visuals"]["esp_box_type"] = visuals::esp_box_type;
-	current_settings["visuals"]["esp_health"] = visuals::esp_health;
-	current_settings["visuals"]["esp_name"] = visuals::esp_name;*/
 	
 }
 
@@ -117,78 +131,13 @@ std::vector<std::string> settings::visuals::c_entity_list::data()
 	return classes;
 }
 
-void settings::parse_settings_from_string(std::string_view string)
+void settings::parse_settings_from_string(const std::string& s)
 {
-	/*
-	auto j = json::parse(string.data());
-	
-	visuals::esp = j["visuals"]["esp"];
-	visuals::esp = j["visuals"]["esp_box"];
-	visuals::esp = j["visuals"]["esp_box_type"];
-	visuals::esp = j["visuals"]["esp_health"];
-	visuals::esp = j["visuals"]["esp_name"];
-	
-	current_settings = j;
-	*/
+	auto j = json::parse(s);
+	if (!j.empty())
+	{
+		states = j["states"].get <std::map<std::string, bool>>();
+		values = j["values"].get <std::map<std::string, float>>();
+		strings = j["strings"].get <std::map<std::string, std::string>>();
+	}
 }
-
-//void settings::visuals::c_player_list::push_back(const player_info_t& c)
-//{
-//	players_info.push_back(c);
-//}
-//
-//void settings::visuals::c_player_list::remove(int idx)
-//{
-//	players_info.erase(players_info.begin() + idx);
-//}
-//
-//bool settings::visuals::c_player_list::exist(const player_info_t& c)
-//{
-//	return std::find(players_info.begin(), players_info.end(), c) != players_info.end();
-//}
-//
-//bool settings::visuals::c_player_list::exist(const std::string& c)
-//{
-//	return std::find_if(players_info.begin(), players_info.end(), [&](player_info_t& info)
-//	{
-//		return info.name == c || info.steam_id == c;
-//	}) != players_info.end();
-//}
-//
-//int settings::visuals::c_player_list::find(const player_info_t& c)
-//{
-//	if (!players_info.empty())
-//		for (auto i = 0; i < players_info.size(); ++i)
-//			if (players_info.at(i).steam_id == c.steam_id)
-//				return i;
-//	return -1;
-//}
-//
-//int settings::visuals::c_player_list::find(const std::string& c)
-//{
-//	if (!players_info.empty())
-//		for (auto i = 0; i < players_info.size(); ++i)
-//			if (players_info.at(i).steam_id == c)
-//				return i;
-//	return -1;
-//}
-//
-//void settings::visuals::c_player_list::exchange(std::vector<player_info_t>& c)
-//{
-//}
-//
-//bool settings::visuals::c_player_list::empty()
-//{
-//}
-//
-//void settings::visuals::c_player_list::clear()
-//{
-//}
-//
-//size_t settings::visuals::c_player_list::size()
-//{
-//}
-//
-//std::vector<settings::visuals::player_info_t> settings::visuals::c_player_list::data()
-//{
-//}

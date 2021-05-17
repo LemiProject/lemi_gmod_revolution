@@ -101,7 +101,7 @@ void render_system::on_scene_end(uintptr_t ret_address)
         if (strstr(mn, "gameoverlay"))
             game_overlay_return_address = ret_address;
     }
-    if (game_overlay_return_address != (uintptr_t)ret_address && settings::other::anti_obs)
+    if (game_overlay_return_address != (uintptr_t)ret_address && settings::states["other::anti_obs"])
         return;
 	
     IDirect3DStateBlock9* pixel_state = NULL;

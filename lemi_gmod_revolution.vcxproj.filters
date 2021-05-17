@@ -282,6 +282,12 @@
     <ClInclude Include="src\features\prediction_system\prediction_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="deps\include\file_tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="deps\include\platform_folders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\interfaces.cpp">
@@ -402,6 +408,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\utils\md5_check_sum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="deps\include\file_tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="deps\include\platform_folders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

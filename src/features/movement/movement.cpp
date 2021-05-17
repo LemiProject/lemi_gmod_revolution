@@ -5,7 +5,7 @@
 
 void movement::bunny_hop::run_bunny_hop(c_user_cmd& ucmd)
 {
-	if (!settings::misc::bunny_hop)
+	if (!settings::states["misc::bunny_hop"])
         return;
 	
     auto* local_player = get_local_player();
