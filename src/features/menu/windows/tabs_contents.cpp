@@ -93,24 +93,24 @@ void menu_tabs_content::draw_visuals()
 
 	BeginGroupPanel("Player ESP##VISUALS_ESP_PLAYER", { GetWindowSize().x / panels_in_visuals_count, -1 });
 	{
-		internal::text_and_toggle_button("Enabled", "##VISUALS_ESP_PLAYER_ENABLED", &states["visuals::esp_enabled"]);
+		internal::text_and_toggle_button("Enabled", "##VISUALS_ESP_PLAYER_ENABLED", &states["visuals::esp_enabled_player"]);
 		internal::set_tooltip("Esp enabled");
 		internal::text_and_toggle_button("Global ESP", "##VISUALS_ESP_GLOBAL_ENABLED", &states["visuals::esp_global"]);
 		internal::set_tooltip("ESP settings for entities and players");
-		internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_PLAYER_BOX_ENABLE", &states["visuals::esp_draw_box"]);
+		internal::text_and_toggle_button("Box enabled", "##VISUALS_ESP_PLAYER_BOX_ENABLE", &states["visuals::esp_box_player"]);
 		internal::set_tooltip("Draw box");
-		if (settings::states["visuals::esp_draw_box"])
+		if (settings::states["visuals::esp_box_player"])
 		{
-			internal::text_and_toggle_button("Box team color", "##VISUALS_ESP_PLAYER_COLOR_BY_TEAM", &states["visuals::esp_color_by_team"]);
+			internal::text_and_toggle_button("Box team color", "##VISUALS_ESP_PLAYER_COLOR_BY_TEAM", &states["visuals::esp_color_by_team_player"]);
 			internal::set_tooltip("Use the player's team color for rendering");
 
-			if (BeginCombo("##VISUALS_ESP_PLAYER_BOX_TYPE_COMBO", fmt::format("Box type: {}", to_string(static_cast<visuals::e_esp_box_type>(values["visuals::esp_box_type"]))).c_str(), internal::combo_flags))
+			if (BeginCombo("##VISUALS_ESP_PLAYER_BOX_TYPE_COMBO", fmt::format("Box type: {}", to_string(static_cast<visuals::e_esp_box_type>(values["visuals::esp_box_type_player"]))).c_str(), internal::combo_flags))
 			{
 				for (auto i = 0; i < static_cast<int>(visuals::e_esp_box_type::iter_last); ++i)
 				{
-					const auto is_selected = (values["visuals::esp_box_type"] == i);
+					const auto is_selected = (values["visuals::esp_box_type_player"] == i);
 					if (Selectable(to_string(static_cast<visuals::e_esp_box_type>(i)), is_selected))
-						values["visuals::esp_box_type"] = i;
+						values["visuals::esp_box_type_player"] = i;
 					if (is_selected)
 						SetItemDefaultFocus();
 				}
@@ -118,13 +118,13 @@ void menu_tabs_content::draw_visuals()
 			}
 		}
 
-		internal::text_and_toggle_button("Name", "##VISUALS_ESP_PLAYER_NAME_ENABLE", &states["visuals::esp_draw_name"]);
+		internal::text_and_toggle_button("Name", "##VISUALS_ESP_PLAYER_NAME_ENABLE", &states["visuals::esp_name_player"]);
 		internal::set_tooltip("Draw entity's name");
-		internal::text_and_toggle_button("Health", "##VISUALS_ESP_PLAYER_HEALTH_ENABLE", &states["visuals::esp_draw_health"]);
+		internal::text_and_toggle_button("Health", "##VISUALS_ESP_PLAYER_HEALTH_ENABLE", &states["visuals::esp_health_player"]);
 		internal::set_tooltip("Draw entity's health");
-		internal::text_and_toggle_button("Active weapon", "##VISUALS_ESP_PLAYER_ACTIVEWEAPON_NAME", &states["visuals::esp_draw_active_weapon"]);
+		internal::text_and_toggle_button("Active weapon", "##VISUALS_ESP_PLAYER_ACTIVEWEAPON_NAME", &states["visuals::esp_active_weapon_player"]);
 		internal::set_tooltip("Draw active weapon name");
-		SliderFloat("ESP Draw distance##VISUALS_ESP_PLAYER_DRAW_DISTANCE", &values["visuals::esp_draw_distance"], 0.f, 20000.f, "%.1f", 1.f);
+		SliderFloat("ESP Draw distance##VISUALS_ESP_PLAYER_DRAW_DISTANCE", &values["visuals::esp_distance_player"], 0.f, 20000.f, "%.1f", 1.f);
 		internal::set_tooltip("Distance from target until ESP stops rendering");
 	}
 	EndGroupPanel();
