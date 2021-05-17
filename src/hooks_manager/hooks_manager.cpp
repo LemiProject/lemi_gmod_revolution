@@ -394,7 +394,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 		return settings::visuals::entitys_to_draw.exist(ent.data());
 	};
 	
-	if (!settings::states["visuals::chams_enabled"] || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot())
+	if (!settings::states["visuals::chams_enabled"] || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot() || (settings::states["other::anti_obs"] && settings::states["visuals::chams_obs_check"]))
 		return original(interfaces::model_render, draw_state, render_info, bone);
 
 	float color_modulation[4] = {1.f, 1.f, 0.f, 0.5f};

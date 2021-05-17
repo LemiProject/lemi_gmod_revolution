@@ -73,7 +73,7 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 		}
 	}
 
-	if (ent->is_player() && settings::states["visuals::esp_draw_active_weapon"])
+	if (ent->is_player() && settings::states["visuals::esp_active_weapon_player"])
 	{
 		auto ply = (c_base_player*)ent;
 		auto weapon = get_primary_weapon(ply);
@@ -91,14 +91,18 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 inline void draw_box(c_base_entity* ent, math::box_t& box)
 {
 	c_color color;
-	if (ent->is_player())
-		color = settings::states["visuals::esp_color_by_team"]
-		                   ? static_cast<c_base_player*>(ent)->get_team_color()
-		                   : c_color(settings::colors::colors_map["esp_box_color"]);
-	else
-		color = c_color(settings::colors::colors_map["esp_box_color"]);
-	
-	const auto box_type = static_cast<int>(settings::values["visuals::esp_box_type"]);
+	int box_type;
+		if (ent->is_player()) {
+			color = settings::states["visuals::esp_color_by_team_player"]
+				? static_cast<c_base_player*>(ent)->get_team_color()
+				: c_color(settings::colors::colors_map["esp_box_color"]);
+
+			box_type = static_cast<int>(settings::values["visuals::esp_box_type_player"]);
+		}
+		else {
+			color = c_color(settings::colors::colors_map["esp_box_color"]);
+			box_type = static_cast<int>(settings::values["visuals::esp_box_type_entity"]);
+		}
 	
 	if (box_type == static_cast<int>(settings::visuals::e_esp_box_type::flat))
 	{
@@ -119,7 +123,7 @@ inline void draw_box(c_base_entity* ent, math::box_t& box)
 
 void visuals::esp::run_esp()
 {
-	if (!interfaces::engine->is_in_game() || !settings::states["visuals::esp_enabled"])
+	if (!interfaces::engine->is_in_game())
 		return;
 	
 	for (auto i = 0; i <= interfaces::entity_list->get_highest_entity_index(); ++i)
@@ -136,21 +140,52 @@ void visuals::esp::run_esp()
 		if (!is_draw || ent == get_local_player() || has_owner)
 			continue;
 
-		if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_draw_distance"])
-			continue;
-		
 		math::box_t box{};
-		if (!game_utils::get_entity_box(ent, box))
-			continue;
 
-		if (settings::states["visuals::esp_draw_box"])
-			draw_box(ent, box);
+		if (ent->is_player())
+			if (settings::states["visuals::esp_enabled_player"]) {
+				if (settings::values["visuals::esp_distance_player"] > 0)
+					if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
+						continue;
 
-		if (settings::states["visuals::esp_draw_name"])
-			draw_name(ent, box);
+				if (!game_utils::get_entity_box(ent, box))
+					continue;
 
-		if (settings::states["visuals::esp_draw_health"])
-			draw_health(ent, box);
+				if (settings::states["visuals::esp_box_player"])
+					draw_box(ent, box);
+
+				if (settings::states["visuals::esp_name_player"])
+					draw_name(ent, box);
+
+				if (settings::states["visuals::esp_health_player"])
+					draw_health(ent, box);
+			}
+
+		if (!ent->is_player())
+			if (settings::states["visuals::esp_enabled_entity"] || (settings::states["visuals::esp_enabled_player"] && settings::states["visuals::esp_global"])) {
+				if (settings::states["visuals::esp_global"])
+				{
+					if (settings::values["visuals::esp_distance_player"] > 0)
+						if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
+							continue;
+				}
+				else
+					if (settings::values["visuals::esp_distance_entity"] > 0)
+						if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_entity"])
+							continue;
+
+				if (!game_utils::get_entity_box(ent, box))
+					continue;
+
+				if (settings::states["visuals::esp_box_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_box_player"]))
+					draw_box(ent, box);
+
+				if (settings::states["visuals::esp_name_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_name_player"]))
+					draw_name(ent, box);
+
+				if (settings::states["visuals::esp_health_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_health_player"]))
+					draw_health(ent, box);
+			}
 	}
 }
 
