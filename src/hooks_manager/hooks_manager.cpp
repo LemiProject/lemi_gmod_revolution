@@ -301,6 +301,19 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
+
+	//auto* weapon = get_primary_weapon(lp);
+	//if (weapon->can_shoot() && std::string(weapon->get_lua_script_name()).find("cw_") != std::string::npos)
+	//	if (settings::states["legit_bot::no_spread"] && cmd->buttons & IN_ATTACK)
+	//	{
+	//		q_angle ang = cmd->viewangles;
+	//		ang.y += 180 * (cmd->command_number % 2);
+	//		ang.normalize();
+	//		c_vector forw;
+	//		math::angle_vectors(ang, forw);
+	//		/*memory_utils::get_offset<c_vector>(cmd, 0x40) = forw;
+	//		memory_utils::get_offset<bool>(cmd, 0x3f) = true;*/
+	//	}
 	
 	{
 		static auto spawn_time = 0.f;

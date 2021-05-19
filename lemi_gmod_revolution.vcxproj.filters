@@ -291,7 +291,7 @@
     <ClInclude Include="src\features\aim\spreads\tttbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\features\aim\spreads\cw2.h">
+    <ClInclude Include="src\features\aim\spreads\all_spreads.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

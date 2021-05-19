@@ -20,6 +20,15 @@ void settings::parse_settings_from_file(const std::string& s)
 	parse_settings_from_string(get_file_content(s));
 }
 
+template <typename map_t>
+void merge_map(const map_t& from, map_t& to)
+{
+	for (auto& i : to)
+		for (auto j : from)
+			if (i.first == j.first)
+				i.second = j.second;
+}
+
 std::string settings::parse_setting_in_string()
 {
 	json j;
@@ -27,6 +36,7 @@ std::string settings::parse_setting_in_string()
 	j["values"] = values;
 	j["strings"] = strings;
 	j["binds"] = binds;
+	j["colors"] = colors::colors_map;
 	
 	return j.dump();
 }
@@ -136,8 +146,15 @@ void settings::parse_settings_from_string(const std::string& s)
 	auto j = json::parse(s);
 	if (!j.empty())
 	{
-		states = j["states"].get <std::map<std::string, bool>>();
-		values = j["values"].get <std::map<std::string, float>>();
-		strings = j["strings"].get <std::map<std::string, std::string>>();
+		if (!j["states"].empty())
+			merge_map(j["states"].get <std::map<std::string, bool>>(), states);
+		if (!j["values"].empty())
+			merge_map(j["values"].get <std::map<std::string, float>>(), values);
+		if (!j["strings"].empty())
+			merge_map(j["strings"].get <std::map<std::string, std::string>>(), strings);
+		if (!j["binds"].empty())
+			merge_map(j["binds"].get<decltype(binds)>(), binds);
+		if (!j["colors"].empty())
+			merge_map(j["colors"].get<std::map<std::string, std::array<float, 4>>>(), colors::colors_map);
 	}
 }

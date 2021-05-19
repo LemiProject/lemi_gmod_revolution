@@ -146,7 +146,8 @@ public:
 		push_entity(); //1
 		lua->push_number(0); //2
 		lua->get_field(-2, "Recoil"); //3
-		out["Recoil"] = lua->get_number();
+		if (lua->is_type(-1, (int)e_lua_type::type_number))
+			out["Recoil"] = lua->get_number();
 		lua->pop(3);
 
 		out["Primary::Recoil"] = get_primary_value("Recoil");
@@ -204,6 +205,32 @@ public:
 			if (lua_spread_cone != 0.f)
 				return { lua_spread_cone };
 
+			{
+				auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+				c_lua_auto_pop ap(lua);
+
+				push_entity();
+				lua->get_field(-1, "CurCone");
+				if (lua->is_type(-1, (int)e_lua_type::type_number))
+					lua_spread_cone = lua->get_number();
+			}
+			
+			if (lua_spread_cone != 0.f)
+				return { lua_spread_cone };
+
+			{
+				auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+				c_lua_auto_pop ap(lua);
+
+				push_entity();
+				lua->get_field(-1, "MaxSpreadInc");
+				if (lua->is_type(-1, (int)e_lua_type::type_number))
+					lua_spread_cone = lua->get_number();
+			}
+
+			if (lua_spread_cone != 0.f)
+				return { lua_spread_cone };
+			
 			auto just_spread = [&]() -> float
 			{
 				auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
