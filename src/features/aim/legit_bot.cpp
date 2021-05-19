@@ -8,6 +8,7 @@
 #include "../../utils/game_utils.h"
 
 #include "../../settings/settings.h"
+#include "spreads/all_spreads.h"
 #include "spreads/tttbase.h"
 
 struct target_t
@@ -95,10 +96,16 @@ void aim::legit_bot(c_user_cmd* cmd)
 	auto* weapon = get_primary_weapon(lp);
 	if (!weapon || !weapon->can_shoot())
 		return;
-	
+
 	target_t target;
 
-	if (!(cmd->buttons & IN_ATTACK) || weapon->get_next_primary_attack() <= interfaces::global_vars->interval_per_tick)
+	auto is_auto_fire = settings::states["legit_bot::legit_bot_auto_fire"] && (GetAsyncKeyState(
+			settings::binds["legit_bot::legit_bot_auto_fire_key"]) || settings::binds[
+			"legit_bot::legit_bot_auto_fire_key"]
+		== 0);
+	
+	if ((  (!(cmd->buttons & IN_ATTACK)) && !is_auto_fire) 
+		|| weapon->get_next_primary_attack() <= interfaces::global_vars->interval_per_tick)
 		return;
 	
 	if (!get_target(target))
@@ -120,6 +127,9 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!settings::states["legit_bot::legit_bot_silent_aim"])
 		interfaces::engine->set_view_angles(cmd->viewangles);
 
+	if (is_auto_fire)
+		cmd->buttons |= IN_ATTACK;
+	
 	if (settings::states["visuals::draw_line_to_target"])
 		directx_render::render_surface([&]()
 		{
@@ -155,10 +165,12 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 	else
 		weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
 
-	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK)
+	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK && weapon->can_shoot())
 	{
 		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos || weapon->get_weapon_base().find("bobs_gun_base") != std::string::npos)
 			calc_spread_ttt(weapon, ucmd);
+		//else
+		//	allspreads_nospread(weapon, ucmd);
 	}
 }
 

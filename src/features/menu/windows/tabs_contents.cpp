@@ -56,6 +56,12 @@ void menu_tabs_content::draw_legit_bot()
 
 		Hotkey("Keybind##LEGITBOT_MAIN_TOGGLEKEY", &binds["legit_bot::legit_bot_key"], { 0, 0 });
 		internal::set_tooltip("Key to toggle aimbotting");
+
+		internal::text_and_toggle_button("Autofire", "##LEGITBOT_AUTOFIRE_ENB", &states["legit_bot::legit_bot_auto_fire"]);
+		internal::set_tooltip("Fire when target is can be shooted");
+
+		if (states["legit_bot::legit_bot_auto_fire"])
+			SameLine(), Hotkey("Keybind##LEGITBOT_AUTOFIRE_KEYBIND", &binds["legit_bot::legit_bot_auto_fire_key"]);
 		
 		SliderFloat("Legitbot fov##LEGITBOT_MAIN_FOV", &values["legit_bot::legit_bot_fov"], 1.f, 360.f);
 		internal::set_tooltip("Degrees from the crosshair where players will be targetted");

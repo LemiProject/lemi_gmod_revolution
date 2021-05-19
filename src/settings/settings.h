@@ -94,6 +94,7 @@ namespace settings
 		{"legit_bot::no_spread", false},
 		{"visuals::draw_fov", false},
 		{"visuals::draw_line_to_target", false},
+		{"legit_bot::legit_bot_auto_fire", false},
 		
 		// Misc
 		{"misc::bunny_hop", true},
@@ -127,6 +128,7 @@ namespace settings
 
 		// Legitbot
 		{"legit_bot::legit_bot_key", 0},
+		{"legit_bot::legit_bot_auto_fire_key", 0}
 	};
 	namespace colors
 	{

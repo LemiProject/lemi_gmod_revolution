@@ -4,6 +4,10 @@
 
 namespace math
 {
+	constexpr int pitch = 0;
+	constexpr int yaw = 1;
+	constexpr int roll = 2;
+	
 	struct vec2_t
 	{
 		float x, y;
@@ -42,10 +46,16 @@ namespace math
 	float float_negative(float var);
 	double double_negative(double var);
 
+	__forceinline void sincos(float x, float* s, float* c)
+	{
+		*s = sin(x);
+		*c = cos(x);
+	}
+	
 	namespace lua
 	{ //TODO: IMPL THIS AND CREATE CW2 NOSPREAD
 		double rand(double min, double max);
-		double random_seed();
+		void random_seed(double seed);
 		
 	}
 }
@@ -117,6 +127,15 @@ namespace math
 		const auto radx = deg2rad(ang.x);
 		const auto rady = deg2rad(ang.y);
 		return c_vector(cos(radx) * cos(rady), cos(radx) * sin(rady), sin(radx));
+	}
+
+	inline void angle_vectors(const q_angle& ang, c_vector& vector)
+	{
+		float sp, sy, cp, cy;
+		sincos(deg2rad(ang[yaw]), &sy, &cy);
+		sincos(deg2rad(ang[pitch]), &sp, &cp);
+		
+		vector = {cp * cy, cp * sy, -sp};
 	}
 }
 

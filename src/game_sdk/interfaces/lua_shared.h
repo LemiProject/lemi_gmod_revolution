@@ -291,3 +291,25 @@ public:
         return (*(fn**)this)[6](this, state);
     }
 };
+
+
+
+class c_lua_auto_pop
+{
+	c_lua_interface* i;
+	int top;
+public:
+	c_lua_auto_pop(c_lua_interface* intr);
+	~c_lua_auto_pop();
+};
+
+inline c_lua_auto_pop::c_lua_auto_pop(c_lua_interface* intr)
+{
+	top = intr->top();
+	i = intr;
+}
+
+inline c_lua_auto_pop::~c_lua_auto_pop()
+{
+	i->pop(i->top() - top);
+}

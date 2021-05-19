@@ -68,5 +68,10 @@ namespace memory_utils
 
         return nullptr;
 	}
-	
+
+	template<typename t>
+	t& get_offset(void* ptr, DWORD offset)
+	{
+        return *reinterpret_cast<t*>((uintptr_t)ptr + offset);
+	}
 }
