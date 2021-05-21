@@ -8,6 +8,8 @@
 #include <color.h>
 #include <functional>
 
+#include "../interfaces.h"
+
 namespace render_system
 {
 	namespace fonts
@@ -85,4 +87,17 @@ namespace directx_render
 	void filled_circle(const ImVec2& pos, int radius, c_color color, int segments = 120, int t = 1);
 	
 	void corner_box(math::box_t box, c_color color);
+
+	namespace directx_lua_api
+	{
+		inline c_color current_color = {255, 255, 255, 255};
+
+		LUA_FUNCTION(directx_lua_api_set_color);
+		LUA_FUNCTION(directx_lua_api_filled_rect);
+		LUA_FUNCTION(directx_lua_api_bordered_rect);
+
+		LUA_FUNCTION(lua_api_is_screen_grab);
+
+		void push_all(c_lua_interface* lua);
+	}
 }

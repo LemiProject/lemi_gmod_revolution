@@ -288,7 +288,7 @@
     <ClInclude Include="deps\include\platform_folders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\features\aim\spreads\tttbase.h">
+    <ClInclude Include="src\features\aim\spreads\csbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\features\aim\spreads\all_spreads.h">
@@ -420,6 +420,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="deps\include\platform_folders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\menu\menu_lua_api.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

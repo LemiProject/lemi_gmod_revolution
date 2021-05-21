@@ -2,6 +2,7 @@
 
 #include "../../game_sdk/entitys/c_base_player.h"
 #include "../../settings/settings.h"
+#include "../../utils/game_utils.h"
 
 void movement::bunny_hop::run_bunny_hop(c_user_cmd& ucmd)
 {
@@ -34,4 +35,7 @@ void movement::bunny_hop::run_bunny_hop(c_user_cmd& ucmd)
         last_jumped = false;
         should_fake = false;
     }
+
+    if (settings::states["lua::hack_hooks"])
+        lua::hook_call("LPostBhop");
 }

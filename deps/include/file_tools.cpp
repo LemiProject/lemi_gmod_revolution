@@ -35,6 +35,11 @@ void file_tools::create_directory(const std::string& path)
 //}
 void file_tools::read_file(std::string& out, const std::string& path)
 {
+	std::ifstream file;
+	file.open(path);
+	std::string file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+	out = file_content;
 }
 
 std::string file_tools::get_hack_directory()

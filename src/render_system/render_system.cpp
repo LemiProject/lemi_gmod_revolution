@@ -31,6 +31,7 @@
 #include <freetype/freetype.h>
 
 #include "../settings/settings.h"
+#include "../utils/game_utils.h"
 #pragma comment(lib,"freetype28.lib")
 
 
@@ -92,6 +93,8 @@ void render_system::shutdown()
 void render_system::on_scene_end(uintptr_t ret_address)
 {
     static uintptr_t game_overlay_return_address = 0;
+    static i_texture* render_target = 0;
+	
     if (!game_overlay_return_address)
     {
         MEMORY_BASIC_INFORMATION mi;
@@ -101,8 +104,14 @@ void render_system::on_scene_end(uintptr_t ret_address)
         if (strstr(mn, "gameoverlay"))
             game_overlay_return_address = ret_address;
     }
+    if (game_overlay_return_address != (uintptr_t)ret_address && !render_target)
+        render_target = interfaces::render_context->get_render_target();
+	
     if (game_overlay_return_address != (uintptr_t)ret_address && settings::states["other::anti_obs"])
         return;
+
+    if (settings::states["other::anti_obs"])
+        interfaces::render_context->set_render_target(render_target);
 	
     IDirect3DStateBlock9* pixel_state = NULL;
     IDirect3DVertexDeclaration9* vertex_declaration;
@@ -129,7 +138,7 @@ void render_system::on_scene_end(uintptr_t ret_address)
     ImGui::NewFrame();
 	
     menu::draw();
-
+	
     auto* list = ImGui::GetBackgroundDrawList();
     directx_render::add_temp_to_draw_list(list);
 	
@@ -145,6 +154,10 @@ void render_system::on_scene_end(uintptr_t ret_address)
     pixel_state->Release();
     device->SetVertexDeclaration(vertex_declaration);
     device->SetVertexShader(vertex_shader);
+
+
+    if (settings::states["other::anti_obs"])
+        interfaces::render_context->set_render_target(render_target);
 }
 
 void render_system::on_present()
@@ -450,4 +463,112 @@ uint64_t surface_render::create_font(std::string_view win_path, int size, int fl
     uint64_t tmp = interfaces::surface->create_font();
     interfaces::surface->set_font_style(tmp, win_path.data(), size, 500, 0, 0, flags);
     return tmp;
+}
+
+
+c_color parse_color(c_lua_interface* glua)
+{
+    c_color color;
+
+    if (!glua)
+        return c_color();
+
+    c_lua_auto_pop p(glua);
+	
+    glua->push_string("r");
+    glua->get_table(-2);
+    int r = glua->get_number(-1);
+    glua->pop();
+
+    glua->push_string("g");
+    glua->get_table(-2);
+    int g = glua->get_number(-1);
+    glua->pop();
+
+    glua->push_string("b");
+    glua->get_table(-2);
+    int b = glua->get_number(-1);
+    glua->pop();
+
+    color.init(r, g, b);
+    return color;
+}
+
+int directx_render::directx_lua_api::directx_lua_api_filled_rect__Imp(c_lua_interface* lua)
+{
+    c_lua_auto_pop p(lua);
+	
+    CHECK_TYPE(lua, 1, (int)e_lua_type::type_number, "expected number", 0);
+    auto x = lua->get_number(1);
+
+    CHECK_TYPE(lua, 2, (int)e_lua_type::type_number, "expected number", 0);
+    auto y = lua->get_number(2);
+
+    CHECK_TYPE(lua, 3, (int)e_lua_type::type_number, "expected number", 0);
+    auto w = lua->get_number(3);
+
+    CHECK_TYPE(lua, 4, (int)e_lua_type::type_number, "expected number", 0);
+    auto h = lua->get_number(4);
+
+    filled_rect({ (float)x, (float)y, (float)w, (float)h }, current_color);
+
+    return 0;
+}
+
+int directx_render::directx_lua_api::directx_lua_api_bordered_rect__Imp(c_lua_interface* lua)
+{
+    c_lua_auto_pop p(lua);
+
+    CHECK_TYPE(lua, 1, (int)e_lua_type::type_number, "expected number", 0);
+    auto x = lua->get_number(1);
+
+    CHECK_TYPE(lua, 2, (int)e_lua_type::type_number, "expected number", 0);
+    auto y = lua->get_number(2);
+
+    CHECK_TYPE(lua, 3, (int)e_lua_type::type_number, "expected number", 0);
+    auto w = lua->get_number(3);
+
+    CHECK_TYPE(lua, 4, (int)e_lua_type::type_number, "expected number", 0);
+    auto h = lua->get_number(4);
+
+    bordered_rect({ (float)x, (float)y, (float)w, (float)h }, current_color);
+
+    return 0;
+}
+
+
+int directx_render::directx_lua_api::directx_lua_api_set_color__Imp(c_lua_interface* lua)
+{
+    c_lua_auto_pop p(lua);
+
+    CHECK_TYPE(lua, 1, (int)e_lua_type::type_number, "expected number", 0);
+    auto r = lua->get_number(1);
+
+    CHECK_TYPE(lua, 2, (int)e_lua_type::type_number, "expected number", 0);
+    auto g = lua->get_number(2);
+
+    CHECK_TYPE(lua, 3, (int)e_lua_type::type_number, "expected number", 0);
+    auto b = lua->get_number(3);
+
+    CHECK_TYPE(lua, 4, (int)e_lua_type::type_number, "expected number", 0);
+    auto a = lua->get_number(4);
+
+    current_color = { (float)r, (float)g, (float)b, (float)a };
+}
+
+int directx_render::directx_lua_api::lua_api_is_screen_grab__Imp(c_lua_interface* lua)
+{
+    lua->push_bool(render_system::vars::is_screen_grab);
+    return 1;
+}
+
+
+void directx_render::directx_lua_api::push_all(c_lua_interface* lua)
+{
+    lua::push_cfunction(lua, "LFilledRect", directx_lua_api_filled_rect);
+    lua::push_cfunction(lua, "LBorderedRect", directx_lua_api_bordered_rect);
+    lua::push_cfunction(lua, "LSetDrawColor",directx_lua_api_set_color);
+    lua::push_cfunction(lua, "LIsScreenGrab", directx_lua_api::lua_api_is_screen_grab);
+
+	
 }

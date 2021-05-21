@@ -5,6 +5,7 @@
 #include "../game_sdk/entitys/c_base_player.h"
 
 #include "../render_system/render_system.h"
+#include "../settings/settings.h"
 
 namespace game_utils
 {
@@ -137,5 +138,43 @@ namespace game_utils
 			ang.y += 180.f;
 		
 		return ang;
+	}
+}
+
+
+namespace lua
+{
+	constexpr auto hack_table_name = "L";
+	
+	__forceinline void hook_call(const std::string& name, e_type t = e_type::client)
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)t);
+		if (lua)
+		{
+			c_lua_auto_pop p(lua);
+			lua->push_special((int)e_special::glob);
+			lua->get_field(-1, "hook");
+			lua->get_field(-1, "Call");
+			lua->push_string(name.c_str());
+			lua->call(1, 0);
+		}
+	}
+
+	__forceinline void push_hack_globals(c_lua_interface* lua)
+	{
+		if (!settings::states["lua::hack_globals"])
+			return;
+		
+		c_lua_auto_pop p(lua);
+		
+		directx_render::directx_lua_api::push_all(lua);
+	}
+
+	__forceinline void push_cfunction(c_lua_interface* i, const std::string& name, void* fn)
+	{
+		i->push_special((int)e_special::glob);
+			i->push_c_function(fn);
+			i->set_field(-2, name.c_str());
+		i->pop();
 	}
 }
