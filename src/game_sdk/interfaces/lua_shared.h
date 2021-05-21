@@ -60,6 +60,34 @@ enum class e_lua_type
 	type_player = type_entity,
 };
 
+class c_lua_interface;
+
+struct lua_State
+{
+#if defined( _WIN32 ) && !defined( _M_X64 )
+	// Win32
+	unsigned char _ignore_this_common_lua_header_[48 + 22];
+#elif defined( _WIN32 ) && defined( _M_X64 )
+	// Win64
+	unsigned char _ignore_this_common_lua_header_[92 + 22];
+#elif defined( __linux__ ) && !defined( __x86_64__ )
+	// Linux32
+	unsigned char _ignore_this_common_lua_header_[48 + 22];
+#elif defined( __linux__ ) && defined( __x86_64__ )
+	// Linux64
+	unsigned char _ignore_this_common_lua_header_[92 + 22];
+#elif defined ( __APPLE__ ) && !defined( __x86_64__ )
+	// macOS32
+	unsigned char _ignore_this_common_lua_header_[48 + 22];
+#elif defined ( __APPLE__ ) && defined( __x86_64__ )
+	// macOS64
+	unsigned char _ignore_this_common_lua_header_[92 + 22];
+#else
+#error agh
+#endif
+
+	c_lua_interface* lua_base;
+};
 
 class _i_lua_object
 {
@@ -182,6 +210,8 @@ public:
 };
 
 using number_t = double;
+struct lua_State;
+typedef int (*CFunc)(lua_State* L);
 
 class c_lua_interface
 {
@@ -236,7 +266,7 @@ public:
 	virtual void* get_vector(int) = 0;
 	virtual void push_angle(void*) = 0;
 	virtual void push_vector(void*) = 0;
-	virtual void set_state() = 0;
+	virtual void set_state(lua_State* l) = 0;
 	virtual void create_meta_table(char const*) = 0;
 	virtual void push_meta_table(int) = 0;
 	virtual void push_user_type(void*, int) = 0;
@@ -313,3 +343,16 @@ inline c_lua_auto_pop::~c_lua_auto_pop()
 {
 	i->pop(i->top() - top);
 }
+
+#define LUA_FUNCTION( FUNC )                          \
+            inline int FUNC##__Imp( c_lua_interface* lua ); \
+            inline int FUNC( lua_State* L )                          \
+            {                                                 \
+                c_lua_interface* lua = L->lua_base;   \
+                lua->set_state(L);                             \
+                return FUNC##__Imp( lua );                    \
+            }                                                 \
+            int FUNC##__Imp( c_lua_interface* lua )
+
+
+#define CHECK_TYPE( LUA, POS, TYPE, ERR, RET ) if (!LUA->is_type(POS, TYPE)) { LUA->arg_error(POS, ERR); return RET; }

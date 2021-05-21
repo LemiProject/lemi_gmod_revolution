@@ -12,6 +12,8 @@
 #include <imgui/TextEditor.h>
 #include <imgui/imgui_stdlib.h>
 
+
+#include "file_tools.h"
 #include "main_window.h"
 #include "../../../interfaces.h"
 #include "../../../game_sdk/entitys/c_base_player.h"
@@ -48,6 +50,20 @@ struct team_t
 	c_color color;
 };
 std::map<int, team_t> teams_list;
+
+inline void set_tooltip(const std::string& text, ...)
+{
+	if (ImGui::IsItemHovered())
+	{
+		auto fmt = text.c_str();
+		ImGui::BeginTooltip();
+		va_list args;
+		va_start(args, fmt);
+		ImGui::TextV(fmt, args);
+		va_end(args);
+		ImGui::EndTooltip();
+	}
+}
 
 void bg_window::update_entity_list()
 {
@@ -258,6 +274,66 @@ void draw_entity_list()
 	End();
 }
 
+void draw_lua_files_loader()
+{
+	using namespace ImGui;
+	static std::vector<std::string> lua_files;
+	static auto current_lua_id = -1;
+	
+	auto get_lua_dir = [&]()
+	{
+		auto dir_path = file_tools::get_hack_directory_path();
+		dir_path.append("lua");
+		if (!file_tools::exist(dir_path.string()))
+			file_tools::create_directory(dir_path.string());
+		return dir_path.string();
+	};
+	
+	auto get_luas = [&]()
+	{
+		auto path = get_lua_dir();
+		std::vector<std::string> out;
+		for (auto& p : std::filesystem::directory_iterator(path))
+			if (!p.is_directory())
+				if (p.path().filename().string().find(".lua") != std::string::npos)
+					out.push_back(p.path().filename().string());
+		return out;
+	};
+
+	
+	if (lua_files.empty())
+		lua_files = get_luas();
+	
+	Begin("Lua files loader##LUAL");
+
+	if (BeginListBox("Luas##LULA"))
+	{
+		auto ls = lua_files;
+		for (auto i = 0; i < ls.size(); ++i)
+		{
+			if (Selectable((ls[i] + "##LUALAI").c_str(), i == current_lua_id))
+				current_lua_id = i;
+			if (i == current_lua_id)
+				SetItemDefaultFocus();
+		}
+		EndListBox();
+	}
+
+	if (Button("Add##LUALRUN") && current_lua_id >= 0)
+	{
+		std::string code;
+		file_tools::read_file(code, get_lua_dir() + "\\" + lua_files[current_lua_id]);
+		lua_features::add_code_to_run(code);
+	}
+	
+	SameLine();
+	if (Button("Reload##LUALRL")) lua_files = get_luas();
+	SameLine();
+	if (Button("Open directory##LUALOD")) ShellExecute(NULL, NULL, get_lua_dir().c_str(), NULL, NULL, SW_SHOWNORMAL);
+	
+	End();
+}
+
 void draw_glua_loader()
 {
 	using namespace ImGui;
@@ -265,25 +341,7 @@ void draw_glua_loader()
 	static TextEditor* editor = nullptr;
 	static auto load_file_show = false;
 	if (load_file_show)
-	[]()
-	{
-		static std::string str;
-		
-		Begin("Load file##SUBWINDOW");
-
-		InputText("Path##LOADFILE_SUBWINDOW", &str);
-		if (Button("Run##LOADFILE_SUBWINDOW") && !str.empty() && std::filesystem::exists(str)) auto as2 = std::async(std::launch::async, []()
-			{
-				std::string code;
-				{
-					std::ifstream stream(str);
-					code = std::string((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-				}
-				lua_features::add_code_to_run(code);
-			});
-		
-		End();
-	}();
+		draw_lua_files_loader();
 	
 	if (!editor)
 	{
@@ -366,6 +424,14 @@ void draw_glua_loader()
 	{
 		lua_features::add_code_to_run(editor->GetText());
 	}
+
+	SameLine();
+	Checkbox("Hack hooks##CALLASGHUDPAINT", &settings::states["lua::hack_hooks"]);
+	set_tooltip("Enable hack hooks call");
+	SameLine();
+	Checkbox("Hack globals##HACKGLOBALS", &settings::states["lua::hack_globals"]);
+	set_tooltip("Enable hack globals pushing");
+	
 	End();
 }
 

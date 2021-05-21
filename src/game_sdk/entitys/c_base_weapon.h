@@ -199,7 +199,7 @@ public:
 		if (is_use_lua())
 		{
 			auto lua_spread_cone = get_primary_value("Spread");
-			if (get_weapon_base().find("weapon_tttbase") != std::string::npos)
+			if (get_weapon_base().find("weapon_tttbase") != std::string::npos || get_weapon_base().find("swb") != std::string::npos)
 				lua_spread_cone = get_primary_value("Cone");
 			
 			if (lua_spread_cone != 0.f)

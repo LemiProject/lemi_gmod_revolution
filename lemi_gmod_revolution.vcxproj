@@ -200,7 +200,7 @@
     <ClInclude Include="deps\include\platform_folders.h" />
     <ClInclude Include="src\features\aim\aim.h" />
     <ClInclude Include="src\features\aim\spreads\all_spreads.h" />
-    <ClInclude Include="src\features\aim\spreads\tttbase.h" />
+    <ClInclude Include="src\features\aim\spreads\csbase.h" />
     <ClInclude Include="src\features\lua_features\lua_features.h" />
     <ClInclude Include="src\features\menu\menu.h" />
     <ClInclude Include="src\features\menu\styles.h" />
@@ -279,6 +279,7 @@
     <ClCompile Include="src\features\aim\legit_bot.cpp" />
     <ClCompile Include="src\features\lua_features\lua_features.cpp" />
     <ClCompile Include="src\features\menu\menu.cpp" />
+    <ClCompile Include="src\features\menu\menu_lua_api.cpp" />
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />
     <ClCompile Include="src\features\menu\windows\tabs_contents.cpp" />

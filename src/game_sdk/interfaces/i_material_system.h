@@ -374,3 +374,49 @@ public:
 		return (*(fn**)this)[107](this, new_render);
 	}
 };
+
+class ivtf_texture;
+
+class i_texture_regenerator
+{
+public:
+	virtual void regenerate_texture_bits(i_texture * pTexture, ivtf_texture * pVTFTexture, rect_t * pRect) = 0;
+	virtual void release() = 0;
+};
+
+class i_texture
+{
+public:
+	virtual const char* get_name(void) const = 0;
+	virtual int get_mapping_width() const = 0;
+	virtual int get_mapping_height() const = 0;
+	virtual int get_actual_width() const = 0;
+	virtual int get_actual_height() const = 0;
+	virtual int get_num_animation_frames() const = 0;
+	virtual bool is_translucent() const = 0;
+	virtual bool is_mipmapped() const = 0;
+	virtual void get_low_res_color_sample(float s, float t, float* color) const = 0;
+	virtual void* get_resource_data(uint32_t eDataType, size_t* pNumBytes) const = 0;
+	virtual void increment_reference_count(void) = 0;
+	virtual void decrement_reference_count(void) = 0;
+	inline void add_ref() { increment_reference_count(); }
+	inline void release() { decrement_reference_count(); }
+	virtual void set_texture_regenerator(i_texture_regenerator* pTextureRegen) = 0;
+	virtual void download(rect_t* pRect = 0, int nAdditionalCreationFlags = 0) = 0;
+	virtual int get_approximate_vid_mem_bytes(void) const = 0;
+	virtual bool is_error() const = 0;
+	virtual bool is_volume_texture() const = 0;
+	virtual int get_mapping_depth() const = 0;
+	virtual int get_actual_depth() const = 0;
+	virtual image_format get_image_format() const = 0;
+	virtual int get_normal_decode_mode() const = 0;
+	virtual bool is_render_target() const = 0;
+	virtual bool is_cube_map() const = 0;
+	virtual bool is_normal_map() const = 0;
+	virtual bool is_procedural() const = 0;
+	virtual void delete_if_unreferenced() = 0;
+	virtual void swap_contents(i_texture* pOther) = 0;
+	virtual unsigned int get_flags(void) const = 0;
+	virtual void force_lod_override(int iNumLodsOverrideUpOrDown) = 0;
+	virtual bool save_to_file(const char* fileName) = 0;
+};

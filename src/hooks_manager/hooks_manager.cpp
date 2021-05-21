@@ -28,8 +28,6 @@
 #include <intrin.h>
 #include <iostream>
 
-
-
 #include "../globals.h"
 #include "../features/lua_features/lua_features.h"
 #include "../features/menu/windows/bgwindow.h"
@@ -295,25 +293,12 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 		aim::anti_recoil_and_spread(cmd);
 	}
 	engine_prediction.end();
-
-	if (settings::binds["misc::fix_movement"])
-		fix_movement(old_cmd);
 	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
 
-	//auto* weapon = get_primary_weapon(lp);
-	//if (weapon->can_shoot() && std::string(weapon->get_lua_script_name()).find("cw_") != std::string::npos)
-	//	if (settings::states["legit_bot::no_spread"] && cmd->buttons & IN_ATTACK)
-	//	{
-	//		q_angle ang = cmd->viewangles;
-	//		ang.y += 180 * (cmd->command_number % 2);
-	//		ang.normalize();
-	//		c_vector forw;
-	//		math::angle_vectors(ang, forw);
-	//		/*memory_utils::get_offset<c_vector>(cmd, 0x40) = forw;
-	//		memory_utils::get_offset<bool>(cmd, 0x3f) = true;*/
-	//	}
+	if (settings::states["misc::fix_movement"])
+		fix_movement(old_cmd);
 	
 	{
 		static auto spawn_time = 0.f;
@@ -375,17 +360,8 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	
 	interfaces::surface->start_drawing();
 	{
-		//auto lua = interfaces::lua_shared->get_interface((int)e_type::client);
-		//if (lua)
-		//{
-		//	lua->push_special((int)e_special::glob); //1
-		//	lua->get_field(-1, "hook"); //2
-		//	lua->get_field(-1, "Call"); //2
-		//	lua->push_string("ASGHudPaint"); //3
-		//	lua->call(1, 0); // 3 - 1 = 2
-		//	lua->pop(2);
-		//	
-		//}
+		if (settings::states["lua::hack_hooks"])
+			lua::hook_call("LASGHudPaint");
 	}	
 	interfaces::surface->finish_drawing();
 }
@@ -466,16 +442,25 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 	
 	if (panel_name == "FocusOverlayPanel")
 	{
+		if (settings::states["lua::hack_hooks"])
+			lua::hook_call("LBeforeVisuals");
 		directx_render::render_surface([]()
 			{
 				visuals::run_visuals();
+				if (settings::states["lua::hack_hooks"])
+					lua::hook_call("LDrawVisuals");
 			});
+		if (settings::states["lua::hack_hooks"])
+			lua::hook_call("LPostVisuals");
 	}
 	
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)
 {
+	if (settings::states["lua::hack_hooks"])
+		lua::hook_call("LWndProcHook");
+	
 	if (message_type == WM_CLOSE)
 	{
 		hack_utils::shutdown_hack();
@@ -502,6 +487,8 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 
 long end_scene_hook::hook(IDirect3DDevice9* device)
 {
+	if (settings::states["lua::hack_hooks"])
+		lua::hook_call("LEndSceneHook");
 	auto ret = original(device);
 	render_system::on_scene_end((uintptr_t)_ReturnAddress());
 	return ret;

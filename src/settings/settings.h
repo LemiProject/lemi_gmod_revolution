@@ -100,6 +100,10 @@ namespace settings
 		{"misc::bunny_hop", true},
 		{"misc::fix_movement", false},
 		{"other::anti_obs", false},
+
+		// Lua
+		{"lua::hack_hooks", false},
+		{"lua::hack_globals", false},
 	};
 	
 	inline std::map<std::string, float> values {

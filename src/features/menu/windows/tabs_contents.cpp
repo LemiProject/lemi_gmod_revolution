@@ -283,7 +283,7 @@ void menu_tabs_content::draw_setting()
 		}
 
 		if (Button("Open directory##OPEN_DIRECTORY"))
-			system(("explorer " + config_directory()).c_str());
+			ShellExecute(NULL, NULL, config_directory().c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}
 	EndGroupPanel();
 	
