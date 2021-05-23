@@ -24,6 +24,18 @@ struct target_t
 int last_target_id = -1;
 float last_target_time = -1.f;
 
+bool pass_filters(c_base_player* ply)
+{
+	auto f = settings::flags["legit_bot::legit_bot_player_filter"];
+
+	if (f & (int)settings::aimbot::e_player_filter::admin && ply->is_admin()) return false;
+	if (f & (int)settings::aimbot::e_player_filter::fly && ply->get_move_type() == (int)e_move_type::fly) return false;
+	if (f & (int)settings::aimbot::e_player_filter::noclip && ply->get_move_type() == (int)e_move_type::noclip) return false;
+	if (f & (int)settings::aimbot::e_player_filter::observer && ply->get_move_type() == (int)e_move_type::observer) return false;
+
+	return true;
+}
+
 bool get_target(target_t& target)
 {
 	auto invalidate_target = [](const target_t& t)
@@ -49,6 +61,9 @@ bool get_target(target_t& target)
 		const auto fov = game_utils::get_fov(engine_angels,
 		                                     game_utils::calc_angle(get_local_player()->get_eye_pos(),
 												 hit_pos));
+
+		if (!pass_filters(player))
+			continue;
 		
 		if (fov < tmp.fov && fov <= settings::values["legit_bot::legit_bot_fov"] && player->is_visible_by(get_local_player()))
 		{

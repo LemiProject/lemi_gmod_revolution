@@ -120,6 +120,60 @@ namespace game_utils
 		return true;
 	}
 
+	inline bool get_player_box(c_base_entity* ent, math::box_t& box_in)
+	{
+		c_vector flb, brt, blb, frt, frb, brb, blt, flt;
+
+		const auto& origin = ent->get_render_origin();
+		const auto min = ent->get_collidable_ptr()->mins() + origin;
+		const auto max = ent->get_collidable_ptr()->maxs() + origin;
+		
+		c_vector points[] = {
+			c_vector(min.x, min.y, min.z),
+			c_vector(min.x, max.y, min.z),
+			c_vector(max.x, max.y, min.z),
+			c_vector(max.x, min.y, min.z),
+			c_vector(max.x, max.y, max.z),
+			c_vector(min.x, max.y, max.z),
+			c_vector(min.x, min.y, max.z),
+			c_vector(max.x, min.y, max.z)
+		};
+
+		if (!world_to_screen(points[3], flb) || !world_to_screen(points[5], brt)
+			|| !world_to_screen(points[0], blb) || !world_to_screen(points[4], frt)
+			|| !world_to_screen(points[2], frb) || !world_to_screen(points[1], brb)
+			|| !world_to_screen(points[6], blt) || !world_to_screen(points[7], flt))
+			return false;
+
+		c_vector arr[] = { flb, brt, blb, frt, frb, brb, blt, flt };
+
+		auto left = flb.x;
+		auto top = flb.y;
+		auto right = flb.x;
+		auto bottom = flb.y;
+
+		if (left < 0 || top < 0 || right < 0 || bottom < 0)
+			return false;
+
+		for (int i = 1; i < 8; i++) {
+			if (left > arr[i].x)
+				left = arr[i].x;
+			if (bottom < arr[i].y)
+				bottom = arr[i].y;
+			if (right < arr[i].x)
+				right = arr[i].x;
+			if (top > arr[i].y)
+				top = arr[i].y;
+		}
+
+		box_in.x = left;
+		box_in.y = top;
+		box_in.w = right - left;
+		box_in.h = bottom - top;
+
+		return true;
+	}
+
 	inline float get_fov(const c_vector& from, const c_vector& to)
 	{
 		auto delta = to - from;

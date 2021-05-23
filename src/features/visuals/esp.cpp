@@ -162,9 +162,9 @@ inline void draw_user_group(c_base_player* ply, math::box_t& box)
 		text_pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
 
 	auto is_admin = str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
-		|| str.find("king") != std::string::npos;
+		|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos;
 
-	c_color color = is_admin ? colors::red_color : colors::green_color;
+	c_color color = is_admin ? c_color(settings::colors::colors_map["esp_usergoup_text_admin"]) : c_color( settings::colors::colors_map["esp_usergoup_text_user"]);
 	
 	text(render_system::fonts::in_game_font, str, text_pos, font_size, color, directx_render::font_outline);
 
@@ -234,7 +234,7 @@ void visuals::esp::run_esp()
 				if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
 					continue;
 
-				if (!game_utils::get_entity_box(ent, box))
+				if (!game_utils::get_player_box(ent, box))
 					continue;
 
 				if (settings::states["visuals::esp_box_player"])
