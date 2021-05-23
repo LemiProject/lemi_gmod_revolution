@@ -75,6 +75,20 @@ public:
 		glua->pop(3);
 		return out;
 	}
+
+	std::string get_user_group()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		if (!lua)
+			return {};
+		c_lua_auto_pop p(lua);
+		
+		push_entity();
+		lua->get_field(-1, "GetUserGroup");
+		lua->push(-2);
+		lua->call(1, 1);
+		return lua->get_string();
+	}
 	
 	std::string get_name() const
 	{
@@ -96,6 +110,20 @@ public:
 		glua->pop(3);
 
 		return name;
+	}
+
+	float get_armor()
+	{
+		auto* const lua = interfaces::lua_shared->get_interface((int)e_type::client);
+		if (!lua)
+			return 0.f;
+		c_lua_auto_pop p(lua);
+		push_entity();
+		lua->get_field(-1, "Armor");
+		lua->push(-2);
+		lua->call(1, 1);
+		
+		return (float)lua->get_number();
 	}
 
 	std::string get_steam_id() const

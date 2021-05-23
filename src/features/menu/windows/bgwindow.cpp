@@ -67,7 +67,7 @@ inline void set_tooltip(const std::string& text, ...)
 
 void bg_window::update_entity_list()
 {
-	//Update every second
+	//Update every 5 second
 	auto is_update = [&]()
 	{		
 		if (entity_lists_update_time_stamp == 0.f)
@@ -75,7 +75,7 @@ void bg_window::update_entity_list()
 
 		const auto current_time_stamp = interfaces::engine->get_time_stamp_from_start();
 
-		if (roundf(current_time_stamp) - roundf(entity_lists_update_time_stamp) < 1)
+		if (roundf(current_time_stamp) - roundf(entity_lists_update_time_stamp) < 5)
 			return false;
 
 		return true;
@@ -150,16 +150,27 @@ void draw_entity_list()
 	int w, h;
 	interfaces::engine->get_screen_size(w, h);
 	ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
-	Begin("Entity list##SUBWINDOW");
+	Begin("Target list##SUBWINDOW");
 
 	BeginTabBar("##ENTITY_LIST_TAB_BAR");
 
-	if (BeginTabItem("Entitys"))
+	if (BeginTabItem("Entities"))
 	{
 		static ImGuiTextFilter entity_filter;
-		entity_filter.Draw();
 
-		if (ImGui::BeginTable("entitys_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+		PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.3f));
+		entity_filter.Draw("Filter (inc,-exc)");
+		PopItemWidth();
+		SameLine();
+		Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0});
+		if (IsItemHovered())
+		{
+			BeginTooltip();
+			Text("Add the entity you are looking at");
+			EndTooltip();
+		}
+		
+		if (ImGui::BeginTable("entities_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
 		{
 			ImGui::TableSetupColumn("Name");
 			ImGui::TableSetupColumn("ESP");
@@ -195,7 +206,18 @@ void draw_entity_list()
 	if (BeginTabItem("Players"))
 	{
 		static ImGuiTextFilter player_filter;
-		player_filter.Draw();
+		
+		PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.3f));
+		player_filter.Draw("Filter (inc,-exc)");
+		PopItemWidth();
+		SameLine();
+		Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
+		if (IsItemHovered())
+		{
+			BeginTooltip();
+			Text("Add the entity you are looking at");
+			EndTooltip();
+		}
 		
 		if (BeginTable("players_table", 3, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
 		{
@@ -274,6 +296,8 @@ void draw_entity_list()
 	End();
 }
 
+TextEditor* editor = nullptr;
+
 void draw_lua_files_loader()
 {
 	using namespace ImGui;
@@ -323,7 +347,7 @@ void draw_lua_files_loader()
 	{
 		std::string code;
 		file_tools::read_file(code, get_lua_dir() + "\\" + lua_files[current_lua_id]);
-		lua_features::add_code_to_run(code);
+		editor->SetText(code);
 	}
 	
 	SameLine();
@@ -337,8 +361,6 @@ void draw_lua_files_loader()
 void draw_glua_loader()
 {
 	using namespace ImGui;
-
-	static TextEditor* editor = nullptr;
 	static auto load_file_show = false;
 	if (load_file_show)
 		draw_lua_files_loader();
@@ -460,7 +482,7 @@ void bg_window::draw()
 			ImGui::MenuItem("Main window", 0, &main_window::show_main_window);
 			ImGui::MenuItem("Imgui style editor", 0, &show_style_editor);
 			ImGui::MenuItem("Colors editor", 0, &show_colors_editor);
-			ImGui::MenuItem("Entity list", 0, &show_entity_list);
+			ImGui::MenuItem("Target list", 0, &show_entity_list);
 			ImGui::MenuItem("Glua loader", 0, &show_glua_loader);
 			
 			ImGui::EndMenu();

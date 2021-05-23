@@ -9,11 +9,45 @@
 
 #include <fmt/core.h>
 
-
 #include "../../game_sdk/entitys/c_base_weapon.h"
 #include "../../render_system/render_system.h"
 #include "../../settings/settings.h"
 
+ImVec2 last_text_pos = {-1.f, -1.f};
+std::string last_text;
+
+inline float calc_text_size(c_base_entity* ent, math::box_t box)
+{
+	float size = 16.f;
+	if (box.h < 55)
+	{
+		size -= size * (box.h / 100);
+		if (size < 13.f)
+			size = 13.f;
+	}
+	return size;
+}
+
+void draw_armor(c_base_player* ply, math::box_t box)
+{
+	if (ply->is_alive())
+	{
+		const auto armor = std::clamp((int)ply->get_armor(), 0, 100);
+		const auto pos = ImVec2(box.x, box.y + box.h + 2.f);
+
+		const math::box_t void_box{pos.x, pos.y, box.w, 2.f};
+		auto armor_box{ void_box };
+
+		armor_box.w = armor * void_box.w / 100;
+		//armor_box.x = void_box.x + void_box.w - armor_box.w;
+
+		const auto armor_color = c_color(settings::colors::colors_map["esp_armor_color_hp"]);
+		const auto void_color = c_color(settings::colors::colors_map["esp_armor_color_void"]);
+
+		directx_render::filled_rect(void_box, void_color);
+		directx_render::filled_rect(armor_box, armor_color);
+	}
+}
 
 void draw_health(c_base_entity* ent, math::box_t box)
 {
@@ -33,11 +67,25 @@ void draw_health(c_base_entity* ent, math::box_t box)
 
 		directx_render::filled_rect(void_box, void_color);
 		directx_render::filled_rect(health_box, health_color);
-		
-		//auto text = std::to_string(health);
-		//auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(14.f, FLT_MAX, 0, text.c_str());
-		
-		//directx_render::text(render_system::fonts::in_game_font, text, { health_box.x - text_size.x - 10, health_box.y + text_size.y }, 14.f, health_color, directx_render::font_outline);
+
+		if (!ent->is_player() && !(settings::states["visuals::esp_health_text_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_health_text_player"])))
+			return;
+
+		if (ent->is_player() && !settings::states["visuals::esp_health_text_player"])
+			return;
+
+		auto text = std::to_string(health);
+		auto font_size = calc_text_size(ent, box);
+		auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0, text.c_str());
+		auto text_pos = ImVec2(box.x + box.w + text_size.y / 2.f, box.y);
+
+		float g = 255 * (health / 100.f);
+		c_color text_color = {255 - g, g, 0};
+
+		directx_render::text(render_system::fonts::in_game_font, text, text_pos, font_size, text_color, directx_render::font_outline);
+
+		last_text_pos = pos;
+		last_text = text;
 	}
 }
 
@@ -45,7 +93,8 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 {
 	const auto text = ent->is_player() ? static_cast<c_base_player*>(ent)->get_name() : ent->get_print_name();
 
-	auto ts = render_system::fonts::in_game_font->CalcTextSizeA(16.f, FLT_MAX, 0.f, text.c_str());
+	auto font_size = calc_text_size(ent, box);
+	auto ts = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.c_str());
 	const math::vec2_t text_size = {ts.x, ts.y};
 	
 	//const auto position = math::vec2_t{ box.x + box.w * 0.5f/* - (text_size.x / 2.f)*/, box.y + box.h + text_size.y / 2};
@@ -53,7 +102,7 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 	
 	const auto color = ent->is_player() ? static_cast<c_base_player*>(ent)->get_team_color() : c_color(settings::colors::colors_map["esp_health_color_hp"]);
 
-	directx_render::text(render_system::fonts::in_game_font, text, position.get_im_vec2(), 16.f, color, directx_render::font_centered | directx_render::font_outline);
+	directx_render::text(render_system::fonts::in_game_font, text, position.get_im_vec2(), font_size, color, directx_render::font_centered | directx_render::font_outline);
 
 	if (ent->is_player())
 	{
@@ -65,10 +114,16 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 				constexpr auto str = "F";
 
 				auto name_size = ts;
-				ts = render_system::fonts::in_game_font->CalcTextSizeA(16.f, FLT_MAX, 0.f, str);
+				ts = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, str);
 				auto pos = ImVec2(box.x + box.w + ts.y / 2.f, box.y);
 
-				directx_render::text(render_system::fonts::in_game_font, str, pos, 16.f, colors::green_color, directx_render::font_outline);
+				if (last_text_pos.x >= 0 && last_text_pos.y >= 0)
+					pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
+				
+				directx_render::text(render_system::fonts::in_game_font, str, pos, font_size, colors::green_color, directx_render::font_outline);
+
+				last_text_pos = pos;
+				last_text = str;
 			}
 		}
 	}
@@ -81,11 +136,40 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 		if (weapon)
 		{
 			auto weapon_name = weapon->get_print_name();
-			auto ts = render_system::fonts::in_game_font->CalcTextSizeA(16.f, FLT_MAX, 0.f, weapon_name.c_str());
+			auto fs = calc_text_size(ent, box);
+			auto ts = render_system::fonts::in_game_font->CalcTextSizeA(fs, FLT_MAX, 0.f, weapon_name.c_str());
 			auto pos = ImVec2(box.x + box.w / 2.f, box.y + box.h + ts.y / 2.f);
-			directx_render::text(render_system::fonts::in_game_font, weapon_name, pos, 16.f, c_color(settings::colors::colors_map["esp_weapon_name_color"]), directx_render::font_centered | directx_render::font_outline);
+
+			//for armor
+			pos.y += 3.f;
+			
+			directx_render::text(render_system::fonts::in_game_font, weapon_name, pos, fs, c_color(settings::colors::colors_map["esp_weapon_name_color"]), directx_render::font_centered | directx_render::font_outline);
 		}
 	}
+}
+
+inline void draw_user_group(c_base_player* ply, math::box_t& box)
+{
+	auto str = ply->get_user_group();
+	if (str.empty())
+		return;
+
+	auto font_size = calc_text_size(ply, box);
+	auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, str.c_str());
+	auto text_pos = ImVec2(box.x + box.w + text_size.y / 2.f, box.y);
+
+	if (last_text_pos.x >= -1.f && last_text_pos.y >= -1.f)
+		text_pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
+
+	auto is_admin = str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
+		|| str.find("king") != std::string::npos;
+
+	c_color color = is_admin ? colors::red_color : colors::green_color;
+	
+	text(render_system::fonts::in_game_font, str, text_pos, font_size, color, directx_render::font_outline);
+
+	last_text_pos = text_pos;
+	last_text = str;
 }
 
 inline void draw_box(c_base_entity* ent, math::box_t& box)
@@ -140,13 +224,15 @@ void visuals::esp::run_esp()
 		if (!is_draw || ent == get_local_player() || has_owner)
 			continue;
 
+		last_text_pos = {-1.f, -1.f};
+		last_text = "";
+		
 		math::box_t box{};
 
 		if (ent->is_player())
 			if (settings::states["visuals::esp_enabled_player"]) {
-				if (settings::values["visuals::esp_distance_player"] > 0)
-					if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
-						continue;
+				if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
+					continue;
 
 				if (!game_utils::get_entity_box(ent, box))
 					continue;
@@ -154,23 +240,26 @@ void visuals::esp::run_esp()
 				if (settings::states["visuals::esp_box_player"])
 					draw_box(ent, box);
 
+				if (settings::states["visuals::esp_health_player"])
+					draw_health(ent, box);
+
+				if (settings::states["visuals::esp_player_user_group"])
+					draw_user_group((c_base_player*)ent, box);
+				
 				if (settings::states["visuals::esp_name_player"])
 					draw_name(ent, box);
 
-				if (settings::states["visuals::esp_health_player"])
-					draw_health(ent, box);
+				if (settings::states["visuals::esp_armor_player"])
+					draw_armor((c_base_player*)ent, box);
 			}
-
 		if (!ent->is_player())
 			if (settings::states["visuals::esp_enabled_entity"] || (settings::states["visuals::esp_enabled_player"] && settings::states["visuals::esp_global"])) {
 				if (settings::states["visuals::esp_global"])
 				{
-					if (settings::values["visuals::esp_distance_player"] > 0)
 						if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
 							continue;
 				}
 				else
-					if (settings::values["visuals::esp_distance_entity"] > 0)
 						if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_entity"])
 							continue;
 
@@ -180,11 +269,11 @@ void visuals::esp::run_esp()
 				if (settings::states["visuals::esp_box_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_box_player"]))
 					draw_box(ent, box);
 
-				if (settings::states["visuals::esp_name_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_name_player"]))
-					draw_name(ent, box);
-
 				if (settings::states["visuals::esp_health_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_health_player"]))
 					draw_health(ent, box);
+				
+				if (settings::states["visuals::esp_name_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_name_player"]))
+					draw_name(ent, box);
 			}
 	}
 }

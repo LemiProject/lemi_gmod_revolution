@@ -67,25 +67,29 @@ namespace settings
 
 	inline std::map<std::string, bool> states {
 		// Player ESP
-		{"visuals::esp_enabled_player", true},
-		{"visuals::esp_global", true},
-		{"visuals::esp_box_player", true},
-		{"visuals::esp_name_player", true},
-		{"visuals::esp_health_player", true},
-		{"visuals::esp_active_weapon_player", true},
-		{"visuals::esp_color_by_team_player", true},
-
+		{"visuals::esp_enabled_player", false},
+		{"visuals::esp_global", false},
+		{"visuals::esp_box_player", false},
+		{"visuals::esp_name_player", false},
+		{"visuals::esp_armor_player", false},
+		{"visuals::esp_health_player", false},
+		{"visuals::esp_health_text_player", false},
+		{"visuals::esp_active_weapon_player", false},
+		{"visuals::esp_color_by_team_player", false},
+		{"visuals::esp_player_user_group", false},
+		
 		// Entity ESP
-		{"visuals::esp_enabled_entity", true},
-		{"visuals::esp_box_entity", true},
-		{"visuals::esp_name_entity", true},
-		{"visuals::esp_health_entity", true},
+		{"visuals::esp_enabled_entity", false},
+		{"visuals::esp_box_entity", false},
+		{"visuals::esp_name_entity", false},
+		{"visuals::esp_health_entity", false},
+		{"visuals::esp_health_text_entity", false},
 
 		// Chams
-		{"visuals::chams_enabled", true},
-		{"visuals::entity_chams_enabled", true},
-		{"visuals::ignore_z", true},
-		{"visuals::chams_obs_check", true},
+		{"visuals::chams_enabled", false},
+		{"visuals::entity_chams_enabled", false},
+		{"visuals::ignore_z", false},
+		{"visuals::chams_obs_check", false},
 		
 		// Legitbot
 		{"legit_bot::legit_bot_enabled", false},
@@ -97,9 +101,10 @@ namespace settings
 		{"legit_bot::legit_bot_auto_fire", false},
 		
 		// Misc
-		{"misc::bunny_hop", true},
+		{"misc::bunny_hop", false},
 		{"misc::fix_movement", false},
 		{"other::anti_obs", false},
+		{"misc::auto_strafe", false},
 
 		// Lua
 		{"lua::hack_hooks", false},
@@ -129,6 +134,7 @@ namespace settings
 		// Misc
 		{"exploits::wallpush", 0},
 		{"other::menu_key", 0},
+		{"other::add_entity", 0},
 
 		// Legitbot
 		{"legit_bot::legit_bot_key", 0},
@@ -144,6 +150,8 @@ namespace settings
 			{"esp_health_color_hp", {0, 1, 0, 0.8f}},
 			{"esp_health_color_void", {0, 0, 0, 0}},
 			{"esp_weapon_name_color", {1.f, 1.f, 1.f, 1.f}},
+			{"esp_armor_color_hp", {1, 1, 1, 0.8f}},
+			{"esp_armor_color_void", {0, 0, 0, 0}},
 
 			// Chams
 			{"chams_color_modulation", {0, 0.7f, 0.3f, 1}}
@@ -159,5 +167,13 @@ namespace settings
 	std::vector<std::string> get_configs();
 	
 	void init_config_system();
+
+	namespace lua_api
+	{
+		LUA_FUNCTION(lua_api_get_hack_var);
+		LUA_FUNCTION(lua_api_is_key_down);
+		
+		void push_all(c_lua_interface* lua);
+	}
 }
 

@@ -16,9 +16,6 @@ inline void calc_spread_csbase(c_base_combat_weapon* weapon, c_user_cmd* ucmd)
 	if (ucmd->command_number == 0)
 		return;
 	auto seed = md5::md5_pseudo_random(ucmd->command_number) & 0xFF;
-
-	if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
-		seed = engine_prediction.get_prediction_random_seed() & 255;
 	
 	interfaces::random->set_seed(seed);
 
