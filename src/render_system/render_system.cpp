@@ -568,7 +568,7 @@ void directx_render::directx_lua_api::push_all(c_lua_interface* lua)
     lua::push_cfunction(lua, "LFilledRect", directx_lua_api_filled_rect);
     lua::push_cfunction(lua, "LBorderedRect", directx_lua_api_bordered_rect);
     lua::push_cfunction(lua, "LSetDrawColor",directx_lua_api_set_color);
-    lua::push_cfunction(lua, "LIsScreenGrab", directx_lua_api::lua_api_is_screen_grab);
+    lua::push_cfunction(lua, "LIsScreenGrab", lua_api_is_screen_grab);
 
 	
 }

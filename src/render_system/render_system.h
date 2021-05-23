@@ -26,7 +26,7 @@ namespace render_system
 
 	namespace vars
 	{
-		inline std::atomic_bool is_screen_grab;
+		inline bool is_screen_grab;
 		inline D3DMATRIX view_matrix;
 	}
 	

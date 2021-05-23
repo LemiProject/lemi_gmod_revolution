@@ -4,6 +4,10 @@
 
 #include <file_tools.h>
 
+#include "lemi_utils.h"
+#include "../utils/game_utils.h"
+
+
 settings::json json_settings;
 std::vector<settings::c_config_item> config_items;
 
@@ -70,6 +74,70 @@ std::vector<std::string> settings::get_configs()
 
 void settings::init_config_system()
 {
+	
+}
+
+int settings::lua_api::lua_api_get_hack_var__Imp(c_lua_interface* lua)
+{
+	CHECK_TYPE(lua, 1, (int)e_lua_type::type_string, "expected string", 0);
+
+	std::string var = lua->get_string(1);
+
+	if (var._Starts_with("states::"))
+	{
+		replace(var, "states::", "");
+
+		if (states.find(var) == states.end())
+		{
+			lua->arg_error(1, "Cannot find var");
+			return 0;
+		}
+
+		lua->push_bool(states.at(var));
+		return 1;
+	}
+	if (var._Starts_with("binds::"))
+	{
+		replace(var, "binds::", "");
+
+		if (binds.find(var) == binds.end())
+		{
+			lua->arg_error(1, "Cannot find var");
+			return 0;
+		}
+
+		lua->push_number(binds.at(var));
+		return 1;
+	}
+	if (var._Starts_with("values::"))
+	{
+		replace(var, "values::", "");
+
+		if (values.find(var) == values.end())
+		{
+			lua->arg_error(1, "Cannot find var");
+			return 0;
+		}
+
+		lua->push_number(values.at(var));
+		return 1;
+	}
+	
+	lua->arg_error(1, "Cannot find var");
+	return 0;
+}
+
+int settings::lua_api::lua_api_is_key_down__Imp(c_lua_interface* lua)
+{
+	CHECK_TYPE(lua, 1, (int)e_lua_type::type_number, "expected number", 0);
+	lua->push_bool(GetAsyncKeyState(lua->get_number(1)));
+	return 1;
+}
+
+void settings::lua_api::push_all(c_lua_interface* lua)
+{
+	lua::push_cfunction(lua, "LGetHackVar", lua_api_get_hack_var);
+	lua::push_cfunction(lua, "LIsKeyDown", lua_api_is_key_down);
 	
 }
 

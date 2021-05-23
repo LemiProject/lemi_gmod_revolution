@@ -272,8 +272,6 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	DWORD move;
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
-	
-	original(interfaces::client_mode, frame_time, cmd);
 
 	if (!cmd || cmd->command_number == 0 || !interfaces::engine->is_in_game())
 		return false;
@@ -287,15 +285,24 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	movement::run_movement(*cmd);
 	
 	engine_prediction.start(cmd, lp);
-	{		
+	{
 		aim::run_aimbot(cmd);
 		
 		aim::anti_recoil_and_spread(cmd);
 	}
 	engine_prediction.end();
+
+	auto weapon = get_primary_weapon(lp);
+	if (weapon)
+		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() > interfaces::global_vars->curtime)
+			if (cmd->buttons & IN_ATTACK)
+				cmd->buttons &= ~IN_ATTACK;
+	
+	original(interfaces::client_mode, frame_time, cmd);
 	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
+
 
 	if (settings::states["misc::fix_movement"])
 		fix_movement(old_cmd);
@@ -307,12 +314,56 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
 
+
+	static int cc = 0;
+	cc++;
+	if (GetAsyncKeyState(settings::binds["other::add_entity"]) && cc >= 10)
+	{
+		cc = 0;
+		c_vector dir;
+		math::angle_vectors(cmd->viewangles, dir);
+
+		ray_t ray;
+		trace_t tr;
+		c_trace_filter filter;
+		filter.pSkip = lp;
+
+		tr.startpos = lp->get_eye_pos();
+		tr.endpos = tr.startpos + (dir * (4096 * 8));
+
+		ray.init(tr.startpos, tr.endpos);
+		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+
+		if (tr.m_pEnt)
+		{
+			c_base_entity* ent = (c_base_entity*)tr.m_pEnt;
+			if (ent->is_player())
+			{
+				c_base_player* ply = (c_base_player*)ent;
+				if (std::find(settings::other::friends.begin(), settings::other::friends.end(), ply->get_steam_id()) == settings::other::friends.end())
+					settings::other::friends.push_back(ply->get_steam_id());
+				else
+					settings::other::friends.erase(std::find(settings::other::friends.begin(), settings::other::friends.end(), ply->get_steam_id()));
+			}
+			else
+			{
+				if (ent->get_class_name().find("worldspawn") == std::string::npos)
+				{
+					if (settings::visuals::entitys_to_draw.exist(ent->get_class_name()))
+						settings::visuals::entitys_to_draw.remove(settings::visuals::entitys_to_draw.find(ent->get_class_name()));
+					else
+						settings::visuals::entitys_to_draw.push_back(ent->get_class_name());
+				}
+			}
+		}
+	}
+	
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
 
 	if (settings::states["legit_bot::legit_bot_silent_aim"])
 		return !settings::states["legit_bot::legit_bot_silent_aim"];
-	
+
 	return false;
 }
 
@@ -360,8 +411,8 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	
 	interfaces::surface->start_drawing();
 	{
-		if (settings::states["lua::hack_hooks"])
-			lua::hook_call("LASGHudPaint");
+/*		if (settings::states["lua::hack_hooks"])
+			lua::hook_call("LASGHudPaint");*/
 	}	
 	interfaces::surface->finish_drawing();
 }
@@ -442,24 +493,26 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 	
 	if (panel_name == "FocusOverlayPanel")
 	{
-		if (settings::states["lua::hack_hooks"])
-			lua::hook_call("LBeforeVisuals");
-		directx_render::render_surface([]()
+		static auto numm = 0;
+		numm++;
+
+		directx_render::render_surface([&]()
 			{
 				visuals::run_visuals();
-				if (settings::states["lua::hack_hooks"])
+				if (settings::states["lua::hack_hooks"] /*&& numm == 2*/)
+				{
 					lua::hook_call("LDrawVisuals");
+					//numm = 0;
+				}
 			});
-		if (settings::states["lua::hack_hooks"])
-			lua::hook_call("LPostVisuals");
 	}
 	
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)
 {
-	if (settings::states["lua::hack_hooks"])
-		lua::hook_call("LWndProcHook");
+/*	if (settings::states["lua::hack_hooks"])
+		lua::hook_call("LWndProcHook");*/
 	
 	if (message_type == WM_CLOSE)
 	{
@@ -487,8 +540,15 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 
 long end_scene_hook::hook(IDirect3DDevice9* device)
 {
-	if (settings::states["lua::hack_hooks"])
+/*	static auto numm = 0;
+	numm++;*/
+
+/*	if (settings::states["lua::hack_hooks"] && numm == 2)
+	{
 		lua::hook_call("LEndSceneHook");
+		numm = 0;
+	}*/
+
 	auto ret = original(device);
 	render_system::on_scene_end((uintptr_t)_ReturnAddress());
 	return ret;

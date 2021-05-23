@@ -8,8 +8,10 @@
 #include "../../utils/game_utils.h"
 
 #include "../../settings/settings.h"
+
 #include "spreads/all_spreads.h"
 #include "spreads/csbase.h"
+#include "spreads/weapon_base.h"
 
 struct target_t
 {
@@ -167,13 +169,15 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 
 	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK && weapon->can_shoot())
 	{
-		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos 
+		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos
 			|| weapon->get_weapon_base().find("bobs_gun_base") != std::string::npos
-			 || weapon->get_weapon_base().empty())
+			|| weapon->get_weapon_base().empty())
 			calc_spread_csbase(weapon, ucmd);
 		else if (weapon->get_weapon_base().find("swb") != std::string::npos
 			/*|| weapon->get_weapon_base().find("weapon_base") != std::string::npos*/)
 			allspreads_nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
+		/*else if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
+			calc_spread_weapon_base(weapon, ucmd);*/
 	}
 }
 

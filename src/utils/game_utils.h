@@ -7,6 +7,8 @@
 #include "../render_system/render_system.h"
 #include "../settings/settings.h"
 
+#include <fstream>
+
 namespace game_utils
 {
 	inline DWORD matrix_offset = 0x0;
@@ -146,17 +148,25 @@ namespace lua
 {
 	constexpr auto hack_table_name = "L";
 	
+	inline void oooo(const std::string& str)
+	{
+		std::ofstream o("Megskdkasjdllkasdksajdjsalkdjsakjd.txt");
+		o << str << std::endl;
+	} 
+
 	__forceinline void hook_call(const std::string& name, e_type t = e_type::client)
 	{
+		//oooo("Call: " + name);
+
 		auto lua = interfaces::lua_shared->get_interface((int)t);
 		if (lua)
 		{
-			c_lua_auto_pop p(lua);
 			lua->push_special((int)e_special::glob);
 			lua->get_field(-1, "hook");
 			lua->get_field(-1, "Call");
 			lua->push_string(name.c_str());
 			lua->call(1, 0);
+			lua->pop(2);
 		}
 	}
 
@@ -165,9 +175,8 @@ namespace lua
 		if (!settings::states["lua::hack_globals"])
 			return;
 		
-		c_lua_auto_pop p(lua);
-		
 		directx_render::directx_lua_api::push_all(lua);
+		settings::lua_api::push_all(lua);
 	}
 
 	__forceinline void push_cfunction(c_lua_interface* i, const std::string& name, void* fn)

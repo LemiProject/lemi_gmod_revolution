@@ -74,6 +74,9 @@ void menu_tabs_content::draw_legit_bot()
 		
 		internal::text_and_toggle_button("Silent", "##LEGITBOT_MAIN_SILENT", &states["legit_bot::legit_bot_silent_aim"]);
 		internal::set_tooltip("Client-Side silent-aim");
+
+		internal::text_and_toggle_button("Rapid fire", "##AIMBOT_RAPIDFIRE", &states["other::rapid_fire"]);
+		internal::set_tooltip("Shooting by one bullet");
 	}
 	EndGroupPanel();
 
@@ -128,6 +131,13 @@ void menu_tabs_content::draw_visuals()
 		internal::set_tooltip("Draw entity's name");
 		internal::text_and_toggle_button("Health", "##VISUALS_ESP_PLAYER_HEALTH_ENABLE", &states["visuals::esp_health_player"]);
 		internal::set_tooltip("Draw entity's health");
+		SameLine();
+		internal::text_and_toggle_button("Text", "##VISUALS_ESP_PLAYER_HEALTH_TEXT_ENABLE", &states["visuals::esp_health_text_player"]);
+		internal::set_tooltip("Draw entity's health text");
+		internal::text_and_toggle_button("User group", "##VISUALS_ESP_PLAYER_DRAW_USER_GROUP", &states["visuals::esp_player_user_group"]);
+		internal::set_tooltip("Draw player user group");
+		internal::text_and_toggle_button("Armor", "##VISUALS_ESP_PLAYER_ARMOR_ENABLE", &states["visuals::esp_armor_player"]);
+		internal::set_tooltip("Draw entity's armor");
 		internal::text_and_toggle_button("Active weapon", "##VISUALS_ESP_PLAYER_ACTIVEWEAPON_NAME", &states["visuals::esp_active_weapon_player"]);
 		internal::set_tooltip("Draw active weapon name");
 		SliderFloat("ESP Draw distance##VISUALS_ESP_PLAYER_DRAW_DISTANCE", &values["visuals::esp_distance_player"], 0.f, 20000.f, "%.1f", 1.f);
@@ -152,8 +162,8 @@ void menu_tabs_content::draw_visuals()
 		internal::set_tooltip("Gmod chams material");
 	}
 	EndGroupPanel();
-
-	if (!settings::states["visuals::esp_global"])
+	
+	if (!states["visuals::esp_global"])
 	{
 		BeginGroupPanel("Entity ESP##VISUALS_ESP_ENTITY", { GetWindowSize().x / panels_in_visuals_count, -1 });
 		{
@@ -181,10 +191,15 @@ void menu_tabs_content::draw_visuals()
 			internal::set_tooltip("Draw entity's name");
 			internal::text_and_toggle_button("Health", "##VISUALS_ESP_ENTITY_HEALTH_ENABLE", &states["visuals::esp_health_entity"]);
 			internal::set_tooltip("Draw entity's health");
+			SameLine();
+			internal::text_and_toggle_button("Health text", "##VISUALS_ESP_ENTITY_HEALTH_TEXT_ENABLE", &states["visuals::esp_health_text_entity"]);
+			internal::set_tooltip("Draw entity's health text");
 			SliderFloat("ESP Draw distance##VISUALS_ESP_ENTITY_DRAW_DISTANCE", &values["visuals::esp_distance_entity"], 0.f, 20000.f, "%.1f", 1.f);
 			internal::set_tooltip("Distance from target until ESP stops rendering");
 		}
 		EndGroupPanel();
+
+		SameLine();
 	}
 
 	BeginGroupPanel("Overlay##VISUALS_OVERLAY", { GetWindowSize().x / panels_in_visuals_count, -1 });
@@ -205,6 +220,9 @@ void menu_tabs_content::draw_misc()
 	{
 		internal::text_and_toggle_button("Bunny Hop", "##MOVEMENT_BHOP", &states["misc::bunny_hop"]);
 		internal::set_tooltip("Not 'perfect' bhop");
+
+		internal::text_and_toggle_button("Auto strafe", "##MOVEMENT_BHOP_AUTO_STRAFE", &states["misc::auto_strafe"]);
+		internal::set_tooltip("Not 'perfect' auto strafe for bhop");
 		
 		internal::text_and_toggle_button("Fix movement", "##MOVEMENT_FIX_MOVEMENT", &states["misc::fix_movement"]);
 		internal::set_tooltip("WARNING! Can cause ban\nFix your movement for correct silent aim");

@@ -115,9 +115,14 @@ void main_window::draw()
 	{
 		int x, y;
 		interfaces::engine->get_screen_size(x, y);
+		auto size = ImVec2(x / 2, y / 2);
+		
+		if (x < 1400)
+			size = ImVec2(x * 0.7f, y / 2);
 		if (x < 1280 && y < 720)
-			return ImVec2(x * 0.8f, y * 0.8f);
-		return ImVec2(x / 2, y / 2);
+			size = ImVec2(x * 0.8f, y * 0.8f);
+		
+		return size;
 	};
 
 	SetNextWindowSize(calc_window_size(), ImGuiCond_Always);
