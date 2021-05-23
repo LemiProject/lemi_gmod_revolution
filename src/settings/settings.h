@@ -11,22 +11,6 @@
 namespace settings
 {
 	using json = nlohmann::json;
-
-	class c_config_item
-	{
-	public:
-		template <typename T>
-		c_config_item(T& value, std::string_view name)
-		{
-			this->name = name;
-			this->value = reinterpret_cast<void*>(value);
-			this->type = typeid(T).name();
-		}
-
-		std::string name;
-		std::string type;
-		void* value;
-	};
 	
 	namespace visuals
 	{
@@ -57,6 +41,19 @@ namespace settings
 		};
 
 		inline c_entity_list entitys_to_draw;
+	}
+
+	namespace aimbot
+	{
+		enum class e_player_filter
+		{
+			none,
+			noclip = (1 << 0),
+			fly = (1 << 1),
+			admin = (1 << 2),
+			observer = (1 << 3),
+			last = observer
+		}; const char* to_string(e_player_filter);
 	}
 
 	namespace other
@@ -140,6 +137,11 @@ namespace settings
 		{"legit_bot::legit_bot_key", 0},
 		{"legit_bot::legit_bot_auto_fire_key", 0}
 	};
+
+	inline std::map<std::string, int> flags {
+		{"legit_bot::legit_bot_player_filter", 0},
+	};
+
 	namespace colors
 	{
 		typedef std::array<float, 4> color_t;
@@ -152,6 +154,8 @@ namespace settings
 			{"esp_weapon_name_color", {1.f, 1.f, 1.f, 1.f}},
 			{"esp_armor_color_hp", {1, 1, 1, 0.8f}},
 			{"esp_armor_color_void", {0, 0, 0, 0}},
+			{"esp_usergoup_text_user", {1, 1, 1, 1}},
+			{"esp_usergoup_text_admin", {1, 0, 0, 1}},
 
 			// Chams
 			{"chams_color_modulation", {0, 0.7f, 0.3f, 1}}

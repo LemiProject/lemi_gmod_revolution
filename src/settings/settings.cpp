@@ -9,7 +9,6 @@
 
 
 settings::json json_settings;
-std::vector<settings::c_config_item> config_items;
 
 std::string get_file_content(std::string_view path)
 {
@@ -41,7 +40,8 @@ std::string settings::parse_setting_in_string()
 	j["strings"] = strings;
 	j["binds"] = binds;
 	j["colors"] = colors::colors_map;
-	
+	j["flags"] = flags;
+
 	return j.dump();
 }
 
@@ -152,6 +152,18 @@ const char* settings::visuals::to_string(const e_esp_box_type e)
 	}
 }
 
+const char* settings::aimbot::to_string(e_player_filter e)
+{
+	switch (e)
+	{
+	case e_player_filter::fly: return "Fly";
+	case e_player_filter::noclip: return "Noclip";
+	case e_player_filter::observer: return "Observer";
+	case e_player_filter::admin: return "Admin";
+	default: return "unk";
+	}
+}
+
 void settings::visuals::c_entity_list::push_back(const std::string& c)
 {
 	//std::unique_lock<std::mutex> l(mutex);
@@ -224,5 +236,7 @@ void settings::parse_settings_from_string(const std::string& s)
 			merge_map(j["binds"].get<decltype(binds)>(), binds);
 		if (!j["colors"].empty())
 			merge_map(j["colors"].get<std::map<std::string, std::array<float, 4>>>(), colors::colors_map);
+		if (!j["flags"].empty())
+			merge_map(j.get<decltype(flags)>(), flags);
 	}
 }

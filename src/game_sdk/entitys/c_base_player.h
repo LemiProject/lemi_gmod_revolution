@@ -59,6 +59,13 @@ public:
 		return type;
 	}
 
+	bool is_admin()
+	{
+		auto str = get_user_group();
+		return str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
+		|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos;
+	}
+
 	std::string get_team_name()
 	{
 		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);

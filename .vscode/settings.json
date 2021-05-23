@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "xstring": "cpp",
+        "string": "cpp",
+        "*.ipp": "cpp",
+        "map": "cpp"
+    }
+}
