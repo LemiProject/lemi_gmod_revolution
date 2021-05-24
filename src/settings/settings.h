@@ -68,7 +68,7 @@ namespace settings
 
 		inline std::map<int, std::string> bones_hl_names
 		{
-			{(1 << 0), "ValveBiped.Bip01_Head"},
+			{(1 << 0), "ValveBiped.Bip01_Head1"},
 			{(1 << 1), "ValveBiped.Bip01_Neck1"},
 			{(1 << 2), "ValveBiped.Bip01_Spine3"},
 			{(1 << 3), "ValveBiped.Bip01_Spine"},
