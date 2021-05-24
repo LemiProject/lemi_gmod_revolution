@@ -46,7 +46,7 @@ bool get_target_bone(c_base_player* ply, c_vector& out)
 	std::vector<std::string> bones;
 
 	for (auto i = 1; i <= static_cast<int>(plb::last); ++i)
-		if (flags & i)
+		if (flags & i && !bones_hl_names[i].empty())
 			bones.push_back(bones_hl_names[i]);
 
 	if (bones.empty())
@@ -228,6 +228,9 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 	//else
 	//	weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
 
+	if (settings::states["legit_bot::no_recoil"])
+		ucmd->viewangles -= local_player->get_view_punch_angles();
+	
 	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK && weapon->can_shoot())
 	{
 		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos
@@ -240,9 +243,6 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 		//else if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
 		//	calc_spread_weapon_base(weapon, ucmd);
 	}
-
-	if (settings::states["legit_bot::no_recoil"])
-		ucmd->viewangles -= local_player->get_view_punch_angles();
 }
 
 
