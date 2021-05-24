@@ -237,6 +237,6 @@ void settings::parse_settings_from_string(const std::string& s)
 		if (!j["colors"].empty())
 			merge_map(j["colors"].get<std::map<std::string, std::array<float, 4>>>(), colors::colors_map);
 		if (!j["flags"].empty())
-			merge_map(j.get<decltype(flags)>(), flags);
+			merge_map(j["flags"].get<decltype(flags)>(), flags);
 	}
 }
