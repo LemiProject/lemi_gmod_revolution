@@ -274,11 +274,17 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
 
 	if (!cmd || cmd->command_number == 0 || !interfaces::engine->is_in_game())
+	{
+		original(interfaces::client_mode, frame_time, cmd);
 		return false;
-
+	}
+	
 	auto* const lp = get_local_player();
 	if (!lp || !lp->is_alive())
+	{
+		original(interfaces::client_mode, frame_time, cmd);
 		return false;
+	}
 	
 	auto old_cmd = *cmd;	
 
@@ -294,12 +300,16 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 
 	auto weapon = get_primary_weapon(lp);
 	if (weapon)
-		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() > interfaces::global_vars->curtime)
+		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() >= interfaces::global_vars->curtime)
 			if (cmd->buttons & IN_ATTACK)
 				cmd->buttons &= ~IN_ATTACK;
 	
 	original(interfaces::client_mode, frame_time, cmd);
-	
+
+	//test functions
+#ifdef _DEBUG
+
+#endif
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
 
@@ -313,7 +323,6 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
-
 
 	static int cc = 0;
 	cc++;
@@ -360,10 +369,10 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
-
+	
 	if (settings::states["legit_bot::legit_bot_silent_aim"])
 		return !settings::states["legit_bot::legit_bot_silent_aim"];
-
+	
 	return false;
 }
 

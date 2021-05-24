@@ -71,6 +71,23 @@ void menu_tabs_content::draw_legit_bot()
 		
 		SliderFloat("Legitbot delay##LEGITBOT_MAIN_DELAY", &values["legit_bot::legit_bot_delay_before_aiming"], 0.f, 10000.f, "%.0f");
 		internal::set_tooltip("Delay before shooting");
+
+		PushItemWidth(GetWindowSize().x / 6);
+		if (BeginCombo("##LEGIT_BOT_BONES", "Bones", internal::combo_flags))
+		{
+			for (auto i = 1; i <= (int)aimbot::e_player_bones::last; ++i)
+			{
+				if (!(to_string((aimbot::e_player_bones)i).empty()))
+				{
+					auto selected = flags["legit_bot::legit_bot_player_bones"] & i ? true : false;
+					CheckboxFlags(to_string((aimbot::e_player_bones)i).c_str(), &flags["legit_bot::legit_bot_player_bones"], i);
+				}
+			}
+			EndCombo();
+		}
+		internal::set_tooltip("The bones that will work aimbot");
+		
+		SameLine();
 		
 		if (BeginCombo("##LEGIT_BOT_IGNORE_FLAGS", "IngnoreFlags", internal::combo_flags))
 		{
@@ -84,7 +101,10 @@ void menu_tabs_content::draw_legit_bot()
 			}
 			EndCombo();
 		}
-
+		internal::set_tooltip("Aimbot filter");
+		
+		PopItemWidth();
+		
 		internal::text_and_toggle_button("Silent", "##LEGITBOT_MAIN_SILENT", &states["legit_bot::legit_bot_silent_aim"]);
 		internal::set_tooltip("Client-Side silent-aim");
 

@@ -35,9 +35,6 @@ void movement::bunny_hop::run_bunny_hop(c_user_cmd& ucmd)
         last_jumped = false;
         should_fake = false;
     }
-
-    if (settings::states["lua::hack_hooks"])
-        lua::hook_call("LPostBhop");
 }
 
 void movement::bunny_hop::run_auto_strafe(c_user_cmd& cmd)

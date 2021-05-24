@@ -27,7 +27,7 @@ inline void calc_spread_csbase(c_base_combat_weapon* weapon, c_user_cmd* ucmd)
 
 	auto dir = (c_vector(1.0f, 0.0f, 0.0f) + (c_vector(0.0f, -1.0f, 0.0f) * spread * random[0]) + (c_vector(0.0f, 0.0f, 1.0f) * spread * random[1]));
 	
-	q_angle out = math::get_angle(q_angle(0.f, 0.f, 0.f), dir) + get_local_player()->get_view_punch_angles();
+	q_angle out = math::get_angle(q_angle(0.f, 0.f, 0.f), dir) /*+ get_local_player()->get_view_punch_angles()*/;
 	out = math::fix_angles(out);
 	
 	ucmd->viewangles -= out;
