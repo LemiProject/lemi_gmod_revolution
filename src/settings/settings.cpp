@@ -164,6 +164,19 @@ const char* settings::aimbot::to_string(e_player_filter e)
 	}
 }
 
+std::string settings::aimbot::to_string(e_player_bones e)
+{
+	switch (e)
+	{
+	case e_player_bones::pelvis: return "Pelvis";
+	case e_player_bones::body: return "Body";
+	case e_player_bones::top_body: return "TopBody";
+	case e_player_bones::neck: return "Neck";
+	case e_player_bones::head: return "Head";
+	default: return "";
+	}
+}
+
 void settings::visuals::c_entity_list::push_back(const std::string& c)
 {
 	//std::unique_lock<std::mutex> l(mutex);

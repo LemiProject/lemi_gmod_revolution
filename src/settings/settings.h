@@ -54,6 +54,26 @@ namespace settings
 			observer = (1 << 3),
 			last = observer
 		}; const char* to_string(e_player_filter);
+
+		enum class e_player_bones
+		{
+			none = 0,
+			head = (1 << 0),
+			neck = (1 << 1),
+			top_body = (1 << 2),
+			body = (1 << 3),
+			pelvis = (1 << 4),
+			last = pelvis
+		}; std::string to_string(e_player_bones e);
+
+		inline std::map<int, std::string> bones_hl_names
+		{
+			{(1 << 0), "ValveBiped.Bip01_Head"},
+			{(1 << 1), "ValveBiped.Bip01_Neck1"},
+			{(1 << 2), "ValveBiped.Bip01_Spine3"},
+			{(1 << 3), "ValveBiped.Bip01_Spine"},
+			{(1 << 4), "ValveBiped.Bip01_Pelvis"},
+		};
 	}
 
 	namespace other
@@ -140,6 +160,7 @@ namespace settings
 
 	inline std::map<std::string, int> flags {
 		{"legit_bot::legit_bot_player_filter", 0},
+		{"legit_bot::legit_bot_player_bones", 0}
 	};
 
 	namespace colors

@@ -36,6 +36,44 @@ bool pass_filters(c_base_player* ply)
 	return true;
 }
 
+bool get_target_bone(c_base_player* ply, c_vector& out)
+{
+	using plb = settings::aimbot::e_player_bones;
+	using namespace settings::aimbot;
+
+	const auto flags = settings::flags["legit_bot::legit_bot_player_bones"];
+
+	std::vector<std::string> bones;
+
+	for (auto i = 1; i <= static_cast<int>(plb::last); ++i)
+		if (flags & i)
+			bones.push_back(bones_hl_names[i]);
+
+	if (bones.empty())
+		return false;
+	
+	c_vector real_ang;
+	interfaces::engine->get_view_angles(real_ang);
+
+	auto best_fov = FLT_MAX;
+	std::string best_bone;
+	for (auto i : bones)
+	{
+		if (!ply->get_bone(ply->get_bone_by_name(i)).is_valid())
+			continue;
+		const auto fov = game_utils::get_fov(real_ang, game_utils::calc_angle(get_local_player()->get_eye_pos(), ply->get_bone(ply->get_bone_by_name(i))));
+		if (fov < best_fov)
+			best_fov = fov, best_bone = i;
+	}
+
+	if (best_bone.empty())
+		return false;
+	
+	out = ply->get_bone(ply->get_bone_by_name(best_bone));
+	
+	return true;
+}
+
 bool get_target(target_t& target)
 {
 	auto invalidate_target = [](const target_t& t)
@@ -55,15 +93,17 @@ bool get_target(target_t& target)
 		if (!player || !player->is_player() || !player->is_alive() || player == get_local_player())
 			continue;
 
+		if (!pass_filters(player))
+			continue;
+		
 		c_vector engine_angels;
-		auto hit_pos = player->get_bone(player->get_bone_by_name("ValveBiped.Bip01_Head1"));
 		interfaces::engine->get_view_angles(engine_angels);
+		c_vector hit_pos;
+		if (!get_target_bone(player, hit_pos))
+			continue;
 		const auto fov = game_utils::get_fov(engine_angels,
 		                                     game_utils::calc_angle(get_local_player()->get_eye_pos(),
 												 hit_pos));
-
-		if (!pass_filters(player))
-			continue;
 		
 		if (fov < tmp.fov && fov <= settings::values["legit_bot::legit_bot_fov"] && player->is_visible_by(get_local_player()))
 		{
@@ -105,6 +145,9 @@ void aim::legit_bot(c_user_cmd* cmd)
 		if (!GetAsyncKeyState(settings::binds["legit_bot::legit_bot_key"]))
 			return;
 
+	if (cmd->command_number == 0)
+		return;
+	
 	auto* const lp = get_local_player();
 
 	if (!cmd|| !lp || !lp->is_alive() || !lp->is_alive())
@@ -147,15 +190,15 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (is_auto_fire)
 		cmd->buttons |= IN_ATTACK;
 	
-	if (settings::states["visuals::draw_line_to_target"])
-		directx_render::render_surface([&]()
-		{
-			int x, y;
-			interfaces::engine->get_screen_size(x, y);
-			c_vector origin_position;
-			if (game_utils::world_to_screen(target.ply->get_origin(), origin_position))
-				directx_render::line({ x / 2.f, (float)y }, { origin_position.x, origin_position.y}, c_color(0, 190, 60));
-		});
+	//if (settings::states["visuals::draw_line_to_target"])
+//		directx_render::render_surface([&]()
+		//{
+		//	int x, y;
+		//	interfaces::engine->get_screen_size(x, y);
+		//	c_vector origin_position;
+		//	if (game_utils::world_to_screen(target.ply->get_origin(), origin_position))
+		//		directx_render::line({ x / 2.f, (float)y }, { origin_position.x, origin_position.y}, c_color(0, 190, 60));
+		//});
 }
 
 std::map<std::string, std::map<std::string, float>> recoil_for_weapons;
@@ -170,17 +213,20 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 	if (!weapon)
 		return;
 
-	if (recoil_for_weapons.find(weapon->get_weapon_base()) == recoil_for_weapons.end())
-	{
-		std::map<std::string, float> tmp;
-		weapon->get_recoil(tmp);
-		recoil_for_weapons.emplace(weapon->get_weapon_base(), tmp);
-	}
+	if (ucmd->command_number == 0)
+		return;
 	
-	if (settings::states["legit_bot::no_recoil"])
-		weapon->set_recoil(0.f);
-	else
-		weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
+	//if (recoil_for_weapons.find(weapon->get_weapon_base()) == recoil_for_weapons.end())
+	//{
+	//	std::map<std::string, float> tmp;
+	//	weapon->get_recoil(tmp);
+	//	recoil_for_weapons.emplace(weapon->get_weapon_base(), tmp);
+	//}
+	
+	//if (settings::states["legit_bot::no_recoil"])
+	//	ucmd->viewangles -= local_player->get_view_punch_angles();
+	//else
+	//	weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
 
 	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK && weapon->can_shoot())
 	{
@@ -191,9 +237,12 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 		else if (weapon->get_weapon_base().find("swb") != std::string::npos
 			/*|| weapon->get_weapon_base().find("weapon_base") != std::string::npos*/)
 			allspreads_nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
-		/*else if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
-			calc_spread_weapon_base(weapon, ucmd);*/
+		//else if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
+		//	calc_spread_weapon_base(weapon, ucmd);
 	}
+
+	if (settings::states["legit_bot::no_recoil"])
+		ucmd->viewangles -= local_player->get_view_punch_angles();
 }
 
 
