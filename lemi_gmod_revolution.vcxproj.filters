@@ -297,6 +297,12 @@
     <ClInclude Include="src\features\aim\spreads\weapon_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="deps\include\memory\virtual_method.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="deps\include\memory\platform_staff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\interfaces.cpp">

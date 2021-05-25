@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 #include "../../math/math.h"
-//#include <d3dx9.h>
+
+#include <memory/virtual_method.h>
 #include <d3d9.h>
 
 class i_material_var;
@@ -356,12 +357,14 @@ public:
 		return (*(fn**)this)[71](this, material_name, group_name, complain, complain_prefix);
 	}
 
-	i_mat_render_context* get_render_context()
-	{
-		using fn = i_mat_render_context * (__thiscall*)(void*);
-		return (*(fn**)this)[98](this);
-	}
+	//i_mat_render_context* get_render_context()
+	//{
+	//	using fn = i_mat_render_context * (__thiscall*)(void*);
+	//	return (*(fn**)this)[98](this);
+	//}
 
+	VIRTUAL_METHOD(i_mat_render_context*, get_render_context, 102, (), (this));
+	
 	i_mat_render_context* create_render_context(void* material_context_type)
 	{
 		using fn = i_mat_render_context * (__thiscall*)(void*, void*);

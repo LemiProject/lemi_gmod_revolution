@@ -2,6 +2,36 @@
 #include "utils/memory_utils.h"
 
 
+#ifdef _X64_
+constexpr auto move_helper_pattern = "48 8B 0D ? ? ? ? 48 8B 53 10";
+constexpr auto client_mode_pattern = "48 8B 0D ? ? ? ? 48 8B 01 48 FF 60 50 CC CC 48 83 EC 28";
+#else
+constexpr auto move_helper_pattern = "8B 0D ? ? ? ? 8B 46 08 68";
+#endif
+
+uintptr_t get_address_from_instruction(uintptr_t address, int offs, int i_size)
+{
+	uintptr_t ins = address + offs;
+	int ra = *(uint32_t*)(ins);
+	uintptr_t realaddress = address + i_size + ra;
+	return realaddress;
+}
+
+template<typename t>
+t* get_vmt_from_addr(uintptr_t addr, uintptr_t off)
+{
+	uintptr_t step = 3, ins_size = 7, ins = addr + off;
+	uintptr_t imga = *(DWORD*)(ins + step);
+	uintptr_t real_address = ins + ins_size + imga;
+	return *(t**)(real_address);
+}
+
+template <typename T>
+static constexpr auto relative_to_absolute(uintptr_t address) noexcept
+{
+	return (T)(address + 4 + *reinterpret_cast<std::int32_t*>(address));
+}
+
 void interfaces::init_interfaces()
 {
 	engine = memory_utils::capture_interface<c_engine_client>("engine.dll", "VEngineClient015");
@@ -18,11 +48,14 @@ void interfaces::init_interfaces()
 	panel = memory_utils::capture_interface<i_panel>("vgui2.dll", "VGUI_Panel009");
 	game_movement = memory_utils::capture_interface<i_game_movement>("client.dll", "GameMovement001");
 
-	move_helper = **reinterpret_cast<i_move_helper***>(memory_utils::pattern_scanner("client.dll", "8B 0D ? ? ? ? 8B 46 08 68") + 2);
+	//https://i.imgur.com/93NQMj4.png
+	move_helper = **relative_to_absolute<i_move_helper***>((uintptr_t)memory_utils::pattern_scanner("client.dll", move_helper_pattern) + 0x3);
 	
 	render_context = material_system->get_render_context();
-	do { client_mode = **reinterpret_cast<i_client_mode***>((*reinterpret_cast<uintptr_t**>(client))[10] + 0x5); } while (!client_mode);
-	global_vars = **reinterpret_cast<c_global_vars***>((*reinterpret_cast<uintptr_t**>(client))[0] + 0x55);
+	client_mode = **relative_to_absolute<i_client_mode***>((uintptr_t)memory_utils::pattern_scanner("client.dll", client_mode_pattern) + 0x3);
+	
+	https://i.imgur.com/sz8AqEJ.png
+	global_vars = *relative_to_absolute<c_global_vars**>((*(uintptr_t**)client)[11] + 16);
 	view_render = **reinterpret_cast<i_view_render***>((*reinterpret_cast<uintptr_t**>(client))[27] + 0x5);
 	
 	void(*random_seed)(int);

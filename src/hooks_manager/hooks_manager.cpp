@@ -270,7 +270,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	choked_packets++;
 
 	DWORD move;
-	_asm mov move, ebp;
+	move = (DWORD)(uintptr_t(_AddressOfReturnAddress()) - sizeof(void*));
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
 
 	if (!cmd || cmd->command_number == 0 || !interfaces::engine->is_in_game())

@@ -27,6 +27,6 @@ BOOL WINAPI DllMain(HINSTANCE dll_instance, DWORD reason, LPVOID reversed)
 	hack_utils::g_dll = dll_instance;
 	DisableThreadLibraryCalls(dll_instance);
 	if (reason == DLL_PROCESS_ATTACH)
-		CreateThread(nullptr, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(load), nullptr, NULL, nullptr);
+		std::thread(load).detach();
 	return TRUE;
 }
