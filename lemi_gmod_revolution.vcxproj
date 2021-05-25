@@ -24,6 +24,7 @@
     <ProjectGuid>{6adc434c-06c7-434a-9200-5999488c1648}</ProjectGuid>
     <RootNamespace>lemigmodrevolution</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>lemi_gmod_revolution_x64</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

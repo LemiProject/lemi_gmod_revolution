@@ -5,6 +5,7 @@
 #ifdef _X64_
 constexpr auto move_helper_pattern = "48 8B 0D ? ? ? ? 48 8B 53 10";
 constexpr auto client_mode_pattern = "48 8B 0D ? ? ? ? 48 8B 01 48 FF 60 50 CC CC 48 83 EC 28";
+constexpr auto global_vars_pattern = "48 8B 05 ? ? ? ? 0F B6 DA";
 #else
 constexpr auto move_helper_pattern = "8B 0D ? ? ? ? 8B 46 08 68";
 #endif
@@ -55,7 +56,7 @@ void interfaces::init_interfaces()
 	client_mode = **relative_to_absolute<i_client_mode***>((uintptr_t)memory_utils::pattern_scanner("client.dll", client_mode_pattern) + 0x3);
 	
 	https://i.imgur.com/sz8AqEJ.png
-	global_vars = *relative_to_absolute<c_global_vars**>((*(uintptr_t**)client)[11] + 16);
+	global_vars = *relative_to_absolute<c_global_vars**>((uintptr_t)memory_utils::pattern_scanner("client.dll", global_vars_pattern) + 0x3);
 	view_render = **reinterpret_cast<i_view_render***>((*reinterpret_cast<uintptr_t**>(client))[27] + 0x5);
 	
 	void(*random_seed)(int);
