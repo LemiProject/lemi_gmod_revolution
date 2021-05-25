@@ -195,6 +195,28 @@ namespace game_utils
 		
 		return ang;
 	}
+
+	inline void trace_view_angles(trace_t& t, const q_angle& viewangles)
+	{
+		if (!get_local_player() || !get_local_player()->is_alive())
+			return;
+		
+		c_vector dir;
+		math::angle_vectors(viewangles, dir);
+
+		ray_t ray;
+		trace_t tr;
+		c_trace_filter filter;
+		filter.pSkip = get_local_player();
+
+		tr.startpos = get_local_player()->get_eye_pos();
+		tr.endpos = tr.startpos + (dir * (4096 * 8));
+
+		ray.init(tr.startpos, tr.endpos);
+		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+		
+		t = tr;
+	}
 }
 
 

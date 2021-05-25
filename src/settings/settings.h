@@ -108,19 +108,21 @@ namespace settings
 		{"visuals::ignore_z", false},
 		{"visuals::chams_obs_check", false},
 		
-		// Legitbot
-		{"legit_bot::legit_bot_enabled", false},
-		{"legit_bot::legit_bot_silent_aim", false},
-		{"legit_bot::no_recoil", false},
-		{"legit_bot::no_spread", false},
+		// Aimbot
+		{"aim_bot::aim_bot_enabled", false},
+		{"aim_bot::aim_bot_silent_aim", false},
+		{"aim_bot::no_recoil", false},
+		{"aim_bot::no_spread", false},
 		{"visuals::draw_fov", false},
 		{"visuals::draw_line_to_target", false},
-		{"legit_bot::legit_bot_auto_fire", false},
+		{"aim_bot::aim_bot_auto_fire", false},
+		{"aim_bot::aim_bot_trigger_bot", false},
 		
 		// Misc
 		{"misc::bunny_hop", false},
 		{"misc::fix_movement", false},
 		{"other::anti_obs", false},
+		{"other::rapid_fire", false},
 		{"misc::auto_strafe", false},
 
 		// Lua
@@ -137,10 +139,10 @@ namespace settings
 		{"visuals::esp_distance_entity", 20000.f},
 		{"visuals::esp_box_type_entity", (float)visuals::e_esp_box_type::bounding},
 
-		// Legitbot
-		{"legit_bot::legit_bot_fov", 10.f},
-		{"legit_bot::legit_bot_smooth_value", 0.f},
-		{"legit_bot::legit_bot_delay_before_aiming", 0.f},
+		// Aimbot
+		{"aim_bot::aim_bot_fov", 10.f},
+		{"aim_bot::aim_bot_smooth_value", 0.f},
+		{"aim_bot::aim_bot_delay_before_aiming", 0.f},
 	};
 	
 	inline std::map<std::string, std::string> strings {
@@ -153,14 +155,15 @@ namespace settings
 		{"other::menu_key", 0},
 		{"other::add_entity", 0},
 
-		// Legitbot
-		{"legit_bot::legit_bot_key", 0},
-		{"legit_bot::legit_bot_auto_fire_key", 0}
+		// Aimbot
+		{"aim_bot::aim_bot_key", 0},
+		{"aim_bot::aim_bot_auto_fire_key", 0},
+		{"aim_bot::aim_bot_trigger_bot_key", 0}
 	};
 
 	inline std::map<std::string, int> flags {
-		{"legit_bot::legit_bot_player_filter", 0},
-		{"legit_bot::legit_bot_player_bones", 0}
+		{"aim_bot::aim_bot_player_filter", 0},
+		{"aim_bot::aim_bot_player_bones", 0}
 	};
 
 	namespace colors
@@ -193,6 +196,8 @@ namespace settings
 	
 	void init_config_system();
 
+	bool get_bind_state(const std::string& name, bool may_be_null = true);
+	
 	namespace lua_api
 	{
 		LUA_FUNCTION(lua_api_get_hack_var);

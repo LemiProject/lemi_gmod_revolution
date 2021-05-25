@@ -219,7 +219,7 @@ void override_view_hook::hook(c_view_setup* setup)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
 
 	if (get_local_player() && get_local_player()->is_alive())
-		if (settings::states["legit_bot::no_recoil"])
+		if (settings::states["aim_bot::no_recoil"])
 			setup->angles -= get_local_player()->get_view_punch_angles();
 	
 	globals::view::last_view_setup = *setup;
@@ -293,11 +293,27 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	engine_prediction.start(cmd, lp);
 	{
 		aim::run_aimbot(cmd);
+
+		if (settings::states["aim_bot::aim_bot_trigger_bot"] && settings::get_bind_state("aim_bot::aim_bot_trigger_bot_key"))
+		{
+			trace_t tr;
+			game_utils::trace_view_angles(tr, cmd->viewangles);
+			if (tr.m_pEnt)
+			{
+				if (reinterpret_cast<c_base_player*>(tr.m_pEnt)->is_player())
+				{
+					auto ply = (c_base_player*)tr.m_pEnt;
+
+					if (ply->is_alive())
+						cmd->buttons |= IN_ATTACK;
+				}
+			}
+		}
 		
 		aim::anti_recoil_and_spread(cmd);
 	}
 	engine_prediction.end();
-
+	
 	auto weapon = get_primary_weapon(lp);
 	if (weapon)
 		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() >= interfaces::global_vars->curtime)
@@ -323,26 +339,15 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
-
+	
 	static int cc = 0;
 	cc++;
 	if (GetAsyncKeyState(settings::binds["other::add_entity"]) && cc >= 10)
 	{
 		cc = 0;
-		c_vector dir;
-		math::angle_vectors(cmd->viewangles, dir);
-
-		ray_t ray;
 		trace_t tr;
-		c_trace_filter filter;
-		filter.pSkip = lp;
-
-		tr.startpos = lp->get_eye_pos();
-		tr.endpos = tr.startpos + (dir * (4096 * 8));
-
-		ray.init(tr.startpos, tr.endpos);
-		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
-
+		game_utils::trace_view_angles(tr, cmd->viewangles);
+		
 		if (tr.m_pEnt)
 		{
 			c_base_entity* ent = (c_base_entity*)tr.m_pEnt;
@@ -370,8 +375,8 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
 	
-	if (settings::states["legit_bot::legit_bot_silent_aim"])
-		return !settings::states["legit_bot::legit_bot_silent_aim"];
+	if (settings::states["aim_bot::aim_bot_silent_aim"])
+		return !settings::states["aim_bot::aim_bot_silent_aim"];
 	
 	return false;
 }
@@ -472,7 +477,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper)
 {
-	if (settings::states["legit_bot::no_recoil"])
+	if (settings::states["aim_bot::no_recoil"])
 	{
 		q_angle angle;
 		interfaces::engine->get_view_angles(angle);

@@ -277,7 +277,7 @@
     <ClCompile Include="deps\include\minpp\minhook\hook.c" />
     <ClCompile Include="deps\include\minpp\minhook\trampoline.c" />
     <ClCompile Include="deps\include\platform_folders.cpp" />
-    <ClCompile Include="src\features\aim\legit_bot.cpp" />
+    <ClCompile Include="src\features\aim\aim_bot.cpp" />
     <ClCompile Include="src\features\lua_features\lua_features.cpp" />
     <ClCompile Include="src\features\menu\menu.cpp" />
     <ClCompile Include="src\features\menu\menu_lua_api.cpp" />

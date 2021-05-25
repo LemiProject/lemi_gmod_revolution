@@ -46,41 +46,41 @@ namespace menu_tabs_content::internal
 	}
 }
 
-void menu_tabs_content::draw_legit_bot()
+void menu_tabs_content::draw_aim_bot()
 {
 	constexpr auto panels_in_visuals_count = 3;
-	BeginGroupPanel("Legitbot##LEGITBOT_MAIN", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	BeginGroupPanel("Aimbot##Aimbot_MAIN", { GetWindowSize().x / panels_in_visuals_count, -1 });
 	{
-		internal::text_and_toggle_button("Enabled", "##LEGITBOT_MAIN_ENABLED", &states["legit_bot::legit_bot_enabled"]);
-		internal::set_tooltip("Enable legitbot");
+		internal::text_and_toggle_button("Enabled", "##Aimbot_MAIN_ENABLED", &states["aim_bot::aim_bot_enabled"]);
+		internal::set_tooltip("Enable Aimbot");
 
-		Hotkey("Keybind##LEGITBOT_MAIN_TOGGLEKEY", &binds["legit_bot::legit_bot_key"], { 0, 0 });
+		Hotkey("Keybind##Aimbot_MAIN_TOGGLEKEY", &binds["aim_bot::aim_bot_key"], { 0, 0 });
 		internal::set_tooltip("Key to toggle aimbotting");
 
-		internal::text_and_toggle_button("Autofire", "##LEGITBOT_AUTOFIRE_ENB", &states["legit_bot::legit_bot_auto_fire"]);
+		internal::text_and_toggle_button("Autofire", "##Aimbot_AUTOFIRE_ENB", &states["aim_bot::aim_bot_auto_fire"]);
 		internal::set_tooltip("Fire when target is can be shooted");
 
-		if (states["legit_bot::legit_bot_auto_fire"])
-			SameLine(), Hotkey("Keybind##LEGITBOT_AUTOFIRE_KEYBIND", &binds["legit_bot::legit_bot_auto_fire_key"]);
+		if (states["aim_bot::aim_bot_auto_fire"])
+			SameLine(), Hotkey("Keybind##Aimbot_AUTOFIRE_KEYBIND", &binds["aim_bot::aim_bot_auto_fire_key"]);
 		
-		SliderFloat("Legitbot fov##LEGITBOT_MAIN_FOV", &values["legit_bot::legit_bot_fov"], 1.f, 360.f);
+		SliderFloat("Aimbot fov##Aimbot_MAIN_FOV", &values["aim_bot::aim_bot_fov"], 1.f, 360.f);
 		internal::set_tooltip("Degrees from the crosshair where players will be targetted");
 		
-		SliderFloat("Legitbot smooth##LEGITBOT_MAIN_SMOOTH_VAL", &values["legit_bot::legit_bot_smooth_value"], 0.f, 100.f);
-		internal::set_tooltip("Legitbot smoothing value");
+		SliderFloat("Aimbot smooth##Aimbot_MAIN_SMOOTH_VAL", &values["aim_bot::aim_bot_smooth_value"], 0.f, 100.f);
+		internal::set_tooltip("Aimbot smoothing value");
 		
-		SliderFloat("Legitbot delay##LEGITBOT_MAIN_DELAY", &values["legit_bot::legit_bot_delay_before_aiming"], 0.f, 10000.f, "%.0f");
+		SliderFloat("Aimbot delay##Aimbot_MAIN_DELAY", &values["aim_bot::aim_bot_delay_before_aiming"], 0.f, 10000.f, "%.0f");
 		internal::set_tooltip("Delay before shooting");
 
 		PushItemWidth(GetWindowSize().x / 6);
-		if (BeginCombo("##LEGIT_BOT_BONES", "Bones", internal::combo_flags))
+		if (BeginCombo("##aim_bot_BONES", "Bones", internal::combo_flags))
 		{
 			for (auto i = 1; i <= (int)aimbot::e_player_bones::last; ++i)
 			{
 				if (!(to_string((aimbot::e_player_bones)i).empty()))
 				{
-					auto selected = flags["legit_bot::legit_bot_player_bones"] & i ? true : false;
-					CheckboxFlags(to_string((aimbot::e_player_bones)i).c_str(), &flags["legit_bot::legit_bot_player_bones"], i);
+					auto selected = flags["aim_bot::aim_bot_player_bones"] & i ? true : false;
+					CheckboxFlags(to_string((aimbot::e_player_bones)i).c_str(), &flags["aim_bot::aim_bot_player_bones"], i);
 				}
 			}
 			EndCombo();
@@ -89,14 +89,14 @@ void menu_tabs_content::draw_legit_bot()
 		
 		SameLine();
 		
-		if (BeginCombo("##LEGIT_BOT_IGNORE_FLAGS", "IngnoreFlags", internal::combo_flags))
+		if (BeginCombo("##aim_bot_IGNORE_FLAGS", "IngnoreFlags", internal::combo_flags))
 		{
 			for (auto i = 1; i <= (int)aimbot::e_player_filter::last; ++i)
 			{				
 				if (!(std::string(to_string((aimbot::e_player_filter)i)) == "unk"))
 				{
-					auto selected = flags["legit_bot::legit_bot_player_filter"] & i ? true : false;
-					CheckboxFlags(to_string((aimbot::e_player_filter)i), &flags["legit_bot::legit_bot_player_filter"], i);
+					auto selected = flags["aim_bot::aim_bot_player_filter"] & i ? true : false;
+					CheckboxFlags(to_string((aimbot::e_player_filter)i), &flags["aim_bot::aim_bot_player_filter"], i);
 				}
 			}
 			EndCombo();
@@ -105,7 +105,7 @@ void menu_tabs_content::draw_legit_bot()
 		
 		PopItemWidth();
 		
-		internal::text_and_toggle_button("Silent", "##LEGITBOT_MAIN_SILENT", &states["legit_bot::legit_bot_silent_aim"]);
+		internal::text_and_toggle_button("Silent", "##Aimbot_MAIN_SILENT", &states["aim_bot::aim_bot_silent_aim"]);
 		internal::set_tooltip("Client-Side silent-aim");
 
 		internal::text_and_toggle_button("Rapid fire", "##AIMBOT_RAPIDFIRE", &states["other::rapid_fire"]);
@@ -115,12 +115,22 @@ void menu_tabs_content::draw_legit_bot()
 
 	SameLine();
 
-	BeginGroupPanel("Accuracy##LEGITBOT_ACCURACY", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	BeginGroupPanel("Accuracy##Aimbot_ACCURACY", { GetWindowSize().x / panels_in_visuals_count, -1 });
 	{
-		internal::text_and_toggle_button("NoRecoil", "##LEGITBOT_ACCURACY_NORECOIL", &states["legit_bot::no_recoil"]);
+		internal::text_and_toggle_button("NoRecoil", "##Aimbot_ACCURACY_NORECOIL", &states["aim_bot::no_recoil"]);
 		internal::set_tooltip("WARNING! Can cause ban\nDisables recoil on most packs");
-		internal::text_and_toggle_button("NoSpread", "##LEGITBOT_ACCURACY_NOSPREAD", &states["legit_bot::no_spread"]);
+		internal::text_and_toggle_button("NoSpread", "##Aimbot_ACCURACY_NOSPREAD", &states["aim_bot::no_spread"]);
 		internal::set_tooltip("WARNING! Can cause ban\nAt this time only M9K works, more pack will be added in next few updates");
+	}
+	EndGroupPanel();
+
+	BeginGroupPanel("Other##Aimbot_OTHER", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	{
+		internal::text_and_toggle_button("Trigger", "##Aimbot_OTHER_TRIGGER", &states["aim_bot::aim_bot_trigger_bot"]);
+		internal::set_tooltip("Shooting if enemy on crosshair");
+		if (states["aim_bot::aim_bot_trigger_bot"])
+			SameLine(), Hotkey("Bind##TRIGGER_BOT_BIND", &binds["aim_bot::aim_bot_trigger_bot_key"]);
+		
 	}
 	EndGroupPanel();
 }
@@ -240,7 +250,7 @@ void menu_tabs_content::draw_visuals()
 		internal::text_and_toggle_button("Draw fov", "##VISUALS_OVERLAY_DRAW_FOV", &states["visuals::draw_fov"]);
 		internal::set_tooltip("Draw aimbot fov");
 		//internal::text_and_toggle_button("Line to target", "##VISUALS_OVERLAY_DRAW_LINE_TO_LB_TARGET", &states["visuals::draw_line_to_target"]);
-		//internal::set_tooltip("Draw line to legitbot target");
+		//internal::set_tooltip("Draw line to Aimbot target");
 	}
 	EndGroupPanel();
 }

@@ -15,14 +15,14 @@ using namespace ImGui;
 
 constexpr size_t tabs_count = 5;
 constexpr const char* const tabs_names[tabs_count] = {
-	"LEGIT##TABNAME",
+	"AIM##TABNAME",
 	"RAGE##TABNAME",
 	"VISUAL##TABNAME",
 	"MISC##TABNAME",
 	"SETTINGS##TABNAME",
 };
 enum e_tabs {
-	e_tabs_legit = 0,
+	e_tabs_aim = 0,
 	e_tabs_rage,
 	e_tabs_visual,
 	e_tabs_misc,
@@ -138,8 +138,8 @@ void main_window::draw()
 		
 		switch (current_tab)
 		{
-		case e_tabs_legit:
-			menu_tabs_content::draw_legit_bot();
+		case e_tabs_aim:
+			menu_tabs_content::draw_aim_bot();
 			break;
 		case e_tabs_rage:
 			menu_tabs_content::draw_rage_bot();

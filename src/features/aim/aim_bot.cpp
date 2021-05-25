@@ -26,7 +26,7 @@ float last_target_time = -1.f;
 
 bool pass_filters(c_base_player* ply)
 {
-	auto f = settings::flags["legit_bot::legit_bot_player_filter"];
+	auto f = settings::flags["aim_bot::aim_bot_player_filter"];
 
 	if (f & (int)settings::aimbot::e_player_filter::admin && ply->is_admin()) return false;
 	if (f & (int)settings::aimbot::e_player_filter::fly && ply->get_move_type() == (int)e_move_type::fly) return false;
@@ -41,7 +41,7 @@ bool get_target_bone(c_base_player* ply, c_vector& out)
 	using plb = settings::aimbot::e_player_bones;
 	using namespace settings::aimbot;
 
-	const auto flags = settings::flags["legit_bot::legit_bot_player_bones"];
+	const auto flags = settings::flags["aim_bot::aim_bot_player_bones"];
 
 	std::vector<std::string> bones;
 
@@ -105,7 +105,7 @@ bool get_target(target_t& target)
 		                                     game_utils::calc_angle(get_local_player()->get_eye_pos(),
 												 hit_pos));
 		
-		if (fov < tmp.fov && fov <= settings::values["legit_bot::legit_bot_fov"] && player->is_visible_by(get_local_player()))
+		if (fov < tmp.fov && fov <= settings::values["aim_bot::aim_bot_fov"] && player->is_visible_by(get_local_player()))
 		{
 			if (std::find(settings::other::friends.begin(), settings::other::friends.end(),player->get_steam_id()) != settings::other::friends.end())
 				continue;
@@ -136,13 +136,13 @@ q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val)
 	return out;
 }
 
-void aim::legit_bot(c_user_cmd* cmd)
+void aim::aim_bot(c_user_cmd* cmd)
 {
-	if (!settings::states["legit_bot::legit_bot_enabled"] || !interfaces::engine->is_in_game())
+	if (!settings::states["aim_bot::aim_bot_enabled"] || !interfaces::engine->is_in_game())
 		return;
 
-	if (settings::binds["legit_bot::legit_bot_key"] != 0)
-		if (!GetAsyncKeyState(settings::binds["legit_bot::legit_bot_key"]))
+	if (settings::binds["aim_bot::aim_bot_key"] != 0)
+		if (!GetAsyncKeyState(settings::binds["aim_bot::aim_bot_key"]))
 			return;
 
 	if (cmd->command_number == 0)
@@ -159,9 +159,9 @@ void aim::legit_bot(c_user_cmd* cmd)
 
 	target_t target;
 
-	auto is_auto_fire = settings::states["legit_bot::legit_bot_auto_fire"] && (GetAsyncKeyState(
-			settings::binds["legit_bot::legit_bot_auto_fire_key"]) || settings::binds[
-			"legit_bot::legit_bot_auto_fire_key"]
+	auto is_auto_fire = settings::states["aim_bot::aim_bot_auto_fire"] && (GetAsyncKeyState(
+			settings::binds["aim_bot::aim_bot_auto_fire_key"]) || settings::binds[
+			"aim_bot::aim_bot_auto_fire_key"]
 		== 0);
 	
 	if ((  (!(cmd->buttons & IN_ATTACK)) && !is_auto_fire) 
@@ -171,20 +171,20 @@ void aim::legit_bot(c_user_cmd* cmd)
 	if (!get_target(target))
 		return;
 
-	if (settings::values["legit_bot::legit_bot_delay_before_aiming"] > 0)
+	if (settings::values["aim_bot::aim_bot_delay_before_aiming"] > 0)
 		if (last_target_id != target.idx && interfaces::engine->get_time_stamp_from_start() <= last_target_time +
-			(settings::values["legit_bot::legit_bot_delay_before_aiming"] / 100.f) && !get_entity_by_index(last_target_id)->is_alive())
+			(settings::values["aim_bot::aim_bot_delay_before_aiming"] / 100.f) && !get_entity_by_index(last_target_id)->is_alive())
 			return;
 	
-	if (settings::values["legit_bot::legit_bot_smooth_value"] > 0.f)
-		target.angle = do_smooth(target.angle, cmd->viewangles, settings::values["legit_bot::legit_bot_smooth_value"]);
+	if (settings::values["aim_bot::aim_bot_smooth_value"] > 0.f)
+		target.angle = do_smooth(target.angle, cmd->viewangles, settings::values["aim_bot::aim_bot_smooth_value"]);
 
 	last_target_id = target.idx;
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 	
 	cmd->viewangles = target.angle;
 
-	if (!settings::states["legit_bot::legit_bot_silent_aim"])
+	if (!settings::states["aim_bot::aim_bot_silent_aim"])
 		interfaces::engine->set_view_angles(cmd->viewangles);
 
 	if (is_auto_fire)
@@ -223,15 +223,15 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 	//	recoil_for_weapons.emplace(weapon->get_weapon_base(), tmp);
 	//}
 	
-	//if (settings::states["legit_bot::no_recoil"])
+	//if (settings::states["aim_bot::no_recoil"])
 	//	ucmd->viewangles -= local_player->get_view_punch_angles();
 	//else
 	//	weapon->set_recoil(recoil_for_weapons[weapon->get_weapon_base()]);
 
-	if (settings::states["legit_bot::no_recoil"])
+	if (settings::states["aim_bot::no_recoil"])
 		ucmd->viewangles -= local_player->get_view_punch_angles();
 	
-	if (settings::states["legit_bot::no_spread"] && ucmd->buttons & IN_ATTACK && weapon->can_shoot())
+	if (settings::states["aim_bot::no_spread"] && ucmd->buttons & IN_ATTACK && weapon->can_shoot())
 	{
 		if (weapon->get_weapon_base().find("weapon_tttbase") != std::string::npos
 			|| weapon->get_weapon_base().find("bobs_gun_base") != std::string::npos

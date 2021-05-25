@@ -386,7 +386,7 @@
     <ClCompile Include="src\render_system\img\img_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\features\aim\legit_bot.cpp">
+    <ClCompile Include="src\features\aim\aim_bot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="deps\include\imgui\imgui_freetype.cpp">

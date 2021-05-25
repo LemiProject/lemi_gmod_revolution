@@ -77,6 +77,14 @@ void settings::init_config_system()
 	
 }
 
+bool settings::get_bind_state(const std::string& name, bool may_be_null)
+{
+	auto key = binds[name];
+	if (may_be_null)
+		return GetAsyncKeyState(key) || key == 0;
+	return GetAsyncKeyState(key);
+}
+
 int settings::lua_api::lua_api_get_hack_var__Imp(c_lua_interface* lua)
 {
 	CHECK_TYPE(lua, 1, (int)e_lua_type::type_string, "expected string", 0);
