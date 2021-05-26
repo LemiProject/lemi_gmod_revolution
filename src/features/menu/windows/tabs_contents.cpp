@@ -12,6 +12,8 @@
 
 #include <fstream>
 
+#include "../../../utils/hack_utils.h"
+
 using namespace ImGui;
 using namespace settings;
 
@@ -135,8 +137,48 @@ void menu_tabs_content::draw_aim_bot()
 	EndGroupPanel();
 }
 
-void menu_tabs_content::draw_rage_bot()
+void menu_tabs_content::draw_hvh()
 {
+#ifdef _DEBUG
+	constexpr auto panels_in_visuals_count = 3;
+
+	BeginGroupPanel("AnitAim##HVH_AA", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	{
+		internal::text_and_toggle_button("AntiAim", "##HVH_AA_TOGGLE", &states["hvh::anti_aims"]);
+		internal::set_tooltip("Save your head on hvh");
+
+		auto pitch_type_str = std::string(to_string((hvh::e_pitch)values["hvh::pitch_type"]));
+		if (BeginCombo("##PITCH_TYPE_COMBO", fmt::format("Pitch type: {}", pitch_type_str).c_str()))
+		{
+			for (auto i = 1; i <= (int)hvh::e_pitch::last; ++i)
+			{
+				auto selected = values["hvh::pitch_type"] == i;
+				if (Selectable((to_string((hvh::e_pitch)i) + std::string("##") + std::to_string(i)).c_str(), selected))
+					values["hvh::pitch_type"] = i;
+				if (selected)
+					SetItemDefaultFocus();
+			}
+			EndCombo();
+		}
+		
+		SameLine();
+
+		auto yaw_type_str = std::string(to_string((hvh::e_yaw)values["hvh::yaw_type"]));
+		if (BeginCombo("##YAW_TYPE_COMBO", fmt::format("Yaw type: {}", yaw_type_str).c_str()))
+		{
+			for (auto i = 1; i <= (int)hvh::e_yaw::last; ++i)
+			{
+				auto selected = values["hvh::yaw_type"] == i;
+				if (Selectable((to_string((hvh::e_yaw)i) + std::string("##") + std::to_string(i)).c_str(), selected))
+					values["hvh::yaw_type"] = i;
+				if (selected)
+					SetItemDefaultFocus();
+			}
+			EndCombo();
+		}
+	}
+	EndGroupPanel();
+#endif
 }
 
 void menu_tabs_content::draw_visuals()
@@ -276,6 +318,9 @@ void menu_tabs_content::draw_misc()
 	{
 		Hotkey("Wallpush##EXPLOITS_WALLPUSH", &binds["exploits::wallpush"], { 0, 0 });
 		internal::set_tooltip("Worked only on servers with 'sit' command");
+
+		Hotkey("Auto mega-jump", &binds["exploits::auto_mega_jump"]);
+		internal::set_tooltip("Automatically places a block under you, which on most servers allows you to take off high");
 	}
 	EndGroupPanel();
 }
@@ -330,16 +375,24 @@ void menu_tabs_content::draw_setting()
 		SameLine();
 		if (Button("Add##SETTINGS_ADD"))
 		{
-			auto path = config_directory() + "\\" + new_cfg_name + ".vpcfg";
-			if (!file_tools::exist(path))
+			try
 			{
+				auto path = config_directory() + "\\" + new_cfg_name + ".vpcfg";
+				if (!file_tools::exist(path))
 				{
-					std::ofstream s(path);
-					s << "\0";
+					{
+						std::ofstream s(path);
+						s << "\0";
+					}
+					last_configs = get_configs();
+					std::thread(parse_settings_in_file, path).detach();
+					current_cfg = std::distance(last_configs.begin(), std::find(last_configs.begin(), last_configs.end(), new_cfg_name + ".vpcfg"));
 				}
-				last_configs = get_configs();
-				std::thread(parse_settings_in_file, path).detach();
-				current_cfg = std::distance(last_configs.begin(), std::find(last_configs.begin(), last_configs.end(), new_cfg_name + ".vpcfg"));
+			}
+			catch (std::exception& e)
+			{
+				auto msg = MessageBox(render_system::vars::game_hwnd, fmt::format("Failed to add config with error:\n{}", e.what()).c_str(), "LemiProject", MB_OK);
+				hack_utils::shutdown_hack();
 			}
 		}
 

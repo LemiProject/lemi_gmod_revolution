@@ -1,4 +1,5 @@
 #pragma once
+#include <cfloat>
 #include <cmath>
 
 
@@ -47,6 +48,27 @@ public:
 	c_vector& operator-=(const c_vector& left);
 	c_vector& operator*=(const c_vector& left);
 	c_vector& operator/=(const c_vector& left);
+
+	c_vector to_string_friendly() const
+	{
+		if (!is_valid())
+			return { 0.f };
+
+		auto out = *this;
+		
+		if (out.x > FLT_MAX)
+			out.x = FLT_MAX;
+		if (out.y > FLT_MAX)
+			out.y = FLT_MAX;
+		if (out.z > FLT_MAX)
+			out.z = FLT_MAX;
+
+		out.x = roundf(out.x);
+		out.y = roundf(out.y);
+		out.z = roundf(out.z);
+		
+		return out;
+	}
 };
 
 class __declspec(align(16)) c_vector_aligned : public c_vector {

@@ -273,6 +273,12 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
 
+	//update game data
+	{
+		if (get_local_player())
+			globals::game_data::ping = get_local_player()->get_ping();
+	}
+	
 	if (!cmd || cmd->command_number == 0 || !interfaces::engine->is_in_game())
 	{
 		original(interfaces::client_mode, frame_time, cmd);
@@ -321,14 +327,48 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 				cmd->buttons &= ~IN_ATTACK;
 	
 	original(interfaces::client_mode, frame_time, cmd);
+	
+	q_angle vang;
+	interfaces::engine->get_view_angles(vang);
+	globals::local_player_states::viewangles = vang;
+	globals::local_player_states::velocity = lp->get_velocity();
+	globals::local_player_states::position = lp->get_origin();
 
-	//test functions
+	
+	{
+		static auto spawn_time = 0.f;
+		static auto should_undo = false;
+		if (settings::get_bind_state("exploits::auto_mega_jump", false))
+		{
+			auto va = cmd->viewangles;
+			auto vel = lp->get_velocity();
+			if (vel.z < 0)
+			{
+				q_angle vela;
+				math::vector_to_angels(vel, vela);
+				vela.normalize();
+				va = vela;
+
+				trace_t tr;
+				game_utils::trace_view_angles(tr, va);
+
 #ifdef _DEBUG
-
+				globals::local_player_states::land_position = tr.endpos;
 #endif
+				if ((tr.endpos - lp->get_origin()).length() <= 42.f && interfaces::global_vars->curtime > spawn_time + 1.5f + (globals::game_data::ping / 100.f))
+					interfaces::engine->execute_client_cmd("gm_spawn models/hunter/misc/shell2x2a.mdl"), spawn_time = interfaces::global_vars->curtime, should_undo = true;
+			}
+		}
+		if (should_undo && interfaces::global_vars->curtime > spawn_time + 0.1f + (globals::game_data::ping / 100.f))
+			interfaces::engine->execute_client_cmd("undo"), should_undo = false;
+	}
+	
+#ifdef _DEBUG
+	
+#endif
+	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
-
 
 	if (settings::states["misc::fix_movement"])
 		fix_movement(old_cmd);
@@ -340,9 +380,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
 	
-	static int cc = 0;
+	static auto cc = 0;
 	cc++;
-	if (GetAsyncKeyState(settings::binds["other::add_entity"]) && cc >= 10)
+	if (settings::get_bind_state("other::add_entity", false) && cc >= 10)
 	{
 		cc = 0;
 		trace_t tr;

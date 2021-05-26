@@ -15,6 +15,7 @@
 
 #include "file_tools.h"
 #include "main_window.h"
+#include "../../../globals.h"
 #include "../../../interfaces.h"
 #include "../../../game_sdk/entitys/c_base_player.h"
 #include "../../../settings/settings.h"
@@ -112,8 +113,10 @@ void bg_window::update_entity_list()
 		if (class_name.empty())
 			continue;
 
-		if (class_name.find("class ") != std::string::npos)
+		if (class_name.find("class ") != std::string::npos || class_name == "player" || class_name == "worldspawn")
 			continue;
+
+
 		
 		ent_list.push_back(class_name);
 	}
@@ -560,6 +563,7 @@ void bg_window::draw()
 
 	if (show_glua_loader)
 		draw_glua_loader();
+
 	
 	//ImGui::ShowDemoWindow();
 }

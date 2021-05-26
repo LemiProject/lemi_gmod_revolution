@@ -297,6 +297,9 @@
     <ClInclude Include="src\features\aim\spreads\weapon_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\features\hvh\hvh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\interfaces.cpp">

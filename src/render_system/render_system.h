@@ -28,6 +28,7 @@ namespace render_system
 	{
 		inline bool is_screen_grab;
 		inline D3DMATRIX view_matrix;
+		inline HWND game_hwnd;
 	}
 	
 	void init();

@@ -76,6 +76,49 @@ namespace settings
 		};
 	}
 
+	namespace hvh
+	{
+		enum class e_pitch
+		{
+			none,
+			up,
+			down,
+			emotional,
+			last = emotional
+		};
+		//Sorry i'm lazy hd))
+		inline const char* to_string(e_pitch e)
+		{
+			switch (e)
+			{
+			case e_pitch::none: return "";
+			case e_pitch::up: return "Up";
+			case e_pitch::down: return "Down";
+			case e_pitch::emotional: return "Emotional";
+			default: return "";
+			}
+		}
+
+		enum class e_yaw
+		{
+			none,
+			forward,
+			backward,
+			last = backward
+		};
+		inline const char* to_string(e_yaw e)
+		{
+			switch (e)
+			{
+			case e_yaw::none: return "";
+			case e_yaw::forward: return "Forward";
+			case e_yaw::backward: return "Backward";
+			default: return "";
+			}
+		}
+		
+	}
+	
 	namespace other
 	{
 		inline std::vector<std::string> friends;
@@ -128,6 +171,9 @@ namespace settings
 		// Lua
 		{"lua::hack_hooks", false},
 		{"lua::hack_globals", false},
+
+		//HVH
+		{"hvh::anti_aims", false}
 	};
 	
 	inline std::map<std::string, float> values {
@@ -143,6 +189,10 @@ namespace settings
 		{"aim_bot::aim_bot_fov", 10.f},
 		{"aim_bot::aim_bot_smooth_value", 0.f},
 		{"aim_bot::aim_bot_delay_before_aiming", 0.f},
+
+		//HVH
+		{"hvh::yaw_type", 0},
+		{"hvh::pitch_type", 0}
 	};
 	
 	inline std::map<std::string, std::string> strings {
@@ -152,6 +202,7 @@ namespace settings
 	inline std::map<std::string, uint32_t> binds {
 		// Misc
 		{"exploits::wallpush", 0},
+		{"exploits::auto_mega_jump", 0},
 		{"other::menu_key", 0},
 		{"other::add_entity", 0},
 
@@ -197,6 +248,7 @@ namespace settings
 	void init_config_system();
 
 	bool get_bind_state(const std::string& name, bool may_be_null = true);
+	bool get_bind_state(uint32_t bind, bool may_be_null = true);
 	
 	namespace lua_api
 	{
@@ -205,5 +257,15 @@ namespace settings
 		
 		void push_all(c_lua_interface* lua);
 	}
+
+#ifdef _DEBUG
+	namespace debug_vars
+	{
+		//bool no_fall_damage = false;
+		inline uint32_t no_fall_key = 0;
+		
+	}
+#endif
+
 }
 
