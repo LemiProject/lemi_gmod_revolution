@@ -9,10 +9,18 @@ struct text_message_t;
 class c_audio_source;
 class i_net_channel_info;
 
-struct player_info_t
+typedef struct player_info_s
 {
-	
-};
+	char name[128];
+	int userID; // local server user ID, unique while server is running <- THIS IS NOT STEAMID
+	char guid[33]; // that is Steamid
+	unsigned int friendsid;
+	char friendsname[128];
+	bool fakeplayer; // true, if player is a bot controlled by game.dll
+	bool ishltv;
+	unsigned int customfiles[4]; // custom files CRC for this player
+	unsigned char filesdownloaded; // this counter increases each time the server downloaded a new file
+} player_info_t;
 
 class c_engine_client
 {

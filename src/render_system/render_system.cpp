@@ -56,6 +56,8 @@ void render_system::init()
     auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
     if (game_hwnd)
     {
+        vars::game_hwnd = game_hwnd;
+    	
         ImGui_ImplWin32_Init(game_hwnd);
         ImGui_ImplDX9_Init(device);
 

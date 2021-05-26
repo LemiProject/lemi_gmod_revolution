@@ -202,6 +202,7 @@
     <ClInclude Include="src\features\aim\spreads\all_spreads.h" />
     <ClInclude Include="src\features\aim\spreads\csbase.h" />
     <ClInclude Include="src\features\aim\spreads\weapon_base.h" />
+    <ClInclude Include="src\features\hvh\hvh.h" />
     <ClInclude Include="src\features\lua_features\lua_features.h" />
     <ClInclude Include="src\features\menu\menu.h" />
     <ClInclude Include="src\features\menu\styles.h" />
@@ -277,7 +278,7 @@
     <ClCompile Include="deps\include\minpp\minhook\hook.c" />
     <ClCompile Include="deps\include\minpp\minhook\trampoline.c" />
     <ClCompile Include="deps\include\platform_folders.cpp" />
-    <ClCompile Include="src\features\aim\legit_bot.cpp" />
+    <ClCompile Include="src\features\aim\aim_bot.cpp" />
     <ClCompile Include="src\features\lua_features\lua_features.cpp" />
     <ClCompile Include="src\features\menu\menu.cpp" />
     <ClCompile Include="src\features\menu\menu_lua_api.cpp" />

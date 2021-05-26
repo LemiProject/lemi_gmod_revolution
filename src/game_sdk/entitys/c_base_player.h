@@ -99,24 +99,26 @@ public:
 	
 	std::string get_name() const
 	{
-		auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
+		//auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
 
-		if (!glua)
-			return {};
+		//if (!glua)
+		//	return {};
 
-		glua->push_special(static_cast<int>(e_special::glob)); //1
-		glua->get_field(-1, "Entity"); //1
-		glua->push_number(this->get_index()); //2
-		glua->call(1, 1); // 2
+		//glua->push_special(static_cast<int>(e_special::glob)); //1
+		//glua->get_field(-1, "Entity"); //1
+		//glua->push_number(this->get_index()); //2
+		//glua->call(1, 1); // 2
 
-		glua->get_field(-1, "Name"); //2
-		glua->push(-2); //3
-		glua->call(1, 1); // 3
+		//glua->get_field(-1, "Name"); //2
+		//glua->push(-2); //3
+		//glua->call(1, 1); // 3
 
-		std::string name = glua->get_string(-1);
-		glua->pop(3);
+		//std::string name = glua->get_string(-1);
+		//glua->pop(3);
 
-		return name;
+		player_info_s info;
+		interfaces::engine->get_player_info(get_index(), &info);
+		return info.name;
 	}
 
 	float get_armor()
@@ -135,29 +137,33 @@ public:
 
 	std::string get_steam_id() const
 	{
-		auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
+		//auto* const glua = interfaces::lua_shared->get_interface((int)e_type::client);
 
-		if (!glua)
-			return {};
+		//if (!glua)
+		//	return {};
 
-		glua->push_special(static_cast<int>(e_special::glob)); //1
-		glua->get_field(-1, "Entity"); //1
-		glua->push_number(this->get_index()); //2
-		glua->call(1, 1); // 2
+		//glua->push_special(static_cast<int>(e_special::glob)); //1
+		//glua->get_field(-1, "Entity"); //1
+		//glua->push_number(this->get_index()); //2
+		//glua->call(1, 1); // 2
 
-		glua->get_field(-1, "SteamID"); //2
-		glua->push(-2); //3
-		glua->call(1, 1); // 3
-		if (!glua->is_type(-1, (int)e_lua_type::type_string))
-		{
-			glua->pop(3);
-			return {};
-		}
-		
-		std::string sid = glua->get_string(-1);
-		glua->pop(3);
+		//glua->get_field(-1, "SteamID"); //2
+		//glua->push(-2); //3
+		//glua->call(1, 1); // 3
+		//if (!glua->is_type(-1, (int)e_lua_type::type_string))
+		//{
+		//	glua->pop(3);
+		//	return {};
+		//}
+		//
+		//std::string sid = glua->get_string(-1);
+		//glua->pop(3);
 
-		return sid;
+		//return sid;
+
+		player_info_s info;
+		interfaces::engine->get_player_info(get_index(), &info);
+		return info.guid;
 	}
 	
 	q_angle get_view_punch_angles()
@@ -190,6 +196,17 @@ public:
 		lua->pop(3);
 
 		return {x, y, z};
+	}
+
+	float get_ping()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		c_lua_auto_pop p(lua);
+		push_entity();
+		lua->get_field(-1, "Ping");
+		lua->push(-2);
+		lua->call(1, 1);
+		return lua->get_number();
 	}
 	
 	c_color get_team_color()
@@ -240,3 +257,5 @@ __forceinline c_base_player* get_player_by_index(const int i)
 {
 	return static_cast<c_base_player*>(interfaces::entity_list->get_entity_by_index(i));
 }
+
+//__forceinline void spawn_prop(c_base_player* lp, const std::string& str, )

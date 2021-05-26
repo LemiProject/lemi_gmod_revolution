@@ -219,7 +219,7 @@ void override_view_hook::hook(c_view_setup* setup)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
 
 	if (get_local_player() && get_local_player()->is_alive())
-		if (settings::states["legit_bot::no_recoil"])
+		if (settings::states["aim_bot::no_recoil"])
 			setup->angles -= get_local_player()->get_view_punch_angles();
 	
 	globals::view::last_view_setup = *setup;
@@ -273,6 +273,12 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move)-1);
 
+	//update game data
+	{
+		if (get_local_player())
+			globals::game_data::ping = get_local_player()->get_ping();
+	}
+	
 	if (!cmd || cmd->command_number == 0 || !interfaces::engine->is_in_game())
 	{
 		original(interfaces::client_mode, frame_time, cmd);
@@ -293,11 +299,27 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	engine_prediction.start(cmd, lp);
 	{
 		aim::run_aimbot(cmd);
+
+		if (settings::states["aim_bot::aim_bot_trigger_bot"] && settings::get_bind_state("aim_bot::aim_bot_trigger_bot_key"))
+		{
+			trace_t tr;
+			game_utils::trace_view_angles(tr, cmd->viewangles);
+			if (tr.m_pEnt)
+			{
+				if (reinterpret_cast<c_base_player*>(tr.m_pEnt)->is_player())
+				{
+					auto ply = (c_base_player*)tr.m_pEnt;
+
+					if (ply->is_alive())
+						cmd->buttons |= IN_ATTACK;
+				}
+			}
+		}
 		
 		aim::anti_recoil_and_spread(cmd);
 	}
 	engine_prediction.end();
-
+	
 	auto weapon = get_primary_weapon(lp);
 	if (weapon)
 		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() >= interfaces::global_vars->curtime)
@@ -305,14 +327,48 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 				cmd->buttons &= ~IN_ATTACK;
 	
 	original(interfaces::client_mode, frame_time, cmd);
+	
+	q_angle vang;
+	interfaces::engine->get_view_angles(vang);
+	globals::local_player_states::viewangles = vang;
+	globals::local_player_states::velocity = lp->get_velocity();
+	globals::local_player_states::position = lp->get_origin();
 
-	//test functions
+	
+	{
+		static auto spawn_time = 0.f;
+		static auto should_undo = false;
+		if (settings::get_bind_state("exploits::auto_mega_jump", false))
+		{
+			auto va = cmd->viewangles;
+			auto vel = lp->get_velocity();
+			if (vel.z < 0)
+			{
+				q_angle vela;
+				math::vector_to_angels(vel, vela);
+				vela.normalize();
+				va = vela;
+
+				trace_t tr;
+				game_utils::trace_view_angles(tr, va);
+
 #ifdef _DEBUG
-
+				globals::local_player_states::land_position = tr.endpos;
 #endif
+				if ((tr.endpos - lp->get_origin()).length() <= 42.f && interfaces::global_vars->curtime > spawn_time + 1.5f + (globals::game_data::ping / 100.f))
+					interfaces::engine->execute_client_cmd("gm_spawn models/hunter/misc/shell2x2a.mdl"), spawn_time = interfaces::global_vars->curtime, should_undo = true;
+			}
+		}
+		if (should_undo && interfaces::global_vars->curtime > spawn_time + 0.1f + (globals::game_data::ping / 100.f))
+			interfaces::engine->execute_client_cmd("undo"), should_undo = false;
+	}
+	
+#ifdef _DEBUG
+	
+#endif
+	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
-
 
 	if (settings::states["misc::fix_movement"])
 		fix_movement(old_cmd);
@@ -323,26 +379,15 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
-
-	static int cc = 0;
+	
+	static auto cc = 0;
 	cc++;
-	if (GetAsyncKeyState(settings::binds["other::add_entity"]) && cc >= 10)
+	if (settings::get_bind_state("other::add_entity", false) && cc >= 10)
 	{
 		cc = 0;
-		c_vector dir;
-		math::angle_vectors(cmd->viewangles, dir);
-
-		ray_t ray;
 		trace_t tr;
-		c_trace_filter filter;
-		filter.pSkip = lp;
-
-		tr.startpos = lp->get_eye_pos();
-		tr.endpos = tr.startpos + (dir * (4096 * 8));
-
-		ray.init(tr.startpos, tr.endpos);
-		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
-
+		game_utils::trace_view_angles(tr, cmd->viewangles);
+		
 		if (tr.m_pEnt)
 		{
 			c_base_entity* ent = (c_base_entity*)tr.m_pEnt;
@@ -370,8 +415,8 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
 	
-	if (settings::states["legit_bot::legit_bot_silent_aim"])
-		return !settings::states["legit_bot::legit_bot_silent_aim"];
+	if (settings::states["aim_bot::aim_bot_silent_aim"])
+		return !settings::states["aim_bot::aim_bot_silent_aim"];
 	
 	return false;
 }
@@ -472,7 +517,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper)
 {
-	if (settings::states["legit_bot::no_recoil"])
+	if (settings::states["aim_bot::no_recoil"])
 	{
 		q_angle angle;
 		interfaces::engine->get_view_angles(angle);

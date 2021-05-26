@@ -5,6 +5,8 @@
 #include <filesystem>
 #include "platform_folders.h"
 
+#include <Windows.h>
+
 using namespace std;
 
 LAPI void file_tools::create_file(const std::string& path)

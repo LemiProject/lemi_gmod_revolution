@@ -6,16 +6,26 @@
 
 #include "lemi_utils.h"
 #include "../utils/game_utils.h"
+#include "../utils/hack_utils.h"
 
+#include <fmt/format.h>
 
 settings::json json_settings;
 
 std::string get_file_content(std::string_view path)
 {
-	std::ifstream lua_file;
-	lua_file.open(path.data());
-	std::string file_content((std::istreambuf_iterator<char>(lua_file)), std::istreambuf_iterator<char>());
-	return file_content;
+	try
+	{
+		std::ifstream lua_file;
+		lua_file.open(path.data());
+		std::string file_content((std::istreambuf_iterator<char>(lua_file)), std::istreambuf_iterator<char>());
+		return file_content;
+	}
+	catch (std::exception& e)
+	{
+		auto msg = MessageBox(render_system::vars::game_hwnd, fmt::format("Error while reading file {} with error:\n{}", path.data(), e.what()).c_str(), "LemiProject", MB_OK);
+		hack_utils::shutdown_hack();
+	}
 }
 
 void settings::parse_settings_from_file(const std::string& s)
@@ -47,34 +57,73 @@ std::string settings::parse_setting_in_string()
 
 void settings::parse_settings_in_file(const std::string& path)
 {
-	std::ofstream s(path.data());
-	s.clear();
-	s << parse_setting_in_string();
+	try
+	{
+		std::ofstream s(path.data());
+		s.clear();
+		s << parse_setting_in_string();
+	}
+	catch (std::exception& e)
+	{
+		auto msg = MessageBox(render_system::vars::game_hwnd, fmt::format("Error while write settings in file {} with error:\n{}", path.data(), e.what()).c_str(), "LemiProject", MB_OK);
+		hack_utils::shutdown_hack();
+	}
 }
 
 std::string settings::config_directory()
 {
-	auto path = file_tools::get_hack_directory_path();
-	path.append("configs");
-	if (!file_tools::exist(path.string()))
-		file_tools::create_directory(path.string());
-	return path.string();
+	try
+	{
+		auto path = file_tools::get_hack_directory_path();
+		path.append("configs");
+		if (!file_tools::exist(path.string()))
+			file_tools::create_directory(path.string());
+		return path.string();
+	}
+	catch (std::exception& e)
+	{
+		auto msg = MessageBox(render_system::vars::game_hwnd, fmt::format("Failed to get config directory with error:\n{}", e.what()).c_str(), "LemiProject", MB_OK);
+		hack_utils::shutdown_hack();
+	}
 }
 
 std::vector<std::string> settings::get_configs()
 {
-	auto path = config_directory();
-	std::vector<std::string> out;
-	for (auto& p : std::filesystem::directory_iterator(path))
-		if (!p.is_directory())
-			if (p.path().filename().string().find(".vpcfg") != std::string::npos)
-				out.push_back(p.path().filename().string());
-	return out;
+	try
+	{
+		auto path = config_directory();
+		std::vector<std::string> out;
+		for (auto& p : std::filesystem::directory_iterator(path))
+			if (!p.is_directory())
+				if (p.path().filename().string().find(".vpcfg") != std::string::npos)
+					out.push_back(p.path().filename().string());
+		return out;
+	}
+	catch (std::exception& e)
+	{
+		auto msg = MessageBox(render_system::vars::game_hwnd, fmt::format("Cannot get configs list with error:\n{}", e.what()).c_str(), "LemiProject", MB_OK);
+		hack_utils::shutdown_hack();
+	}
 }
 
 void settings::init_config_system()
 {
 	
+}
+
+bool settings::get_bind_state(const std::string& name, bool may_be_null)
+{
+	auto key = binds[name];
+	if (may_be_null)
+		return GetAsyncKeyState(key) || key == 0;
+	return GetAsyncKeyState(key);
+}
+
+bool settings::get_bind_state(uint32_t bind, bool may_be_null)
+{
+	if (may_be_null)
+		return GetAsyncKeyState(bind) || bind == 0;
+	return GetAsyncKeyState(bind);
 }
 
 int settings::lua_api::lua_api_get_hack_var__Imp(c_lua_interface* lua)

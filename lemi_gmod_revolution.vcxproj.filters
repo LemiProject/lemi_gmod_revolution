@@ -297,6 +297,9 @@
     <ClInclude Include="src\features\aim\spreads\weapon_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\features\hvh\hvh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\interfaces.cpp">
@@ -386,7 +389,7 @@
     <ClCompile Include="src\render_system\img\img_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\features\aim\legit_bot.cpp">
+    <ClCompile Include="src\features\aim\aim_bot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="deps\include\imgui\imgui_freetype.cpp">

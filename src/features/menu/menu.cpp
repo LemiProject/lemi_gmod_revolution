@@ -12,6 +12,10 @@
 
 #include <Windows.h>
 
+
+#include "../../globals.h"
+#include "../../settings/settings.h"
+
 bool is_open = false;
 
 void menu::toggle_menu()
@@ -34,6 +38,41 @@ void menu::init()
 	imgui_styles::std_dark_theme();
 }
 
+#ifdef _DEBUG
+
+void draw_debug()
+{
+	using namespace ImGui;
+
+	if (!interfaces::engine->is_in_game())
+		return;
+	
+	SetNextWindowSize({ 300.f, 300.f }, ImGuiCond_Once);
+	Begin(u8"келх опндфейр деаюц)))))");
+
+	auto to_land_delta = globals::local_player_states::land_position - globals::local_player_states::position;
+
+	auto vel = globals::local_player_states::velocity.to_string_friendly();
+	auto va = globals::local_player_states::viewangles.to_string_friendly();
+	auto pos = globals::local_player_states::position.to_string_friendly();
+	auto land = globals::local_player_states::land_position.to_string_friendly();
+	
+	TextWrapped("Ping: %fms\nVelocity: x:%f, y:%f, z:%f\nVelocity: %f\nViewAngles: x:%f, y:%f, z:%f\nPosition: x:%f, y:%f, z:%f\nLandPosition: x:%f, y:%f, z:%f\nToLandDistance: %f",
+		globals::game_data::ping,
+		vel.x, vel.y, vel.z,
+		globals::local_player_states::velocity.length(),
+		va.x, va.y, va.z,
+		pos.x, pos.y, pos.z,
+		land.x, land.y, land.z,
+		to_land_delta.length());
+
+	Hotkey("NFD##DF", &settings::debug_vars::no_fall_key);
+
+	End();
+}
+
+#endif
+
 void menu::draw()
 {
 	if (is_open)
@@ -50,4 +89,7 @@ void menu::draw()
 	{
 		ImGui::GetIO().MouseDrawCursor = false;
 	}
+#ifdef _DEBUG
+	draw_debug();
+#endif
 }
