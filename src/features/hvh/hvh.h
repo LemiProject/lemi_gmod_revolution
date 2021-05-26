@@ -4,10 +4,10 @@
 
 namespace hvh
 {
-	//void anti_aims(c_user_cmd* cmd);
+	void anti_aims(c_user_cmd* cmd);
 
 	__forceinline void run_hvh(c_user_cmd* cmd)
 	{
-		
+		anti_aims(cmd);
 	}
 }

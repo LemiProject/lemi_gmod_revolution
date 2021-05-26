@@ -168,6 +168,9 @@ namespace settings
 		{"other::rapid_fire", false},
 		{"misc::auto_strafe", false},
 
+		//World visuals
+		{"world::third_person", false},
+		
 		// Lua
 		{"lua::hack_hooks", false},
 		{"lua::hack_globals", false},
@@ -190,6 +193,9 @@ namespace settings
 		{"aim_bot::aim_bot_smooth_value", 0.f},
 		{"aim_bot::aim_bot_delay_before_aiming", 0.f},
 
+		//World visuals
+		{"world::third_person_key", 0.f},
+		
 		//HVH
 		{"hvh::yaw_type", 0},
 		{"hvh::pitch_type", 0}

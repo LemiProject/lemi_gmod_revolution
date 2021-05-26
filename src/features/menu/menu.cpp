@@ -68,6 +68,9 @@ void draw_debug()
 
 	Hotkey("NFD##DF", &settings::debug_vars::no_fall_key);
 
+	Checkbox("TP#SDASD", &settings::states["world::third_person"]);
+	Hotkey("TP KEY##ASDSAD", &settings::binds["world::third_person_key"]);
+	
 	End();
 }
 

@@ -17,8 +17,9 @@ void interfaces::init_interfaces()
 	engine_trace = memory_utils::capture_interface<i_engine_trace>("engine.dll", "EngineTraceClient003");
 	panel = memory_utils::capture_interface<i_panel>("vgui2.dll", "VGUI_Panel009");
 	game_movement = memory_utils::capture_interface<i_game_movement>("client.dll", "GameMovement001");
-
+	
 	move_helper = **reinterpret_cast<i_move_helper***>(memory_utils::pattern_scanner("client.dll", "8B 0D ? ? ? ? 8B 46 08 68") + 2);
+	input = **reinterpret_cast<c_input***>(memory_utils::pattern_scanner("client.dll", "8B 0D ? ? ? ? 8B 01 FF 60 48") + 2);
 	
 	render_context = material_system->get_render_context();
 	do { client_mode = **reinterpret_cast<i_client_mode***>((*reinterpret_cast<uintptr_t**>(client))[10] + 0x5); } while (!client_mode);
