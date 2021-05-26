@@ -17,7 +17,7 @@ class c_base_entity : public i_client_entity
 {
 public:
 	NETVAR("DT_BaseEntity", "m_vecOrigin", get_origin, c_vector);
-	NETVAR("DT_BaseEntity", "m_vecAngles", get_angels, c_vector);
+	NETVAR("DT_GMOD_Player", "m_angEyeAngles[0]", get_angels, c_vector);
 	NETVAR("DT_BaseEntity", "m_nModelIndex", get_model_index, int);
 	NETVAR("DT_BaseEntity", "m_iTeamNum", get_team_num, int);
 	NETVAR("DT_BasePlayer", "m_vecViewOffset[0]", get_view_offset, c_vector);
@@ -37,6 +37,18 @@ public:
 		return (*(original_fn**)this)[3](this);
 	}
 
+	//q_angle& eye_angles()
+	//{
+	//	using fn = q_angle & (__thiscall*)(void*);
+	//	return (*(fn**)this)[140](this);
+	//}
+
+	//q_angle& local_eye_angles()
+	//{
+	//	using fn = q_angle & (__thiscall*)(void*);
+	//	return (*(fn**)this)[141](this);
+	//}
+	
 	bool is_alive()
 	{
 		using original_fn = bool(__thiscall*)(void*);
@@ -60,7 +72,7 @@ public:
 		using fn = bool(__thiscall*)(void*);
 		return (*(fn**)this)[170](this);
 	}
-
+	
 	const char* get_lua_script_name() //B8 AA 2A 4D 00 C3	client.dll
 	{
 		using fn = const char* (__thiscall*)(void*);

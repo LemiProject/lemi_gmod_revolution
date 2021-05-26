@@ -33,6 +33,8 @@
 #include "../features/menu/windows/bgwindow.h"
 #include "../features/movement/movement.h"
 #include "../features/prediction_system/prediction_system.h"
+#include "../features/hvh/hvh.h"
+
 #include "../settings/settings.h"
 
 inline unsigned int get_virtual(void* _class, const unsigned int index) { return static_cast<unsigned int>((*static_cast<int**>(_class))[index]); }
@@ -180,7 +182,7 @@ void hooks_manager::init()
 	CREATE_HOOK(interfaces::model_render, draw_model_execute_hook::idx, draw_model_execute_hook::hook, draw_model_execute_hook::original);
 	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
 	CREATE_HOOK(interfaces::panel, paint_traverse_hook::idx, paint_traverse_hook::hook, paint_traverse_hook::original);
-	//CREATE_HOOK(interfaces::render_view, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
+	CREATE_HOOK(interfaces::view_render, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
@@ -328,12 +330,6 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	original(interfaces::client_mode, frame_time, cmd);
 	
-	q_angle vang;
-	interfaces::engine->get_view_angles(vang);
-	globals::local_player_states::viewangles = vang;
-	globals::local_player_states::velocity = lp->get_velocity();
-	globals::local_player_states::position = lp->get_origin();
-
 	
 	{
 		static auto spawn_time = 0.f;
@@ -364,7 +360,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	}
 	
 #ifdef _DEBUG
-	
+	hvh::run_hvh(cmd);
 #endif
 	
 	cmd->viewangles.clamp();
@@ -379,6 +375,10 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			interfaces::engine->execute_client_cmd("gm_spawn models/hunter/blocks/cube075x075x075.mdl ; sit ; undo"),
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
+
+	globals::local_player_states::viewangles = cmd->viewangles;
+	globals::local_player_states::velocity = lp->get_velocity();
+	globals::local_player_states::position = lp->get_origin();
 	
 	static auto cc = 0;
 	cc++;
@@ -471,6 +471,58 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 	interfaces::surface->finish_drawing();
 }
 
+void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
+	int what_to_draw)
+{
+	if (get_local_player())
+	{
+		static auto cc = 0;
+		if (cc >= 20 && settings::get_bind_state("world::third_person_key", false))
+			settings::states["world::third_person"] = !settings::states["world::third_person"], cc = 0;
+		cc++;
+
+		static auto prev_third_person = false;
+
+		if (settings::states["world::third_person"] && !render_system::vars::is_screen_grab)
+		{
+			trace_t tr;
+			ray_t ray;
+			c_trace_filter f;
+			f.pSkip = get_local_player();
+
+			c_vector ang_pos;
+			math::angle_vectors(setup.angles, ang_pos);
+			ang_pos *= -1; //invert
+			auto end_pos = setup.origin + (ang_pos * 100.f);
+
+			ray.init(setup.origin, end_pos);
+			interfaces::engine_trace->trace_ray(ray, MASK_SOLID, &f, &tr);
+
+			if (!(abs((tr.endpos - setup.origin).length()) < 50))
+			{
+				setup.origin = tr.endpos;
+
+				interfaces::input->camera_in_third_person = true;
+				prev_third_person = true;
+
+				get_local_player()->get_angels() = globals::local_player_states::viewangles;
+			}
+			else
+			{
+				interfaces::input->camera_in_third_person = false;
+				prev_third_person = false;
+			}
+		}
+		else
+		{
+			if (prev_third_person)
+				interfaces::input->camera_in_third_person = false, prev_third_person = false;
+		}
+	}
+
+	original(view_render, setup, clear_flags, what_to_draw);
+}
+
 //void __fastcall render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
 //	int what_to_draw)
 //{
@@ -506,9 +558,14 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	auto* ent = get_entity_by_index(render_info.entity_index);
 
-	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name())) && ent != get_local_player())
+	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name())))
 	{
-		force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material);
+		//render_info.angles = { 0, 0, 0 };
+		
+		if (ent != get_local_player())
+			force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material);
+		//else
+		//	force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material), get_local_player()->get_angels() = globals::local_player_states::viewangles/*, render_info.angles = globals::local_player_states::viewangles;*/;
 	}
 
 	original(interfaces::model_render, draw_state, render_info, bone);

@@ -20,6 +20,7 @@
 #include "game_sdk/interfaces/i_engine_trace.h"
 #include "game_sdk/interfaces/i_panel.h"
 #include "game_sdk/interfaces/i_game_movement.h"
+#include "game_sdk/interfaces/c_input.h"
 
 namespace interfaces
 {
@@ -42,6 +43,7 @@ namespace interfaces
 	inline i_panel* panel;
 	inline i_game_movement* game_movement;
 	inline i_move_helper* move_helper;
+	inline c_input* input;
 	
 	void init_interfaces();
 }

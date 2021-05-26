@@ -20,7 +20,7 @@ enum class e_move_type
 	movetype
 };
 
-class c_base_player : public c_base_entity
+class c_base_player : public c_base_entity //278
 {
 public:
 	NETVAR("DT_BasePlayer", "m_fFlags", get_flags, int);
@@ -59,6 +59,12 @@ public:
 		return type;
 	}
 
+	//void set_local_view_angles(q_angle ang)
+	//{
+	//	using fn = void(__thiscall*)(void*, q_angle);
+	//	return (*(fn**)this)[350](this, ang);
+	//}
+	
 	bool is_admin()
 	{
 		auto str = get_user_group();
