@@ -153,6 +153,15 @@ struct paint_traverse_hook
 	static void __fastcall hook(i_panel* self, void*, unsigned int panel, bool force_repaint, bool allow_force);
 };
 
+struct run_string_ex
+{
+	static inline constexpr uint32_t idx = 111;
+
+	using fn = bool(__thiscall*)(c_lua_interface*, const char*, const char*, const char*, bool, bool, bool, bool);
+	static inline fn original = nullptr;
+	static bool __fastcall hook(c_lua_interface* self, void* edx, const char* filename, const char* path, const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns);
+};
+
 struct wndproc_hook
 {
 	static LRESULT STDMETHODCALLTYPE hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param);
@@ -312,7 +321,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 				{
 					auto ply = (c_base_player*)tr.m_pEnt;
 
-					if (ply->is_alive())
+					if (ply->is_alive() && game_utils::pass_aimbot_filters(ply))
 						cmd->buttons |= IN_ATTACK;
 				}
 			}
@@ -329,7 +338,6 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 				cmd->buttons &= ~IN_ATTACK;
 	
 	original(interfaces::client_mode, frame_time, cmd);
-	
 	
 	{
 		static auto spawn_time = 0.f;
@@ -493,7 +501,7 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 			c_vector ang_pos;
 			math::angle_vectors(setup.angles, ang_pos);
 			ang_pos *= -1; //invert
-			auto end_pos = setup.origin + (ang_pos * 100.f);
+			auto end_pos = setup.origin + (ang_pos * settings::values["world::third_person_distance"]);
 
 			ray.init(setup.origin, end_pos);
 			interfaces::engine_trace->trace_ray(ray, MASK_SOLID, &f, &tr);
@@ -618,6 +626,13 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 			});
 	}
 	
+}
+
+bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename, const char* path,
+	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns)
+{
+
+	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)

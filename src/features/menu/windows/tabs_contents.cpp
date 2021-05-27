@@ -135,6 +135,15 @@ void menu_tabs_content::draw_aim_bot()
 		
 	}
 	EndGroupPanel();
+
+	SameLine();
+
+	BeginGroupPanel("Overlay##VISUALS_OVERLAY", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	{
+		internal::text_and_toggle_button("Draw fov", "##VISUALS_OVERLAY_DRAW_FOV", &states["visuals::draw_fov"]);
+		internal::set_tooltip("Draw aimbot fov");
+	}
+	EndGroupPanel();
 }
 
 void menu_tabs_content::draw_hvh()
@@ -212,20 +221,40 @@ void menu_tabs_content::draw_visuals()
 			}
 		}
 
-		internal::text_and_toggle_button("Name", "##VISUALS_ESP_PLAYER_NAME_ENABLE", &states["visuals::esp_name_player"]);
-		internal::set_tooltip("Draw entity's name");
-		internal::text_and_toggle_button("Health", "##VISUALS_ESP_PLAYER_HEALTH_ENABLE", &states["visuals::esp_health_player"]);
-		internal::set_tooltip("Draw entity's health");
+		Button("To draw##PLY_TO_DRAW");
+		OpenPopupOnItemClick("PLY_TO_DRAW_POPUP", ImGuiPopupFlags_MouseButtonLeft);
+		if (BeginPopup("PLY_TO_DRAW_POPUP"))
+		{
+			internal::text_and_toggle_button("Name", "##VISUALS_ESP_PLAYER_NAME_ENABLE", &states["visuals::esp_name_player"]);
+			internal::set_tooltip("Draw entity's name");
+			internal::text_and_toggle_button("Health", "##VISUALS_ESP_PLAYER_HEALTH_ENABLE", &states["visuals::esp_health_player"]);
+			internal::set_tooltip("Draw entity's health");
+			SameLine();
+			internal::text_and_toggle_button("Text", "##VISUALS_ESP_PLAYER_HEALTH_TEXT_ENABLE", &states["visuals::esp_health_text_player"]);
+			internal::set_tooltip("Draw entity's health text");
+			internal::text_and_toggle_button("User group", "##VISUALS_ESP_PLAYER_DRAW_USER_GROUP", &states["visuals::esp_player_user_group"]);
+			internal::set_tooltip("Draw player user group");
+			internal::text_and_toggle_button("Armor", "##VISUALS_ESP_PLAYER_ARMOR_ENABLE", &states["visuals::esp_armor_player"]);
+			internal::set_tooltip("Draw entity's armor");
+			internal::text_and_toggle_button("Active weapon", "##VISUALS_ESP_PLAYER_ACTIVEWEAPON_NAME", &states["visuals::esp_active_weapon_player"]);
+			internal::set_tooltip("Draw active weapon name");
+
+			EndPopup();
+		}
+
 		SameLine();
-		internal::text_and_toggle_button("Text", "##VISUALS_ESP_PLAYER_HEALTH_TEXT_ENABLE", &states["visuals::esp_health_text_player"]);
-		internal::set_tooltip("Draw entity's health text");
-		internal::text_and_toggle_button("User group", "##VISUALS_ESP_PLAYER_DRAW_USER_GROUP", &states["visuals::esp_player_user_group"]);
-		internal::set_tooltip("Draw player user group");
-		internal::text_and_toggle_button("Armor", "##VISUALS_ESP_PLAYER_ARMOR_ENABLE", &states["visuals::esp_armor_player"]);
-		internal::set_tooltip("Draw entity's armor");
-		internal::text_and_toggle_button("Active weapon", "##VISUALS_ESP_PLAYER_ACTIVEWEAPON_NAME", &states["visuals::esp_active_weapon_player"]);
-		internal::set_tooltip("Draw active weapon name");
-		SliderFloat("ESP Draw distance##VISUALS_ESP_PLAYER_DRAW_DISTANCE", &values["visuals::esp_distance_player"], 0.f, 20000.f, "%.1f", 1.f);
+
+		Button("Filters##PLY_ESP_FILTERS");
+		OpenPopupOnItemClick("PLY_ESP_FILTERS_POP", ImGuiPopupFlags_MouseButtonLeft);
+		if (BeginPopup("PLY_ESP_FILTERS_POP"))
+		{
+			internal::text_and_toggle_button("Dormant", "##PLAYER_ESP_IS_FILTER_DORMANT", &states["visuals::esp_player_dormant"]);
+			internal::set_tooltip("Is draw dormant");
+			
+			EndPopup();
+		}
+		
+		SliderFloat("ESP Draw distance##VISUALS_ESP_PLAYER_DRAW_DISTANCE", &values["visuals::esp_distance_player"], 0.f, 50000.f, "%.0f", 1.f);
 		internal::set_tooltip("Distance from target until ESP stops rendering");
 	}
 	EndGroupPanel();
@@ -272,14 +301,34 @@ void menu_tabs_content::draw_visuals()
 				}
 			}
 
-			internal::text_and_toggle_button("Name", "##VISUALS_ESP_ENTITY_NAME_ENABLE", &states["visuals::esp_name_entity"]);
-			internal::set_tooltip("Draw entity's name");
-			internal::text_and_toggle_button("Health", "##VISUALS_ESP_ENTITY_HEALTH_ENABLE", &states["visuals::esp_health_entity"]);
-			internal::set_tooltip("Draw entity's health");
+			Button("To draw##ENT_TO_DRAW");
+			OpenPopupOnItemClick("ENT_TO_DRAW_POPUP", ImGuiPopupFlags_MouseButtonLeft);
+			if (BeginPopup("ENT_TO_DRAW_POPUP"))
+			{
+				internal::text_and_toggle_button("Name", "##VISUALS_ESP_ENTITY_NAME_ENABLE", &states["visuals::esp_name_entity"]);
+				internal::set_tooltip("Draw entity's name");
+				internal::text_and_toggle_button("Health", "##VISUALS_ESP_ENTITY_HEALTH_ENABLE", &states["visuals::esp_health_entity"]);
+				internal::set_tooltip("Draw entity's health");
+				SameLine();
+				internal::text_and_toggle_button("Health text", "##VISUALS_ESP_ENTITY_HEALTH_TEXT_ENABLE", &states["visuals::esp_health_text_entity"]);
+				internal::set_tooltip("Draw entity's health text");
+
+				EndPopup();
+			}
+
 			SameLine();
-			internal::text_and_toggle_button("Health text", "##VISUALS_ESP_ENTITY_HEALTH_TEXT_ENABLE", &states["visuals::esp_health_text_entity"]);
-			internal::set_tooltip("Draw entity's health text");
-			SliderFloat("ESP Draw distance##VISUALS_ESP_ENTITY_DRAW_DISTANCE", &values["visuals::esp_distance_entity"], 0.f, 20000.f, "%.1f", 1.f);
+
+			Button("Filters##ENTITY_ESP_FILTERS");
+			OpenPopupOnItemClick("ENTITY_ESP_FILTERS_POP", ImGuiPopupFlags_MouseButtonLeft);
+			if (BeginPopup("ENTITY_ESP_FILTERS_POP"))
+			{
+				internal::text_and_toggle_button("Dormant", "##ENTITY_ESP_IS_FILTER_DORMANT", &states["visuals::esp_entity_dormant"]);
+				internal::set_tooltip("Is draw dormant");
+
+				EndPopup();
+			}
+			
+			SliderFloat("ESP Draw distance##VISUALS_ESP_ENTITY_DRAW_DISTANCE", &values["visuals::esp_distance_entity"], 0.f, 50000.f, "%.0f", 1.f);
 			internal::set_tooltip("Distance from target until ESP stops rendering");
 		}
 		EndGroupPanel();
@@ -287,12 +336,13 @@ void menu_tabs_content::draw_visuals()
 		SameLine();
 	}
 
-	BeginGroupPanel("Overlay##VISUALS_OVERLAY", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	BeginGroupPanel("World##VISUALS_WORLD", { GetWindowSize().x / panels_in_visuals_count, -1 });
 	{
-		internal::text_and_toggle_button("Draw fov", "##VISUALS_OVERLAY_DRAW_FOV", &states["visuals::draw_fov"]);
-		internal::set_tooltip("Draw aimbot fov");
-		//internal::text_and_toggle_button("Line to target", "##VISUALS_OVERLAY_DRAW_LINE_TO_LB_TARGET", &states["visuals::draw_line_to_target"]);
-		//internal::set_tooltip("Draw line to Aimbot target");
+		internal::text_and_toggle_button("Third person", "##VISUALS_WORLD_TP", &states["world::third_person"]);
+		Hotkey("Third person key##VISUALS_WORLD_TP_KEY", &binds["world::third_person_key"]);
+		PushItemWidth(GetWindowSize().x / 6);
+		SliderFloat("Third person distance##TPD", &values["world::third_person_distance"], 60.f, 1000.f, "%.0f");
+		PopItemWidth();
 	}
 	EndGroupPanel();
 }
