@@ -32,7 +32,7 @@ namespace settings
 			void remove(int idx);
 			bool exist(const std::string& c);
 			int find(const std::string& c);
-			void exchange(std::vector<std::string>& c);
+			void exchange(const std::vector<std::string>& c);
 			bool empty();
 			void clear();
 
@@ -131,12 +131,14 @@ namespace settings
 		{"visuals::esp_global", false},
 		{"visuals::esp_box_player", false},
 		{"visuals::esp_name_player", false},
+		{"visuals::esp_team_player", false},
 		{"visuals::esp_armor_player", false},
 		{"visuals::esp_health_player", false},
 		{"visuals::esp_health_text_player", false},
 		{"visuals::esp_active_weapon_player", false},
 		{"visuals::esp_color_by_team_player", false},
 		{"visuals::esp_player_user_group", false},
+		{"visuals::esp_player_dormant", false},
 		
 		// Entity ESP
 		{"visuals::esp_enabled_entity", false},
@@ -144,6 +146,7 @@ namespace settings
 		{"visuals::esp_name_entity", false},
 		{"visuals::esp_health_entity", false},
 		{"visuals::esp_health_text_entity", false},
+		{"visuals::esp_entity_dormant", false},
 
 		// Chams
 		{"visuals::chams_enabled", false},
@@ -194,7 +197,7 @@ namespace settings
 		{"aim_bot::aim_bot_delay_before_aiming", 0.f},
 
 		//World visuals
-		{"world::third_person_key", 0.f},
+		{"world::third_person_distance", 0.f},
 		
 		//HVH
 		{"hvh::yaw_type", 0},
@@ -215,7 +218,13 @@ namespace settings
 		// Aimbot
 		{"aim_bot::aim_bot_key", 0},
 		{"aim_bot::aim_bot_auto_fire_key", 0},
-		{"aim_bot::aim_bot_trigger_bot_key", 0}
+		{"aim_bot::aim_bot_trigger_bot_key", 0},
+
+		//WORLD
+		{"world::third_person_key", 0},
+
+		//HVH
+		{"hvh::fake_duck", 0}
 	};
 
 	inline std::map<std::string, int> flags {

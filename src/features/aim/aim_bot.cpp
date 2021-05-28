@@ -11,6 +11,7 @@
 
 #include "spreads/all_spreads.h"
 #include "spreads/csbase.h"
+#include "spreads/fas2nospread.h"
 #include "spreads/weapon_base.h"
 
 struct target_t
@@ -23,18 +24,6 @@ struct target_t
 
 int last_target_id = -1;
 float last_target_time = -1.f;
-
-bool pass_filters(c_base_player* ply)
-{
-	auto f = settings::flags["aim_bot::aim_bot_player_filter"];
-
-	if (f & (int)settings::aimbot::e_player_filter::admin && ply->is_admin()) return false;
-	if (f & (int)settings::aimbot::e_player_filter::fly && ply->get_move_type() == (int)e_move_type::fly) return false;
-	if (f & (int)settings::aimbot::e_player_filter::noclip && ply->get_move_type() == (int)e_move_type::noclip) return false;
-	if (f & (int)settings::aimbot::e_player_filter::observer && ply->get_move_type() == (int)e_move_type::observer) return false;
-
-	return true;
-}
 
 bool get_target_bone(c_base_player* ply, c_vector& out)
 {
@@ -93,7 +82,7 @@ bool get_target(target_t& target)
 		if (!player || !player->is_player() || !player->is_alive() || player == get_local_player())
 			continue;
 
-		if (!pass_filters(player))
+		if (!game_utils::pass_aimbot_filters(player))
 			continue;
 		
 		c_vector engine_angels;
@@ -238,10 +227,11 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 			|| weapon->get_weapon_base().empty())
 			calc_spread_csbase(weapon, ucmd);
 		else if (weapon->get_weapon_base().find("swb") != std::string::npos
-			/*|| weapon->get_weapon_base().find("weapon_base") != std::string::npos*/)
+			|| weapon->get_weapon_base().find("cw_") != std::string::npos)
 			allspreads_nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
-		//else if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
-		//	calc_spread_weapon_base(weapon, ucmd);
+		else if (weapon->get_class_name().find("fas2") != std::string::npos)
+			fas2nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
+			
 	}
 }
 

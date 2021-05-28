@@ -49,6 +49,11 @@ void draw_armor(c_base_player* ply, math::box_t box)
 	}
 }
 
+bool is_entity_var(const std::string& ent_var, const std::string& ply_var)
+{
+	return settings::states[ent_var] || (settings::states["visuals::esp_global"] && settings::states[ply_var]);
+}
+
 void draw_health(c_base_entity* ent, math::box_t box)
 {
 	if (ent->is_alive())
@@ -77,14 +82,16 @@ void draw_health(c_base_entity* ent, math::box_t box)
 		auto text = std::to_string(health);
 		auto font_size = calc_text_size(ent, box);
 		auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0, text.c_str());
-		auto text_pos = ImVec2(box.x + box.w + text_size.y / 2.f, box.y);
+		auto text_pos = last_text_pos;
 
+		text_pos.x += text_size.y / 2.f;
+		
 		float g = 255 * (health / 100.f);
 		c_color text_color = {255 - g, g, 0};
 
 		directx_render::text(render_system::fonts::in_game_font, text, text_pos, font_size, text_color, directx_render::font_outline);
 
-		last_text_pos = pos;
+		last_text_pos = text_pos;
 		last_text = text;
 	}
 }
@@ -148,6 +155,24 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 	}
 }
 
+void draw_team(c_base_player* ply, math::box_t& box)
+{
+	auto str = ply->get_team_name();
+	if (str.empty())
+		return;
+
+	auto font_size = calc_text_size(ply, box);
+	auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, str.c_str());
+	auto text_pos = ImVec2(box.x + box.w + text_size.y / 2.f, box.y);
+
+	text_pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
+
+	text(render_system::fonts::in_game_font, str, text_pos, font_size, ply->get_team_color(), directx_render::font_outline);
+
+	last_text_pos = text_pos;
+	last_text = str;
+}
+
 inline void draw_user_group(c_base_player* ply, math::box_t& box)
 {
 	auto str = ply->get_user_group();
@@ -158,8 +183,7 @@ inline void draw_user_group(c_base_player* ply, math::box_t& box)
 	auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, str.c_str());
 	auto text_pos = ImVec2(box.x + box.w + text_size.y / 2.f, box.y);
 
-	if (last_text_pos.x >= -1.f && last_text_pos.y >= -1.f)
-		text_pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
+	text_pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
 
 	auto is_admin = str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
 		|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos;
@@ -214,27 +238,39 @@ void visuals::esp::run_esp()
 	{
 		auto* ent = get_entity_by_index(i);
 
-		if (!ent || !ent->is_alive() || ent->is_dormant())
+		if (!ent || !ent->is_alive())
+			continue;
+
+		if (ent->is_player() && !settings::states["visuals::esp_player_dormant"] && ent->is_dormant())
+			continue;
+		if (!ent->is_player() && !is_entity_var("visuals::esp_entity_dormant", "visuals::esp_player_dormant") && ent->is_dormant())
 			continue;
 		
 		const auto is_draw =  ent->is_player() || settings::visuals::entitys_to_draw.exist(ent->get_class_name());
-
 		const auto has_owner = interfaces::entity_list->get_entity_by_handle(ent->get_owner_entity_handle()) ? true : false;
 		
 		if (!is_draw || ent == get_local_player() || has_owner)
 			continue;
 
-		last_text_pos = {-1.f, -1.f};
+		math::box_t box{};
+		if (ent->is_player())
+		{
+			if (!game_utils::get_player_box(ent, box))
+				continue;
+		}
+		else
+		{
+			if (!game_utils::get_entity_box(ent, box))
+				continue;
+		}
+
+		auto ts = render_system::fonts::in_game_font->CalcTextSizeA(calc_text_size(ent, box), FLT_MAX, 0.f, "TEST");
+		last_text_pos = ImVec2(box.x + box.w, box.y);
 		last_text = "";
 		
-		math::box_t box{};
-
 		if (ent->is_player())
 			if (settings::states["visuals::esp_enabled_player"]) {
 				if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
-					continue;
-
-				if (!game_utils::get_player_box(ent, box))
 					continue;
 
 				if (settings::states["visuals::esp_box_player"])
@@ -243,6 +279,9 @@ void visuals::esp::run_esp()
 				if (settings::states["visuals::esp_health_player"])
 					draw_health(ent, box);
 
+				if (settings::states["visuals::esp_team_player"])
+					draw_team((c_base_player*)ent, box);
+				
 				if (settings::states["visuals::esp_player_user_group"])
 					draw_user_group((c_base_player*)ent, box);
 				
@@ -252,8 +291,10 @@ void visuals::esp::run_esp()
 				if (settings::states["visuals::esp_armor_player"])
 					draw_armor((c_base_player*)ent, box);
 			}
+		
 		if (!ent->is_player())
-			if (settings::states["visuals::esp_enabled_entity"] || (settings::states["visuals::esp_enabled_player"] && settings::states["visuals::esp_global"])) {
+			if (is_entity_var("visuals::esp_enabled_entity", "visuals::esp_enabled_player"))
+			{
 				if (settings::states["visuals::esp_global"])
 				{
 						if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_player"])
@@ -262,17 +303,14 @@ void visuals::esp::run_esp()
 				else
 						if (get_local_player()->get_eye_pos().distance_to(ent->get_eye_pos()) > settings::values["visuals::esp_distance_entity"])
 							continue;
-
-				if (!game_utils::get_entity_box(ent, box))
-					continue;
-
-				if (settings::states["visuals::esp_box_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_box_player"]))
+				
+				if (is_entity_var("visuals::esp_box_entity", "visuals::esp_box_player"))
 					draw_box(ent, box);
 
-				if (settings::states["visuals::esp_health_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_health_player"]))
+				if (is_entity_var("visuals::esp_health_entity", "visuals::esp_health_player"))
 					draw_health(ent, box);
 				
-				if (settings::states["visuals::esp_name_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_name_player"]))
+				if (is_entity_var("visuals::esp_name_entity", "visuals::esp_name_player"))
 					draw_name(ent, box);
 			}
 	}

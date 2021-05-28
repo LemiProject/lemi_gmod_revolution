@@ -217,6 +217,18 @@ namespace game_utils
 		
 		t = tr;
 	}
+
+	inline bool pass_aimbot_filters(c_base_player* ply)
+	{
+		auto f = settings::flags["aim_bot::aim_bot_player_filter"];
+
+		if (f & (int)settings::aimbot::e_player_filter::admin && ply->is_admin()) return false;
+		if (f & (int)settings::aimbot::e_player_filter::fly && ply->get_move_type() == (int)e_move_type::fly) return false;
+		if (f & (int)settings::aimbot::e_player_filter::noclip && ply->get_move_type() == (int)e_move_type::noclip) return false;
+		if (f & (int)settings::aimbot::e_player_filter::observer && ply->get_move_type() == (int)e_move_type::observer) return false;
+
+		return true;
+	}
 }
 
 

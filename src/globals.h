@@ -14,7 +14,11 @@ namespace globals
 		inline c_vector velocity;
 		inline q_angle viewangles;
 		inline c_vector position;
-
+		inline c_vector real_eye_pos;
+		
+		inline bool is_fake_duck;
+		inline bool in_third_person;
+		
 #ifdef _DEBUG
 		inline c_vector land_position;
 #endif

@@ -17,7 +17,7 @@ class c_base_entity : public i_client_entity
 {
 public:
 	NETVAR("DT_BaseEntity", "m_vecOrigin", get_origin, c_vector);
-	NETVAR("DT_GMOD_Player", "m_angEyeAngles[0]", get_angels, c_vector);
+	NETVAR("DT_GMOD_Player", "m_angEyeAngles[0]", get_angles, c_vector);
 	NETVAR("DT_BaseEntity", "m_nModelIndex", get_model_index, int);
 	NETVAR("DT_BaseEntity", "m_iTeamNum", get_team_num, int);
 	NETVAR("DT_BasePlayer", "m_vecViewOffset[0]", get_view_offset, c_vector);
