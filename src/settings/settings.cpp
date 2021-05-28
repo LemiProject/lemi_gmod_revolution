@@ -51,7 +51,10 @@ std::string settings::parse_setting_in_string()
 	j["binds"] = binds;
 	j["colors"] = colors::colors_map;
 	j["flags"] = flags;
-
+	j["friends"] = other::friends;
+	j["friendly_teams"] = other::friendly_teams;
+	j["ents_do_draw"] = visuals::entitys_to_draw.data();
+	
 	return j.dump();
 }
 
@@ -256,7 +259,7 @@ int settings::visuals::c_entity_list::find(const std::string& c)
 	return -1;
 }
 
-void settings::visuals::c_entity_list::exchange(std::vector<std::string>& c)
+void settings::visuals::c_entity_list::exchange(const std::vector<std::string>& c)
 {
 	//std::unique_lock<std::mutex> l(mutex);
 	classes = c;
@@ -300,5 +303,17 @@ void settings::parse_settings_from_string(const std::string& s)
 			merge_map(j["colors"].get<std::map<std::string, std::array<float, 4>>>(), colors::colors_map);
 		if (!j["flags"].empty())
 			merge_map(j["flags"].get<decltype(flags)>(), flags);
+
+		if (!j["friends"].is_null())
+			other::friends = j["friends"].get<std::vector<std::string>>();
+		if (!j["friends"].is_null())
+			other::friendly_teams = j["friendly_teams"].get<std::vector<int>>();
+		
+		if (!j["friends"].is_null())
+			visuals::entitys_to_draw.exchange(j["ents_do_draw"].get<std::vector<std::string>>());
+		
+		//j["friends"] = other::friends;
+		//j["friendly_teams"] = other::friendly_teams;
+		//j["ents_do_draw"] = visuals::entitys_to_draw.data();
 	}
 }

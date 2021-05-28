@@ -26,9 +26,12 @@ namespace render_system
 
 	namespace vars
 	{
-		inline bool is_screen_grab;
+		inline bool _is_screen_grab;
+		inline float last_sg_time = 0.f;
 		inline D3DMATRIX view_matrix;
 		inline HWND game_hwnd;
+
+		bool is_screen_grab(float curtime);
 	}
 	
 	void init();

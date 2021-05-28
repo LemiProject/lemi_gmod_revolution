@@ -204,6 +204,38 @@ public:
 		return {x, y, z};
 	}
 
+	q_angle get_view_offset_unduck()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		lua->push_special((int)e_special::glob); //1
+		lua->get_field(-1, "Entity");
+		lua->push_number(get_index()); //2
+		lua->call(1, 1); //2 - 1 = 1 + 1 = 2  AJFHA FUCKING LUA AAKSJDKSADJLKASJDLKAJSDLKJASD
+
+		lua->get_field(-1, "GetViewOffset");
+		lua->push(-2);
+		lua->call(1, 1);
+
+		lua->push_string("x");
+		lua->get_table(-2);
+		float x = lua->get_number(-1);
+		lua->pop();
+
+		lua->push_string("y");
+		lua->get_table(-2);
+		float y = lua->get_number(-1);
+		lua->pop();
+
+		lua->push_string("z");
+		lua->get_table(-2);
+		float z = lua->get_number(-1);
+		lua->pop();
+
+		lua->pop(3);
+
+		return { x, y, z };
+	}
+	
 	float get_ping()
 	{
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);

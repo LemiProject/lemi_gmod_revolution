@@ -83,6 +83,8 @@ void draw_health(c_base_entity* ent, math::box_t box)
 		auto font_size = calc_text_size(ent, box);
 		auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0, text.c_str());
 		auto text_pos = last_text_pos;
+
+		text_pos.x += text_size.y / 2.f;
 		
 		float g = 255 * (health / 100.f);
 		c_color text_color = {255 - g, g, 0};
@@ -151,6 +153,24 @@ inline void draw_name(c_base_entity* ent, math::box_t& box)
 			directx_render::text(render_system::fonts::in_game_font, weapon_name, pos, fs, c_color(settings::colors::colors_map["esp_weapon_name_color"]), directx_render::font_centered | directx_render::font_outline);
 		}
 	}
+}
+
+void draw_team(c_base_player* ply, math::box_t& box)
+{
+	auto str = ply->get_team_name();
+	if (str.empty())
+		return;
+
+	auto font_size = calc_text_size(ply, box);
+	auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, str.c_str());
+	auto text_pos = ImVec2(box.x + box.w + text_size.y / 2.f, box.y);
+
+	text_pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
+
+	text(render_system::fonts::in_game_font, str, text_pos, font_size, ply->get_team_color(), directx_render::font_outline);
+
+	last_text_pos = text_pos;
+	last_text = str;
 }
 
 inline void draw_user_group(c_base_player* ply, math::box_t& box)
@@ -245,7 +265,7 @@ void visuals::esp::run_esp()
 		}
 
 		auto ts = render_system::fonts::in_game_font->CalcTextSizeA(calc_text_size(ent, box), FLT_MAX, 0.f, "TEST");
-		last_text_pos = ImVec2(box.x + box.w / 2.f + ts.y, box.y);
+		last_text_pos = ImVec2(box.x + box.w, box.y);
 		last_text = "";
 		
 		if (ent->is_player())
@@ -259,6 +279,9 @@ void visuals::esp::run_esp()
 				if (settings::states["visuals::esp_health_player"])
 					draw_health(ent, box);
 
+				if (settings::states["visuals::esp_team_player"])
+					draw_team((c_base_player*)ent, box);
+				
 				if (settings::states["visuals::esp_player_user_group"])
 					draw_user_group((c_base_player*)ent, box);
 				

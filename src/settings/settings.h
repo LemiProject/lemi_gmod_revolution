@@ -32,7 +32,7 @@ namespace settings
 			void remove(int idx);
 			bool exist(const std::string& c);
 			int find(const std::string& c);
-			void exchange(std::vector<std::string>& c);
+			void exchange(const std::vector<std::string>& c);
 			bool empty();
 			void clear();
 
@@ -131,6 +131,7 @@ namespace settings
 		{"visuals::esp_global", false},
 		{"visuals::esp_box_player", false},
 		{"visuals::esp_name_player", false},
+		{"visuals::esp_team_player", false},
 		{"visuals::esp_armor_player", false},
 		{"visuals::esp_health_player", false},
 		{"visuals::esp_health_text_player", false},
@@ -221,6 +222,9 @@ namespace settings
 
 		//WORLD
 		{"world::third_person_key", 0},
+
+		//HVH
+		{"hvh::fake_duck", 0}
 	};
 
 	inline std::map<std::string, int> flags {

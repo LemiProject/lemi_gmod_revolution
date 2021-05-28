@@ -46,6 +46,12 @@ namespace directx_render
     void add_temp_to_draw_list(ImDrawList* target_list);
 }
 
+
+bool render_system::vars::is_screen_grab(float curtime)
+{
+    return curtime <= last_sg_time + 5.f;
+}
+
 void render_system::init()
 {
     device = **(reinterpret_cast<IDirect3DDevice9***>(memory_utils::pattern_scanner(
@@ -560,7 +566,7 @@ int directx_render::directx_lua_api::directx_lua_api_set_color__Imp(c_lua_interf
 
 int directx_render::directx_lua_api::lua_api_is_screen_grab__Imp(c_lua_interface* lua)
 {
-    lua->push_bool(render_system::vars::is_screen_grab);
+    lua->push_bool(render_system::vars::_is_screen_grab);
     return 1;
 }
 

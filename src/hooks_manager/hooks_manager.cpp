@@ -162,6 +162,14 @@ struct run_string_ex
 	static bool __fastcall hook(c_lua_interface* self, void* edx, const char* filename, const char* path, const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns);
 };
 
+struct frame_stage_notify_hook
+{
+	static inline constexpr uint32_t idx = 35;
+	using fn = void(__thiscall*)(void*, int);
+	static inline fn original = nullptr;
+	static void __fastcall hook(c_client* client, void* edx, int stage);
+};
+
 struct wndproc_hook
 {
 	static LRESULT STDMETHODCALLTYPE hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param);
@@ -182,7 +190,6 @@ void hooks_manager::init()
 	create_hook(**reinterpret_cast<void***>(present), (void*)present_hook::hook, reinterpret_cast<void**>(&present_hook::original));
 	create_hook(**reinterpret_cast<void***>(reset), reset_hook::hook, reinterpret_cast<void**>(&reset_hook::original));
 
-	
 	CREATE_HOOK(interfaces::surface, lock_cursor_hook::idx, lock_cursor_hook::hook, lock_cursor_hook::original);
 	CREATE_HOOK(interfaces::client_mode, override_view_hook::idx, override_view_hook::hook, override_view_hook::original);
 	CREATE_HOOK(interfaces::client_mode, create_move_hook::idx, create_move_hook::hook, create_move_hook::original);
@@ -192,6 +199,7 @@ void hooks_manager::init()
 	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
 	CREATE_HOOK(interfaces::panel, paint_traverse_hook::idx, paint_traverse_hook::hook, paint_traverse_hook::original);
 	CREATE_HOOK(interfaces::view_render, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
+	CREATE_HOOK(interfaces::client, frame_stage_notify_hook::idx, frame_stage_notify_hook::hook, frame_stage_notify_hook::original);
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
@@ -232,8 +240,10 @@ void override_view_hook::hook(c_view_setup* setup)
 	if (get_local_player() && get_local_player()->is_alive())
 		if (settings::states["aim_bot::no_recoil"])
 			setup->angles -= get_local_player()->get_view_punch_angles();
-	
-	globals::view::last_view_setup = *setup;
+
+	if (!globals::local_player_states::in_third_person)
+		if (globals::local_player_states::is_fake_duck)
+			setup->origin = get_local_player()->get_origin() + get_local_player()->get_view_offset_unduck();
 	
 	original(interfaces::client_mode, setup);
 }
@@ -368,8 +378,33 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	}
 	
 #ifdef _DEBUG
-	hvh::run_hvh(cmd);
+	hvh::run_hvh(cmd);	
 #endif
+
+
+	{
+		globals::local_player_states::is_fake_duck = false;
+
+		static auto ticks_counter = 0;
+		static auto should_send = false;
+		if (settings::get_bind_state("hvh::fake_duck", false))
+		{
+			globals::local_player_states::is_fake_duck = true;
+			if (ticks_counter == 9)
+				ticks_counter = 0, should_send = !should_send;
+			ticks_counter++;
+			if (should_send)
+			{
+				send_packets = true;
+				cmd->buttons |= IN_DUCK;
+			}
+			else
+			{
+				cmd->buttons &= ~IN_DUCK;
+				send_packets = false;
+			}
+		}
+	}
 	
 	cmd->viewangles.clamp();
 	cmd->viewangles.normalize();
@@ -422,6 +457,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
+
+	//if (globals::local_player_states::in_third_person)
+		//get_local_player()->get_angles() = { 0, 0, 0 };
 	
 	if (settings::states["aim_bot::aim_bot_silent_aim"])
 		return !settings::states["aim_bot::aim_bot_silent_aim"];
@@ -440,9 +478,16 @@ void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, in
 	
 	if (reinterpret_cast<uintptr_t>(_ReturnAddress()) == render_capture)
 	{
-		render_system::vars::is_screen_grab = true;
-
+		render_system::vars::_is_screen_grab = true;
+		render_system::vars::last_sg_time = interfaces::global_vars->curtime;
+		
 		self->clear_buffers(true, true, true);
+
+		auto last_t = interfaces::input->camera_in_third_person;
+		if (last_t)
+			interfaces::input->camera_in_third_person = false;
+
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		
 		auto get_player_view = [](c_view_setup& setup)
 		{
@@ -456,9 +501,12 @@ void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, in
 			using fn = void(__thiscall*)(void*, const c_view_setup&, int, int);
 			return (*reinterpret_cast<fn**>(interfaces::client))[27](interfaces::client, setup, clear_flags, what_to_draw);
 		};
-		render_view_client(setup, (0x1 | 0x2), ((1 << 0) | (1 << 1)));
+		render_view_client(globals::view::last_view_setup, (0x1 | 0x2), ((1 << 0) | (1 << 1)));
 		
-		render_system::vars::is_screen_grab = false;
+		render_system::vars::_is_screen_grab = false;
+
+		if (last_t)
+			interfaces::input->camera_in_third_person = true;
 	}
 
 	return original(self, x, y, w, h, data, dst);
@@ -468,7 +516,7 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 {
 	original(self, rect);
 
-	if (render_system::vars::is_screen_grab)
+	if (render_system::vars::_is_screen_grab)
 		return;
 	
 	interfaces::surface->start_drawing();
@@ -482,16 +530,21 @@ void view_render_hook::hook(void* self, void* edx, void* rect)
 void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
 	int what_to_draw)
 {
-	if (get_local_player())
+	//if (globals::local_player_states::viewangles.is_valid())
+	//	setup.angles = globals::local_player_states::viewangles;
+
+	globals::view::last_view_setup = setup;
+	globals::local_player_states::in_third_person = false;
+	
+	static auto prev_third_person = false;
+	if (get_local_player() && !render_system::vars::is_screen_grab(interfaces::global_vars->curtime))
 	{
 		static auto cc = 0;
 		if (cc >= 20 && settings::get_bind_state("world::third_person_key", false))
 			settings::states["world::third_person"] = !settings::states["world::third_person"], cc = 0;
 		cc++;
 
-		static auto prev_third_person = false;
-
-		if (settings::states["world::third_person"] && !render_system::vars::is_screen_grab)
+		if (settings::states["world::third_person"])
 		{
 			trace_t tr;
 			ray_t ray;
@@ -508,17 +561,16 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 
 			if (!(abs((tr.endpos - setup.origin).length()) < 50))
 			{
-				setup.origin = tr.endpos;
-
 				interfaces::input->camera_in_third_person = true;
 				prev_third_person = true;
-
-				get_local_player()->get_angels() = globals::local_player_states::viewangles;
+				globals::local_player_states::in_third_person = true;
+				
+				setup.origin = tr.endpos;
 			}
 			else
 			{
-				interfaces::input->camera_in_third_person = false;
-				prev_third_person = false;
+				if (prev_third_person)
+					interfaces::input->camera_in_third_person = false, prev_third_person = false;
 			}
 		}
 		else
@@ -548,7 +600,7 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 		return settings::visuals::entitys_to_draw.exist(ent.data());
 	};
 	
-	if (!settings::states["visuals::chams_enabled"] || !interfaces::engine->is_in_game() || render_system::vars::is_screen_grab || interfaces::engine->is_taking_screenshot() || (settings::states["other::anti_obs"] && settings::states["visuals::chams_obs_check"]))
+	if (!settings::states["visuals::chams_enabled"] || !interfaces::engine->is_in_game() || render_system::vars::_is_screen_grab || interfaces::engine->is_taking_screenshot() || (settings::states["other::anti_obs"] && settings::states["visuals::chams_obs_check"]))
 		return original(interfaces::model_render, draw_state, render_info, bone);
 
 	float color_modulation[4] = {1.f, 1.f, 0.f, 0.5f};
@@ -572,8 +624,8 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 		
 		if (ent != get_local_player())
 			force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material);
-		//else
-		//	force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material), get_local_player()->get_angels() = globals::local_player_states::viewangles/*, render_info.angles = globals::local_player_states::viewangles;*/;
+		else
+			force_mat(settings::states["visuals::ignore_z"], settings::colors::colors_map["chams_color_modulation"].data(), material), interfaces::prediction->set_local_view_angles(globals::local_player_states::viewangles)/*, render_info.angles = globals::local_player_states::viewangles;*/;
 	}
 
 	original(interfaces::model_render, draw_state, render_info, bone);
@@ -599,7 +651,7 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 {
 	original(self, panel, force_repaint, allow_force);
 
-	if (render_system::vars::is_screen_grab)
+	if (render_system::vars::_is_screen_grab)
 		return;
 
 	const std::string panel_name = interfaces::panel->get_name(panel);
@@ -633,6 +685,20 @@ bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename,
 {
 
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
+}
+
+void frame_stage_notify_hook::hook(c_client* client, void* edx, int stage)
+{
+	enum e_frame_stage { frame_undefined = -1, frame_start = 0, frame_render_start = 5, frame_render_end = 6 };
+	
+	if (stage == frame_start && interfaces::input->camera_in_third_person)
+	{
+		auto f = globals::local_player_states::viewangles;
+		f.normalize();
+		f.clamp();
+		interfaces::prediction->set_local_view_angles(f), interfaces::prediction->set_view_angles(f);
+	}
+	original(client, stage);
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)

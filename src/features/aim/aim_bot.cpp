@@ -11,6 +11,7 @@
 
 #include "spreads/all_spreads.h"
 #include "spreads/csbase.h"
+#include "spreads/fas2nospread.h"
 #include "spreads/weapon_base.h"
 
 struct target_t
@@ -226,10 +227,11 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 			|| weapon->get_weapon_base().empty())
 			calc_spread_csbase(weapon, ucmd);
 		else if (weapon->get_weapon_base().find("swb") != std::string::npos
-			/*|| weapon->get_weapon_base().find("weapon_base") != std::string::npos*/)
+			|| weapon->get_weapon_base().find("cw_") != std::string::npos)
 			allspreads_nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
-		//else if (weapon->get_weapon_base().find("weapon_base") != std::string::npos)
-		//	calc_spread_weapon_base(weapon, ucmd);
+		else if (weapon->get_class_name().find("fas2") != std::string::npos)
+			fas2nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
+			
 	}
 }
 
