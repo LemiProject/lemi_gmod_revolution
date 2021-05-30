@@ -38,10 +38,10 @@ void hvh::anti_aims(c_user_cmd* cmd)
 		switch (yaw_type)
 		{
 		case settings::hvh::e_yaw::forward:
-			cmd->viewangles.y = 180.f;
+			cmd->viewangles.y += 180.f;
 			break;
 		case settings::hvh::e_yaw::backward:
-			cmd->viewangles.y = -180.f;
+			cmd->viewangles.y += -180.f;
 			break;			
 		default: break;
 		}

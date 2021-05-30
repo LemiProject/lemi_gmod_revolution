@@ -81,30 +81,20 @@ public:
 	
 	std::string get_print_name()
 	{
-		/*if (!is_use_lua())
-			return {};*/
-		
 		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!glua)
 			return {};
+		c_lua_auto_pop p(glua);
+		
 		push_entity();
-
 		if (!glua->is_type(-1, (int)e_lua_type::type_entity))
-		{
-			glua->pop(1);
 			return get_class_name();
-		}
 
 		glua->get_field(-1, "PrintName");
 		if (!glua->is_type(-1, (int)e_lua_type::type_string))
-		{
-			glua->pop(2);
 			return get_class_name();
-		}
 
-		std::string out = glua->get_string(-1);
-		glua->pop(2);
-		return out;
+		return glua->get_string(-1);
 	}
 	
 	std::string get_class_name()
@@ -112,21 +102,17 @@ public:
 		auto glua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!glua)
 			return {};
-		push_entity(); //1
-
+		c_lua_auto_pop p(glua);
+		
+		push_entity();
 		if (!glua->is_type(-1, (int)e_lua_type::type_entity))
-		{
-			glua->pop();
 			return get_lua_script_name();
-		}
 		
 		glua->get_field(-1, "GetClass"); //1
 		glua->push(-2); //2
 		glua->call(1, 1); //2
 
-		std::string out = glua->get_string(-1);
-		glua->pop(2);
-		return out;
+		return glua->get_string(-1);
 	}
 
 	bool is_visible_by(c_base_entity* from)
@@ -143,7 +129,6 @@ public:
 
 		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
 
-
 		if (tr.m_pEnt == this || tr.fraction >= 0.98f)
 			return true;
 		return false;
@@ -154,6 +139,7 @@ public:
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!lua)
 			return 0;
+		c_lua_auto_pop p(lua);
 		
 		lua->push_special((int)e_special::glob); //1
 		lua->get_field(-1, "Entity"); //1
@@ -164,9 +150,7 @@ public:
 		lua->push(-2); //3
 		lua->push_string(name.c_str()); //4
 		lua->call(2, 1); // 3
-		uint32_t id = lua->get_number(-1);
-		lua->pop(3);
-		return id;
+		return lua->get_number(-1);;
 	}
 
 	c_vector get_bone(int bone)

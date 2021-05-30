@@ -4,7 +4,7 @@
 #include "../../../game_sdk/entitys/c_base_weapon.h"
 
 
-inline void fas2nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd, std::map<std::string, float> wm)
+inline void fas2nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd)
 {
 	auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 	if (!lua)
@@ -29,5 +29,6 @@ inline void fas2nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd, std::ma
 
 	auto ang = q_angle(-x, -y, 0) * 25.f;
 
-	ucmd->viewangles += ang;
+	if (ang.is_valid())
+		ucmd->viewangles += ang;
 }

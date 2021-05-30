@@ -150,43 +150,43 @@ void menu_tabs_content::draw_hvh()
 {
 	constexpr auto panels_in_visuals_count = 3;
 
-	//BeginGroupPanel("AnitAim##HVH_AA", { GetWindowSize().x / panels_in_visuals_count, -1 });
-	//{
-	//	internal::text_and_toggle_button("AntiAim", "##HVH_AA_TOGGLE", &states["hvh::anti_aims"]);
-	//	internal::set_tooltip("Save your head on hvh");
+	BeginGroupPanel("AnitAim##HVH_AA", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	{
+		internal::text_and_toggle_button("AntiAim", "##HVH_AA_TOGGLE", &states["hvh::anti_aims"]);
+		internal::set_tooltip("Save your head on hvh");
 
-	//	auto pitch_type_str = std::string(to_string((hvh::e_pitch)values["hvh::pitch_type"]));
-	//	if (BeginCombo("##PITCH_TYPE_COMBO", fmt::format("Pitch type: {}", pitch_type_str).c_str()))
-	//	{
-	//		for (auto i = 1; i <= (int)hvh::e_pitch::last; ++i)
-	//		{
-	//			auto selected = values["hvh::pitch_type"] == i;
-	//			if (Selectable((to_string((hvh::e_pitch)i) + std::string("##") + std::to_string(i)).c_str(), selected))
-	//				values["hvh::pitch_type"] = i;
-	//			if (selected)
-	//				SetItemDefaultFocus();
-	//		}
-	//		EndCombo();
-	//	}
-	//	
-	//	SameLine();
+		auto pitch_type_str = std::string(to_string((hvh::e_pitch)values["hvh::pitch_type"]));
+		if (BeginCombo("##PITCH_TYPE_COMBO", fmt::format("Pitch type: {}", pitch_type_str).c_str()))
+		{
+			for (auto i = 1; i <= (int)hvh::e_pitch::last; ++i)
+			{
+				auto selected = values["hvh::pitch_type"] == i;
+				if (Selectable((to_string((hvh::e_pitch)i) + std::string("##") + std::to_string(i)).c_str(), selected))
+					values["hvh::pitch_type"] = i;
+				if (selected)
+					SetItemDefaultFocus();
+			}
+			EndCombo();
+		}
+		
+		SameLine();
 
-	//	auto yaw_type_str = std::string(to_string((hvh::e_yaw)values["hvh::yaw_type"]));
-	//	if (BeginCombo("##YAW_TYPE_COMBO", fmt::format("Yaw type: {}", yaw_type_str).c_str()))
-	//	{
-	//		for (auto i = 1; i <= (int)hvh::e_yaw::last; ++i)
-	//		{
-	//			auto selected = values["hvh::yaw_type"] == i;
-	//			if (Selectable((to_string((hvh::e_yaw)i) + std::string("##") + std::to_string(i)).c_str(), selected))
-	//				values["hvh::yaw_type"] = i;
-	//			if (selected)
-	//				SetItemDefaultFocus();
-	//		}
-	//		EndCombo();
-	//	}
-	//}
-	//EndGroupPanel();
-
+		auto yaw_type_str = std::string(to_string((hvh::e_yaw)values["hvh::yaw_type"]));
+		if (BeginCombo("##YAW_TYPE_COMBO", fmt::format("Yaw type: {}", yaw_type_str).c_str()))
+		{
+			for (auto i = 1; i <= (int)hvh::e_yaw::last; ++i)
+			{
+				auto selected = values["hvh::yaw_type"] == i;
+				if (Selectable((to_string((hvh::e_yaw)i) + std::string("##") + std::to_string(i)).c_str(), selected))
+					values["hvh::yaw_type"] = i;
+				if (selected)
+					SetItemDefaultFocus();
+			}
+			EndCombo();
+		}
+	}
+	EndGroupPanel();
+	
 	BeginGroupPanel("Other##HVH_AA", { GetWindowSize().x / panels_in_visuals_count, -1 });
 
 	Hotkey("FakeDuck##HVHFD", &binds["hvh::fake_duck"]);

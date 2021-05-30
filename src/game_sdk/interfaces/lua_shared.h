@@ -323,6 +323,32 @@ public:
 };
 
 
+class c_lua_call_saver
+{
+	c_lua_interface* i;
+	int fn_pos;
+public:
+	c_lua_call_saver(c_lua_interface* intr);
+	~c_lua_call_saver();
+	
+};
+
+inline c_lua_call_saver::c_lua_call_saver(c_lua_interface* intr)
+{
+	i = intr;
+
+	i->push_special((int)e_special::glob); //1
+	i->get_field(-1, "print"); //2
+	i->push_lua_function(); //3
+	
+	
+}
+
+inline c_lua_call_saver::~c_lua_call_saver()
+{
+
+}
+
 
 class c_lua_auto_pop
 {
@@ -332,6 +358,7 @@ public:
 	c_lua_auto_pop(c_lua_interface* intr);
 	~c_lua_auto_pop();
 };
+
 
 inline c_lua_auto_pop::c_lua_auto_pop(c_lua_interface* intr)
 {
