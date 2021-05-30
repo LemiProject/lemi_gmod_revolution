@@ -5,7 +5,15 @@
 
 
 class c_base_combat_weapon;
-class camera_third_data_t;
+struct camera_third_data_t
+{
+	float	pitch;
+	float	yaw;
+	float	dist;
+	float	lag;
+	c_vector	hull_min;
+	c_vector	hull_max;
+};
 class c_handle;
 struct kbutton_t
 {

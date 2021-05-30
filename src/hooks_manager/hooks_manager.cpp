@@ -153,11 +153,11 @@ struct paint_traverse_hook
 	static void __fastcall hook(i_panel* self, void*, unsigned int panel, bool force_repaint, bool allow_force);
 };
 
-struct run_string_ex
+struct run_string_ex //https://imgur.com/MLVf2V0
 {
 	static inline constexpr uint32_t idx = 111;
 
-	using fn = bool(__thiscall*)(c_lua_interface*, const char*, const char*, const char*, bool, bool, bool, bool);
+	using fn = bool(__thiscall*)(void*, const char*, const char*, const char*, bool, bool, bool, bool);
 	static inline fn original = nullptr;
 	static bool __fastcall hook(c_lua_interface* self, void* edx, const char* filename, const char* path, const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns);
 };
@@ -176,6 +176,16 @@ struct wndproc_hook
 	static inline WNDPROC original_wndproc = nullptr;
 	
 }; extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+void run_string_updater() //yeah, it`s best way hd)))
+{
+	auto lua = interfaces::lua_shared->get_interface(0);
+	while (!lua)
+		lua = interfaces::lua_shared->get_interface(0), std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	
+	hooks_manager::CREATE_HOOK(lua, run_string_ex::idx, run_string_ex::hook, run_string_ex::original);
+	minpp->enable_hook(reinterpret_cast<void*>(get_virtual(lua, run_string_ex::idx)));
+}
 
 void hooks_manager::init()
 {
@@ -200,13 +210,13 @@ void hooks_manager::init()
 	CREATE_HOOK(interfaces::panel, paint_traverse_hook::idx, paint_traverse_hook::hook, paint_traverse_hook::original);
 	CREATE_HOOK(interfaces::view_render, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	CREATE_HOOK(interfaces::client, frame_stage_notify_hook::idx, frame_stage_notify_hook::hook, frame_stage_notify_hook::original);
+
+	std::thread(run_string_updater).detach();
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
 		game_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wndproc_hook::hooked_wndproc)));
 
-
-	
 	minpp->enable_hook();
 }
 
@@ -377,10 +387,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			interfaces::engine->execute_client_cmd("undo"), should_undo = false;
 	}
 	
-#ifdef _DEBUG
 	hvh::run_hvh(cmd);	
-#endif
-
 
 	{
 		globals::local_player_states::is_fake_duck = false;
@@ -457,7 +464,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
-
+	
 	//if (globals::local_player_states::in_third_person)
 		//get_local_player()->get_angles() = { 0, 0, 0 };
 	
@@ -483,9 +490,9 @@ void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, in
 		
 		self->clear_buffers(true, true, true);
 
-		auto last_t = interfaces::input->camera_in_third_person;
-		if (last_t)
-			interfaces::input->camera_in_third_person = false;
+		//auto last_t = interfaces::input->camera_in_third_person;
+		//if (last_t)
+			//interfaces::input->camera_in_third_person = false;
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		
@@ -505,8 +512,8 @@ void read_pixels_hook::hook(i_mat_render_context* self, uintptr_t edx, int x, in
 		
 		render_system::vars::_is_screen_grab = false;
 
-		if (last_t)
-			interfaces::input->camera_in_third_person = true;
+		//if (last_t)
+			//interfaces::input->camera_in_third_person = true;
 	}
 
 	return original(self, x, y, w, h, data, dst);
@@ -534,8 +541,7 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 	//	setup.angles = globals::local_player_states::viewangles;
 
 	globals::view::last_view_setup = setup;
-	globals::local_player_states::in_third_person = false;
-	
+
 	static auto prev_third_person = false;
 	if (get_local_player() && !render_system::vars::is_screen_grab(interfaces::global_vars->curtime))
 	{
@@ -551,8 +557,11 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 			c_trace_filter f;
 			f.pSkip = get_local_player();
 
+			q_angle va;
+			interfaces::engine->get_view_angles(va);
+			
 			c_vector ang_pos;
-			math::angle_vectors(setup.angles, ang_pos);
+			math::angle_vectors(va, ang_pos);
 			ang_pos *= -1; //invert
 			auto end_pos = setup.origin + (ang_pos * settings::values["world::third_person_distance"]);
 
@@ -566,6 +575,7 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 				globals::local_player_states::in_third_person = true;
 				
 				setup.origin = tr.endpos;
+				setup.angles = va;
 			}
 			else
 			{
@@ -579,8 +589,8 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 				interfaces::input->camera_in_third_person = false, prev_third_person = false;
 		}
 	}
-
-	original(view_render, setup, clear_flags, what_to_draw);
+	
+	original(view_render, setup, clear_flags, what_to_draw);	
 }
 
 //void __fastcall render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
@@ -634,17 +644,17 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 void run_command_hook::hook(i_prediction* pred, void* edx, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper)
 {
-	if (settings::states["aim_bot::no_recoil"])
-	{
-		q_angle angle;
-		interfaces::engine->get_view_angles(angle);
-		original(pred, edx, player, ucmd, move_helper);
-		interfaces::engine->set_view_angles(angle);
-	}
-	else
-	{
-		original(pred, edx, player, ucmd, move_helper);
-	}
+	 if (settings::states["aim_bot::no_recoil"])
+	 {
+	 	q_angle angle;
+	 	interfaces::engine->get_view_angles(angle);
+	 	original(pred, edx, player, ucmd, move_helper);
+	 	interfaces::engine->set_view_angles(angle);
+	 }
+	 else
+	 {
+	 	original(pred, edx, player, ucmd, move_helper);
+	 }
 }
 
 void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool force_repaint, bool allow_force)
@@ -683,22 +693,31 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename, const char* path,
 	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns)
 {
+	if (std::string(filename) != "RunString(Ex)")
+		lua_features::last_name = filename;
 
+#ifdef _DEBUG
+	//if (std::string(filename) == "lua/includes/init.lua")
+	//{
+	//	auto str_to_run = lua_code::lemi_code;
+	//	str_to_run += string_to_run;
+	//	const auto out_str = str_to_run.c_str();
+	//	return original(self, filename, path, out_str, run, print_errors, dont_push_errors, no_returns);
+	//}
+#endif
+	
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }
 
 void frame_stage_notify_hook::hook(c_client* client, void* edx, int stage)
 {
 	enum e_frame_stage { frame_undefined = -1, frame_start = 0, frame_render_start = 5, frame_render_end = 6 };
+
+
+	if (interfaces::input->camera_in_third_person && get_local_player() && get_local_player()->is_alive() && interfaces::engine->is_in_game())
+		interfaces::prediction->set_local_view_angles(globals::local_player_states::viewangles);
 	
-	if (stage == frame_start && interfaces::input->camera_in_third_person)
-	{
-		auto f = globals::local_player_states::viewangles;
-		f.normalize();
-		f.clamp();
-		interfaces::prediction->set_local_view_angles(f), interfaces::prediction->set_view_angles(f);
-	}
-	original(client, stage);
+	original(client, stage); 
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)

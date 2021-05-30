@@ -228,9 +228,9 @@ void aim::anti_recoil_and_spread(c_user_cmd* ucmd)
 			calc_spread_csbase(weapon, ucmd);
 		else if (weapon->get_weapon_base().find("swb") != std::string::npos
 			|| weapon->get_weapon_base().find("cw_") != std::string::npos)
-			allspreads_nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
+			allspreads_nospread(weapon, ucmd);
 		else if (weapon->get_class_name().find("fas2") != std::string::npos)
-			fas2nospread(weapon, ucmd, recoil_for_weapons[weapon->get_weapon_base()]);
+			fas2nospread(weapon, ucmd);
 			
 	}
 }

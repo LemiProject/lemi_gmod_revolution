@@ -4,7 +4,7 @@
 #include "../../../game_sdk/interfaces/lua_shared.h"
 
 
-inline void allspreads_nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd, std::map<std::string, float> wm)
+inline void allspreads_nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd)
 {
 	auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 	if (!lua)
@@ -30,30 +30,11 @@ inline void allspreads_nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd, 
 	auto y = math::lua::rand(-cone, cone);
 
 	q_angle punch_angle;
-
-	if (wm["Recoil"] != 0)
-	{
-		//auto recoil = wm["Recoil"];
-
-		//auto tmp_punch_angle = ucmd->viewangles;
-		//tmp_punch_angle.x -= recoil * 0.5f;
-		//tmp_punch_angle.y += math::lua::rand(-1, 1) * recoil * 0.5f;
-
-		//tmp_punch_angle += q_angle(-recoil * 1.25f, 0, 0);
-
-		//punch_angle = tmp_punch_angle;
-		punch_angle = get_local_player()->get_view_punch_angles();
-	}
-	else
-	{
-		punch_angle = get_local_player()->get_view_punch_angles();
-	}
-
-	q_angle ang;
+	punch_angle = get_local_player()->get_view_punch_angles();
 	
+	q_angle ang;
 	if (weapon->get_weapon_base().find("swb") != std::string::npos)
 	{
-		q_angle ang;
 		if (!settings::states["aim_bot::no_recoil"])
 			ang = ucmd->viewangles - (punch_angle + (q_angle(x, y, 0) * 25));
 		else
@@ -61,11 +42,9 @@ inline void allspreads_nospread(c_base_combat_weapon* weapon, c_user_cmd* ucmd, 
 	}
 	else if (weapon->get_weapon_base().find("cw_") != std::string::npos)
 	{
-
-		
 		ang = ucmd->viewangles + (q_angle(-x, -y, 0) * 25.f);
 	}
-	
-	
-	ucmd->viewangles = ang;
+
+	if (ang.is_valid())
+		ucmd->viewangles = ang;
 }
