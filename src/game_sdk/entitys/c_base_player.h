@@ -41,6 +41,7 @@ public:
 	NETVAR("DT_BasePlayer", "m_hVehicle", get_vehicle_handle, uintptr_t);
 	NETVAR("DT_BasePlayer", "m_iObserverMode", get_observer_mode, int);
 	NETVAR("DT_BasePlayer", "m_hObserverTarget", get_observer_target_handle, uintptr_t);
+	NETVAR("DT_PlayerResource", "m_iPing", get_ping, int);
 	//NETVAR("DT_BasePlayer", "m_viewPunchAngle", get_view_punch_angles, q_angle);
 	
 	int get_move_type()
@@ -187,16 +188,19 @@ public:
 		return { x, y, z };
 	}
 	
-	float get_ping()
-	{
-		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
-		c_lua_auto_pop p(lua);
-		push_entity();
-		lua->get_field(-1, "Ping");
-		lua->push(-2);
-		lua->call(1, 1);
-		return lua->get_number();
-	}
+	//float get_ping()
+	//{
+	//	/*auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+	//	c_lua_auto_pop p(lua);
+	//	push_entity();
+	//	lua->get_field(-1, "Ping");
+	//	lua->push(-2);
+	//	lua->call(1, 1);
+	//	return lua->get_number();*/
+	//	auto ping = *(int*)((uintptr_t)this + netvar_manager::get_net_var(fnv::hash(), fnv::hash()) + (get_index() * 4));
+
+	//	return ping;
+	//}
 	
 	c_color get_team_color()
 	{

@@ -54,6 +54,10 @@ std::string settings::parse_setting_in_string()
 	j["friends"] = other::friends;
 	j["friendly_teams"] = other::friendly_teams;
 	j["ents_do_draw"] = visuals::entitys_to_draw.data();
+
+	std::string st;
+	ImGui::ImGuiSaveStyle(st, ImGui::GetStyle());
+	j["style"] = json::parse(st);
 	
 	return j.dump();
 }
@@ -306,11 +310,14 @@ void settings::parse_settings_from_string(const std::string& s)
 
 		if (!j["friends"].is_null())
 			other::friends = j["friends"].get<std::vector<std::string>>();
-		if (!j["friends"].is_null())
+		if (!j["friendly_teams"].is_null())
 			other::friendly_teams = j["friendly_teams"].get<std::vector<int>>();
 		
-		if (!j["friends"].is_null())
+		if (!j["ents_do_draw"].is_null())
 			visuals::entitys_to_draw.exchange(j["ents_do_draw"].get<std::vector<std::string>>());
+
+		if (other::load_and_save_style && !j["style"].is_null())
+			ImGui::ImGuiLoadStyle(j["style"].dump(), ImGui::GetStyle());
 		
 		//j["friends"] = other::friends;
 		//j["friendly_teams"] = other::friendly_teams;
