@@ -426,6 +426,9 @@ void menu_tabs_content::draw_setting()
 		SameLine();
 		if (Button("Reload##SETTINGS_RELOAD"))
 			last_configs = get_configs();
+		SameLine();
+		Checkbox("Style##SETTINGS_LOAD_STYLE", &other::load_and_save_style);
+		internal::set_tooltip("Load menu style");
 		
 		InputText("Name##NEW_CFG_NAME", &new_cfg_name);
 		auto its = GetItemRectSize();

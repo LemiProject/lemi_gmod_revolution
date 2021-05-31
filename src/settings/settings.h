@@ -123,6 +123,9 @@ namespace settings
 	{
 		inline std::vector<std::string> friends;
 		inline std::vector<int> friendly_teams;
+
+		inline bool load_and_save_style;
+		inline bool load_bypass;
 	}
 
 	inline std::map<std::string, bool> states {

@@ -300,6 +300,7 @@ void draw_entity_list()
 }
 
 TextEditor* editor = nullptr;
+TextEditor* bypass_editor = nullptr;
 
 void draw_lua_files_loader()
 {
@@ -361,12 +362,68 @@ void draw_lua_files_loader()
 	End();
 }
 
+void draw_bypass_lua()
+{
+	using namespace ImGui;
+
+	if (!bypass_editor)
+	{
+		bypass_editor = new TextEditor();
+		bypass_editor->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+		bypass_editor->SetShowWhitespaces(false);
+	}
+	
+	auto cpos = editor->GetCursorPosition();
+	Begin("Bypass editor##SUBWINDOW", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+
+	if (BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("View"))
+		{
+			if (ImGui::MenuItem("Dark palette"))
+				editor->SetPalette(TextEditor::GetDarkPalette());
+			if (ImGui::MenuItem("Light palette"))
+				editor->SetPalette(TextEditor::GetLightPalette());
+			if (ImGui::MenuItem("Retro blue palette"))
+				editor->SetPalette(TextEditor::GetRetroBluePalette());
+			ImGui::EndMenu();
+		}
+		
+		EndMenuBar();
+	}
+
+	Text("%6d/%-6d %6d lines  | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, bypass_editor->GetTotalLines(),
+		bypass_editor->IsOverwrite() ? "Ovr" : "Ins",
+		bypass_editor->CanUndo() ? "*" : " ",
+		bypass_editor->GetLanguageDefinition().mName.c_str());
+
+	
+	bypass_editor->Render("BypassTextEditor", {
+				   ImGui::GetContentRegionAvail().x,
+				   ImGui::GetContentRegionAvail().y - (ImGui::CalcTextSize("Run").y + ImGui::CalcTextSize("Run").y / 2)
+		});
+
+	if (Button("Apply##RUN_SCRIPT"))
+		lua_code::lemi_code = bypass_editor->GetText();
+
+	SameLine();
+
+	Checkbox("Load bypass", &settings::other::load_bypass);
+	
+	End();
+}
+
+
 void draw_glua_loader()
 {
 	using namespace ImGui;
 	static auto load_file_show = false;
+	static auto bypass_show = false;
 	if (load_file_show)
 		draw_lua_files_loader();
+	
+	if (bypass_show)
+		draw_bypass_lua();
 	
 	if (!editor)
 	{
@@ -387,6 +444,7 @@ void draw_glua_loader()
 		{
 			
 			MenuItem("Load file", 0, &load_file_show);
+			MenuItem("Show bypass", 0, &bypass_show);
 			ImGui::EndMenu();
 		}
 		

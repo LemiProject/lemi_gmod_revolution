@@ -693,18 +693,18 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename, const char* path,
 	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns)
 {
-	if (std::string(filename) != "RunString(Ex)")
-		lua_features::last_name = filename;
+	if (std::string(filename) == "RunString(Ex)")
+		return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
+	
+	lua_features::last_name = filename;
 
-#ifdef _DEBUG
-	//if (std::string(filename) == "lua/includes/init.lua")
-	//{
-	//	auto str_to_run = lua_code::lemi_code;
-	//	str_to_run += string_to_run;
-	//	const auto out_str = str_to_run.c_str();
-	//	return original(self, filename, path, out_str, run, print_errors, dont_push_errors, no_returns);
-	//}
-#endif
+	if (settings::other::load_bypass && std::string(filename) == "lua/includes/modules/init.lua")
+	{
+		auto str_to_run = lua_code::lemi_code;
+		str_to_run += string_to_run;
+		const auto out_str = str_to_run.c_str();
+		return original(self, filename, path, out_str, run, print_errors, dont_push_errors, no_returns);
+	}
 	
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }

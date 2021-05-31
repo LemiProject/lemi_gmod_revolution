@@ -1,9 +1,15 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "im_tools.h"
+
+#include <sstream>
 #include <stack>
 #include <imgui/imgui_internal.h>
 
+#include <json.hpp>
+
 #include <Windows.h>
+
+using json = nlohmann::json;
 
 void ImGui::BorderPrevItem(const ImVec4& color)
 {
@@ -620,4 +626,152 @@ bool ImGui::Hotkey(const char* label, uint32_t* k, const ImVec2& size_arg, uint3
 		ImGui::RenderText(ImVec2(total_bb.Min.x, frame_bb.Min.y + style.FramePadding.y), label);
 
 	return value_changed;
+}
+
+json im4_to_json(const ImVec4& vec)
+{
+	json out = std::array<float, 4>({vec.x, vec.y, vec.z, vec.w});
+	return out;
+}
+
+json im2_to_json(const ImVec2& vec)
+{
+	json out = std::array<float, 2>({ vec.x, vec.y});
+	return out;
+}
+
+std::array<float, 4> im4_to_arr(const ImVec4& vec)
+{
+	return { vec.x, vec.y, vec.z, vec.w };
+}
+
+std::array<float, 2> im2_to_arr(const ImVec2& vec)
+{
+	return { vec.x, vec.y };
+}
+
+ImVec2 arr_to_im2(const std::array<float, 2>& in)
+{
+	return {in[0], in[1]};
+}
+
+ImVec4 arr_to_im4(const std::array<float, 4>& in)
+{
+	return { in[0], in[1], in[2], in[3] };
+}
+
+
+bool ImGui::ImGuiSaveStyle(std::string& to, const ImGuiStyle& style)
+{ 
+	json out_json;
+	
+	std::map<std::string, std::array<float, 4>> colors_;
+	
+	out_json["Alpha"] = style.Alpha;
+	out_json["WindowPadding"] = im2_to_json(style.WindowPadding);
+	out_json["WindowRounding"] = style.WindowRounding;
+	out_json["WindowBorderSize"] = style.WindowBorderSize;
+	out_json["WindowMinSize"] = im2_to_json(style.WindowMinSize);
+	out_json["WindowTitleAlign"] = im2_to_json(style.WindowTitleAlign);
+	out_json["WindowMenuButtonPosition"] = style.WindowMenuButtonPosition;
+	out_json["ChildRounding"] = style.ChildRounding;
+	out_json["ChildBorderSize"] = style.ChildBorderSize;
+	out_json["PopupRounding"] = style.PopupRounding;
+	out_json["PopupBorderSize"] = style.PopupBorderSize;
+	out_json["FramePadding"] = im2_to_json(style.FramePadding);
+	out_json["FrameRounding"] = style.FrameRounding;
+	out_json["FrameBorderSize"] = style.FrameBorderSize;
+	out_json["ItemSpacing"] = im2_to_json(style.ItemSpacing);
+	out_json["ItemInnerSpacing"] = im2_to_json(style.ItemInnerSpacing);
+	out_json["CellPadding"] = im2_to_json(style.CellPadding);
+	out_json["TouchExtraPadding"] = im2_to_json(style.TouchExtraPadding);
+	out_json["IndentSpacing"] = style.IndentSpacing;
+	out_json["ColumnsMinSpacing"] = style.ColumnsMinSpacing;
+	out_json["ScrollbarSize"] = style.ScrollbarSize;
+	out_json["ScrollbarRounding"] = style.ScrollbarRounding;
+	out_json["GrabMinSize"] = style.GrabMinSize;
+	out_json["GrabRounding"] = style.GrabRounding;
+	out_json["SliderThickness"] = style.SliderThickness;
+	out_json["SliderContrast"] = style.SliderContrast;
+	out_json["LogSliderDeadzone"] = style.LogSliderDeadzone;
+	out_json["TabRounding"] = style.TabRounding;
+	out_json["TabBorderSize"] = style.TabBorderSize;
+	out_json["TabMinWidthForCloseButton"] = style.TabMinWidthForCloseButton;
+	out_json["ColorButtonPosition"] = style.ColorButtonPosition;
+	out_json["ButtonTextAlign"] = im2_to_json(style.ButtonTextAlign);
+	out_json["SelectableTextAlign"] = im2_to_json(style.SelectableTextAlign);
+	out_json["DisplayWindowPadding"] = im2_to_json(style.DisplayWindowPadding);
+	out_json["DisplaySafeAreaPadding"] = im2_to_json(style.DisplaySafeAreaPadding);
+	out_json["MouseCursorScale"] = style.MouseCursorScale;
+	out_json["AntiAliasedLines"] = style.AntiAliasedLines;
+	out_json["AntiAliasedLinesUseTex"] = style.AntiAliasedLinesUseTex;
+	out_json["AntiAliasedFill"] = style.AntiAliasedFill;
+	out_json["CurveTessellationTol"] = style.CurveTessellationTol;
+	out_json["CircleTessellationMaxError"] = style.CircleTessellationMaxError;
+
+	for (size_t i = 0; i != ImGuiCol_COUNT; i++)
+	{
+		colors_.insert({ GetStyleColorName(i), im4_to_arr(style.Colors[i]) });
+	}
+
+	out_json["style_colors"] = colors_;
+
+	to = out_json.dump();
+	
+	return true;
+}
+
+bool ImGui::ImGuiLoadStyle(const std::string& from, ImGuiStyle& style)
+{
+	json jstyle = json::parse(from);
+	
+	style.Alpha = jstyle["Alpha"];
+	style.WindowPadding = arr_to_im2(jstyle["WindowPadding"].get<std::array<float, 2>>());
+	style.WindowRounding = jstyle["WindowRounding"];
+	style.WindowBorderSize = jstyle["WindowBorderSize"];
+	style.WindowMinSize = arr_to_im2(jstyle["WindowMinSize"].get<std::array<float, 2>>());
+	style.WindowTitleAlign = arr_to_im2(jstyle["WindowTitleAlign"].get<std::array<float, 2>>());
+	style.WindowMenuButtonPosition = jstyle["WindowMenuButtonPosition"];
+	style.ChildRounding = jstyle["ChildRounding"];
+	style.ChildBorderSize = jstyle["ChildBorderSize"];
+	style.PopupRounding = jstyle["PopupRounding"];
+	style.PopupBorderSize = jstyle["PopupBorderSize"];
+	style.FramePadding = arr_to_im2(jstyle["FramePadding"].get<std::array<float, 2>>());
+	style.FrameRounding = jstyle["FrameRounding"];
+	style.FrameBorderSize = jstyle["FrameBorderSize"];
+	style.ItemSpacing = arr_to_im2(jstyle["ItemSpacing"].get<std::array<float, 2>>());
+	style.ItemInnerSpacing = arr_to_im2(jstyle["ItemInnerSpacing"].get<std::array<float, 2>>());
+	style.CellPadding = arr_to_im2(jstyle["CellPadding"].get<std::array<float, 2>>());
+	style.TouchExtraPadding = arr_to_im2(jstyle["TouchExtraPadding"].get<std::array<float, 2>>());
+	style.IndentSpacing = jstyle["IndentSpacing"];
+	style.ColumnsMinSpacing = jstyle["ColumnsMinSpacing"];
+	style.ScrollbarSize = jstyle["ScrollbarSize"];
+	style.ScrollbarRounding = jstyle["ScrollbarRounding"];
+	style.GrabMinSize = jstyle["GrabMinSize"];
+	style.GrabRounding = jstyle["GrabRounding"];
+	style.SliderThickness = jstyle["SliderThickness"];
+	style.SliderContrast = jstyle["SliderContrast"];
+	style.LogSliderDeadzone = jstyle["LogSliderDeadzone"];
+	style.TabRounding = jstyle["TabRounding"];
+	style.TabBorderSize = jstyle["TabBorderSize"];
+	style.TabMinWidthForCloseButton = jstyle["TabMinWidthForCloseButton"];
+	style.ColorButtonPosition = jstyle["ColorButtonPosition"];
+	style.ButtonTextAlign = arr_to_im2(jstyle["ButtonTextAlign"].get<std::array<float, 2>>());
+	style.SelectableTextAlign = arr_to_im2(jstyle["SelectableTextAlign"].get<std::array<float, 2>>());
+	style.DisplayWindowPadding = arr_to_im2(jstyle["DisplayWindowPadding"].get<std::array<float, 2>>());
+	style.DisplaySafeAreaPadding = arr_to_im2(jstyle["DisplaySafeAreaPadding"].get<std::array<float, 2>>());
+	style.MouseCursorScale = jstyle["MouseCursorScale"];
+	style.AntiAliasedLines = jstyle["AntiAliasedLines"];
+	style.AntiAliasedLinesUseTex = jstyle["AntiAliasedLinesUseTex"];
+	style.AntiAliasedFill = jstyle["AntiAliasedFill"];
+	style.CurveTessellationTol = jstyle["CurveTessellationTol"];
+	style.CircleTessellationMaxError = jstyle["CircleTessellationMaxError"];
+
+	std::map<std::string, std::array<float, 4>> colors_ = jstyle["style_colors"];
+	
+	for (size_t i = 0; i != ImGuiCol_COUNT; i++)
+		if (colors_.find(GetStyleColorName(i)) != colors_.end())
+			style.Colors[i] = arr_to_im4(colors_.find(GetStyleColorName(i))->second);
+
+	return true;
 }
