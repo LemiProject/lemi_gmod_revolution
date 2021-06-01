@@ -381,11 +381,11 @@ void draw_bypass_lua()
 		if (ImGui::BeginMenu("View"))
 		{
 			if (ImGui::MenuItem("Dark palette"))
-				editor->SetPalette(TextEditor::GetDarkPalette());
+				bypass_editor->SetPalette(TextEditor::GetDarkPalette());
 			if (ImGui::MenuItem("Light palette"))
-				editor->SetPalette(TextEditor::GetLightPalette());
+				bypass_editor->SetPalette(TextEditor::GetLightPalette());
 			if (ImGui::MenuItem("Retro blue palette"))
-				editor->SetPalette(TextEditor::GetRetroBluePalette());
+				bypass_editor->SetPalette(TextEditor::GetRetroBluePalette());
 			ImGui::EndMenu();
 		}
 		

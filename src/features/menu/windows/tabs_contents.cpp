@@ -150,7 +150,7 @@ void menu_tabs_content::draw_hvh()
 {
 	constexpr auto panels_in_visuals_count = 3;
 
-	BeginGroupPanel("AnitAim##HVH_AA", { GetWindowSize().x / panels_in_visuals_count, -1 });
+	BeginGroupPanel("AntiAim##HVH_AA", { GetWindowSize().x / panels_in_visuals_count, -1 });
 	{
 		internal::text_and_toggle_button("AntiAim", "##HVH_AA_TOGGLE", &states["hvh::anti_aims"]);
 		internal::set_tooltip("Save your head on hvh");
