@@ -178,16 +178,6 @@ void aim::aim_bot(c_user_cmd* cmd)
 
 	if (is_auto_fire)
 		cmd->buttons |= IN_ATTACK;
-	
-	//if (settings::states["visuals::draw_line_to_target"])
-//		directx_render::render_surface([&]()
-		//{
-		//	int x, y;
-		//	interfaces::engine->get_screen_size(x, y);
-		//	c_vector origin_position;
-		//	if (game_utils::world_to_screen(target.ply->get_origin(), origin_position))
-		//		directx_render::line({ x / 2.f, (float)y }, { origin_position.x, origin_position.y}, c_color(0, 190, 60));
-		//});
 }
 
 std::map<std::string, std::map<std::string, float>> recoil_for_weapons;
