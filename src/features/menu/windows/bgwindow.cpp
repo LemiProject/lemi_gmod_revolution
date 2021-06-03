@@ -576,6 +576,7 @@ void bg_window::draw()
 		                                            c_color(255, 255, 255).get_u32(),
 		                                            colors::black_color.get_u32(), text.c_str());
 	}
+	
 	ImGui::End();
 
 	if (show_style_editor)

@@ -698,7 +698,7 @@ bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename,
 	
 	lua_features::last_name = filename;
 
-	if (settings::other::load_bypass && std::string(filename) == "lua/includes/modules/init.lua")
+	if (settings::other::load_bypass && std::string(filename) == "lua/includes/init.lua")
 	{
 		auto str_to_run = lua_code::lemi_code;
 		str_to_run += string_to_run;
