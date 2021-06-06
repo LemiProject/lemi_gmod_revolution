@@ -350,6 +350,14 @@ void menu_tabs_content::draw_visuals()
 		PushItemWidth(GetWindowSize().x / 6);
 		SliderFloat("Third person distance##TPD", &values["world::third_person_distance"], 60.f, 1000.f, "%.0f");
 		PopItemWidth();
+
+		Spacing();
+		
+		internal::text_and_toggle_button("Free Camera", "##VISUALS_FREE_CAMERA", &states["world::free_camera"]);
+		Hotkey("Free Camera Key##VISUALS_WORLD_FREE_CAMERA_KEY", &binds["world::free_camera_key"]);
+		PushItemWidth(GetWindowSize().x / 6);
+		SliderFloat("Free Camera Speed##FREE_CAMERA_SPEED", &values["world::free_camera_speed"], 1.f, 10.f, "%.1f");
+		PopItemWidth();
 	}
 	EndGroupPanel();
 }

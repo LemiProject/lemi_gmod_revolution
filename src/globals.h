@@ -1,6 +1,7 @@
 #pragma once
 #include "game_sdk/misc/c_view_setup.h"
 #include "math/math.h"
+#include "game_sdk/misc/c_user_cmd.h"
 
 namespace globals
 {
@@ -28,6 +29,7 @@ namespace globals
 	namespace game_data
 	{
 		inline float ping;
-		
+
+		inline c_user_cmd last_cmd;
 	}
 }

@@ -176,6 +176,7 @@ namespace settings
 
 		//World visuals
 		{"world::third_person", false},
+		{"world::free_camera", false},
 		
 		// Lua
 		{"lua::hack_hooks", false},
@@ -201,6 +202,7 @@ namespace settings
 
 		//World visuals
 		{"world::third_person_distance", 0.f},
+		{"world::free_camera_speed", 1.f}, //1 - 10
 		
 		//HVH
 		{"hvh::yaw_type", 0},
@@ -225,7 +227,8 @@ namespace settings
 
 		//WORLD
 		{"world::third_person_key", 0},
-
+		{"world::free_camera_key", 0},
+		
 		//HVH
 		{"hvh::fake_duck", 0}
 	};

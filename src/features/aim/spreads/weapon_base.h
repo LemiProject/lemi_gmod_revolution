@@ -22,7 +22,7 @@ inline void calc_spread_weapon_base(c_base_combat_weapon* weapon, c_user_cmd* uc
 
 	//c_vector dir{ 1.f, cone * y, -(cone * x)};
 	//q_angle ang;
-	//math::vector_to_angels(dir, ang);
+	//math::vector_to_angel(dir, ang);
 	
 	//auto spread = weapon->get_bullet_spread();
 	//auto seed = md5::md5_pseudo_random(ucmd->command_number) & 0xFF;
@@ -62,7 +62,7 @@ inline void calc_spread_weapon_base(c_base_combat_weapon* weapon, c_user_cmd* uc
 
 	//auto dir = forward + (right * spread.x) + (up * spread.y);
 	//q_angle ang;
-	//math::vector_to_angels(dir, ang);
+	//math::vector_to_angel(dir, ang);
 	//ang.normalize();
 
 
