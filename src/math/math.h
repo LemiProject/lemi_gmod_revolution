@@ -64,7 +64,7 @@ using q_angle = c_vector;
 
 namespace math
 {
-	inline void vector_to_angels(const c_vector& forward, q_angle& out)
+	inline void vector_to_angel(const c_vector& forward, q_angle& out)
 	{
 		float tmp, yaw, pitch;
 
@@ -117,7 +117,7 @@ namespace math
 	inline q_angle get_angle(q_angle src, q_angle dst)
 	{
 		q_angle out_angle;
-		vector_to_angels(dst - src, out_angle);
+		vector_to_angel(dst - src, out_angle);
 		return out_angle;
 	}
 
@@ -129,13 +129,36 @@ namespace math
 		return c_vector(cos(radx) * cos(rady), cos(radx) * sin(rady), sin(radx));
 	}
 
-	inline void angle_vectors(const q_angle& ang, c_vector& vector)
+	inline void angle_to_vector(const q_angle& ang, c_vector& vector)
 	{
 		float sp, sy, cp, cy;
 		sincos(deg2rad(ang[yaw]), &sy, &cy);
 		sincos(deg2rad(ang[pitch]), &sp, &cp);
 		
 		vector = {cp * cy, cp * sy, -sp};
+	}
+
+	inline void angle_to_vectors(const q_angle& ang, c_vector& forward, c_vector& right, c_vector& up)
+	{
+		float sr, sp, sy, cr, cp, cy;
+		float radx = math::deg2rad(ang.x);
+		float rady = math::deg2rad(ang.y);
+		float radz = math::deg2rad(ang.z);
+		sp = sin(radx); cp = cos(radx);
+		sy = sin(rady); cy = cos(rady);
+		sr = sin(radz); cr = cos(radz);
+
+		forward.x = cp * cy;
+		forward.y = cp * sy;
+		forward.z = -sp;
+
+		right.x = (-1 * sr * sp * cy + -1 * cr * -sy);
+		right.y = (-1 * sr * sp * sy + -1 * cr * cy);
+		right.z = -1 * sr * cp;
+
+		up.x = (cr * sp * cy + -sr * -sy);
+		up.y = (cr * sp * sy + -sr * cy);
+		up.z = cr * cp;
 	}
 }
 

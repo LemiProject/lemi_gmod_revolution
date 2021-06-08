@@ -59,40 +59,46 @@ void draw_health(c_base_entity* ent, math::box_t box)
 	if (ent->is_alive())
 	{
 		const auto health = std::clamp(ent->get_health(), 0, 100);
-		const auto pos = ImVec2(box.x - 6.f, box.y);
 
-		const math::box_t void_box{ pos.x, pos.y, 3, box.h };
-		auto health_box{ void_box };
+		if (!ent->is_player() && is_entity_var("visuals::esp_health_entity", "visuals::esp_health_player")
+			|| ent->is_player() && settings::states["visuals::esp_health_player"])
+		{
+			const auto pos = ImVec2(box.x - 6.f, box.y);
 
-		health_box.h = health * void_box.h / 100;
-		health_box.y = void_box.y + void_box.h - health_box.h;
+			const math::box_t void_box{ pos.x, pos.y, 3, box.h };
+			auto health_box{ void_box };
 
-		const auto health_color = c_color(settings::colors::colors_map["esp_health_color_hp"]);
-		const auto void_color = c_color(settings::colors::colors_map["esp_health_color_void"]);
+			health_box.h = health * void_box.h / 100;
+			health_box.y = void_box.y + void_box.h - health_box.h;
 
-		directx_render::filled_rect(void_box, void_color);
-		directx_render::filled_rect(health_box, health_color);
+			const auto health_color = c_color(settings::colors::colors_map["esp_health_color_hp"]);
+			const auto void_color = c_color(settings::colors::colors_map["esp_health_color_void"]);
 
-		if (!ent->is_player() && !(settings::states["visuals::esp_health_text_entity"] || (settings::states["visuals::esp_global"] && settings::states["visuals::esp_health_text_player"])))
-			return;
-
-		if (ent->is_player() && !settings::states["visuals::esp_health_text_player"])
-			return;
-
-		auto text = std::to_string(health);
-		auto font_size = calc_text_size(ent, box);
-		auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0, text.c_str());
-		auto text_pos = last_text_pos;
-
-		text_pos.x += text_size.y / 2.f;
+			directx_render::filled_rect(void_box, void_color);
+			directx_render::filled_rect(health_box, health_color);
+		}
 		
-		float g = 255 * (health / 100.f);
-		c_color text_color = {255 - g, g, 0};
+		if (!ent->is_player() && is_entity_var("visuals::esp_health_text_entity", "visuals::esp_health_text_player")
+			|| ent->is_player() && settings::states["visuals::esp_health_text_player"])
+		{
+			{
 
-		directx_render::text(render_system::fonts::in_game_font, text, text_pos, font_size, text_color, directx_render::font_outline);
+				auto text = std::to_string(health);
+				auto font_size = calc_text_size(ent, box);
+				auto text_size = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0, text.c_str());
+				auto text_pos = last_text_pos;
 
-		last_text_pos = text_pos;
-		last_text = text;
+				text_pos.x += text_size.y / 2.f;
+
+				float g = 255 * (health / 100.f);
+				c_color text_color = { 255 - g, g, 0 };
+
+				directx_render::text(render_system::fonts::in_game_font, text, text_pos, font_size, text_color, directx_render::font_outline);
+
+				last_text_pos = text_pos;
+				last_text = text;
+			}
+		}
 	}
 }
 
@@ -276,7 +282,7 @@ void visuals::esp::run_esp()
 				if (settings::states["visuals::esp_box_player"])
 					draw_box(ent, box);
 
-				if (settings::states["visuals::esp_health_player"])
+				if (settings::states["visuals::esp_health_player"] || settings::states["visuals::esp_health_text_player"])
 					draw_health(ent, box);
 
 				if (settings::states["visuals::esp_team_player"])
@@ -307,7 +313,7 @@ void visuals::esp::run_esp()
 				if (is_entity_var("visuals::esp_box_entity", "visuals::esp_box_player"))
 					draw_box(ent, box);
 
-				if (is_entity_var("visuals::esp_health_entity", "visuals::esp_health_player"))
+				if (is_entity_var("visuals::esp_health_entity", "visuals::esp_health_player") || is_entity_var("visuals::esp_health_text_entity", "visuals::esp_health_text_player"))
 					draw_health(ent, box);
 				
 				if (is_entity_var("visuals::esp_name_entity", "visuals::esp_name_player"))

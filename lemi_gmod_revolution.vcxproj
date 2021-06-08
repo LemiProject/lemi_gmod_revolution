@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="deps\include\bind_system.h" />
     <ClInclude Include="deps\include\color.h" />
     <ClInclude Include="deps\include\file_tools.h" />
     <ClInclude Include="deps\include\fmt\chrono.h" />
@@ -288,6 +289,7 @@
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />
     <ClCompile Include="src\features\menu\windows\tabs_contents.cpp" />
+    <ClCompile Include="src\features\movement\freecam.cpp" />
     <ClCompile Include="src\features\movement\movement.cpp" />
     <ClCompile Include="src\features\prediction_system\prediction_system.cpp" />
     <ClCompile Include="src\features\visuals\esp.cpp" />

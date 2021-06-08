@@ -202,7 +202,7 @@ namespace game_utils
 			return;
 		
 		c_vector dir;
-		math::angle_vectors(viewangles, dir);
+		math::angle_to_vector(viewangles, dir);
 
 		ray_t ray;
 		trace_t tr;

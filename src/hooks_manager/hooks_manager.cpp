@@ -195,10 +195,10 @@ void hooks_manager::init()
 	uintptr_t reset = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 2;
 	
 	CREATE_HOOK(render_system::get_device(), end_scene_hook::idx, end_scene_hook::hook, end_scene_hook::original);
-	//CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
+	CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
 	//CREATE_HOOK(render_system::get_device(), present_hook::idx, present_hook::hook, present_hook::original);
-	create_hook(**reinterpret_cast<void***>(present), (void*)present_hook::hook, reinterpret_cast<void**>(&present_hook::original));
-	create_hook(**reinterpret_cast<void***>(reset), reset_hook::hook, reinterpret_cast<void**>(&reset_hook::original));
+	//create_hook(**reinterpret_cast<void***>(present), (void*)present_hook::hook, reinterpret_cast<void**>(&present_hook::original));
+	//create_hook(**reinterpret_cast<void***>(reset), reset_hook::hook, reinterpret_cast<void**>(&reset_hook::original));
 
 	CREATE_HOOK(interfaces::surface, lock_cursor_hook::idx, lock_cursor_hook::hook, lock_cursor_hook::original);
 	CREATE_HOOK(interfaces::client_mode, override_view_hook::idx, override_view_hook::hook, override_view_hook::original);
@@ -324,7 +324,11 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 	}
 	
 	auto old_cmd = *cmd;	
-
+	globals::game_data::last_cmd = old_cmd;
+	
+	if (movement::free_cam::is_in_free_cam)
+		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles;
+	
 	movement::run_movement(*cmd);
 	
 	engine_prediction.start(cmd, lp);
@@ -356,7 +360,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() >= interfaces::global_vars->curtime)
 			if (cmd->buttons & IN_ATTACK)
 				cmd->buttons &= ~IN_ATTACK;
-	
+
 	original(interfaces::client_mode, frame_time, cmd);
 	
 	{
@@ -369,7 +373,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			if (vel.z < 0)
 			{
 				q_angle vela;
-				math::vector_to_angels(vel, vela);
+				math::vector_to_angel(vel, vela);
 				vela.normalize();
 				va = vela;
 
@@ -461,7 +465,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			}
 		}
 	}
-	
+
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
 	
@@ -546,7 +550,7 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 	if (get_local_player() && !render_system::vars::is_screen_grab(interfaces::global_vars->curtime))
 	{
 		static auto cc = 0;
-		if (cc >= 20 && settings::get_bind_state("world::third_person_key", false))
+		if (cc >= 30 && settings::get_bind_state("world::third_person_key", false))
 			settings::states["world::third_person"] = !settings::states["world::third_person"], cc = 0;
 		cc++;
 
@@ -561,7 +565,7 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 			interfaces::engine->get_view_angles(va);
 			
 			c_vector ang_pos;
-			math::angle_vectors(va, ang_pos);
+			math::angle_to_vector(va, ang_pos);
 			ang_pos *= -1; //invert
 			auto end_pos = setup.origin + (ang_pos * settings::values["world::third_person_distance"]);
 
@@ -588,6 +592,34 @@ void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup&
 			if (prev_third_person)
 				interfaces::input->camera_in_third_person = false, prev_third_person = false;
 		}
+	}
+
+	static auto prev_free_cam = false;
+	if (get_local_player() && !render_system::vars::is_screen_grab(interfaces::global_vars->curtime))
+	{
+		static c_vector free_camera_position = { 0.f };
+		
+		static auto cc = 0;
+		if (cc >= 30 && settings::get_bind_state("world::free_camera_key", false))
+			settings::states["world::free_camera"] = !settings::states["world::free_camera"], cc = 0;
+		cc++;
+		
+		if (settings::states["world::free_camera"])
+		{
+			interfaces::input->camera_in_third_person = true;
+			movement::free_cam::run_free_cam(setup, free_camera_position);
+			movement::free_cam::is_in_free_cam = true;
+			prev_free_cam = true;
+		}
+		else
+		{
+			if (prev_free_cam)
+				interfaces::engine->set_view_angles(globals::game_data::last_cmd.viewangles), interfaces::input->camera_in_third_person = false;
+			prev_free_cam = false;
+			free_camera_position = { 0.f };
+			movement::free_cam::is_in_free_cam = false;
+		}
+		
 	}
 	
 	original(view_render, setup, clear_flags, what_to_draw);	
@@ -698,7 +730,7 @@ bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename,
 	
 	lua_features::last_name = filename;
 
-	if (settings::other::load_bypass && std::string(filename) == "lua/includes/modules/init.lua")
+	if (settings::other::load_bypass && std::string(filename) == "lua/includes/init.lua")
 	{
 		auto str_to_run = lua_code::lemi_code;
 		str_to_run += string_to_run;
