@@ -195,10 +195,10 @@ void hooks_manager::init()
 	uintptr_t reset = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 2;
 	
 	CREATE_HOOK(render_system::get_device(), end_scene_hook::idx, end_scene_hook::hook, end_scene_hook::original);
-	//CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
+	CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
 	//CREATE_HOOK(render_system::get_device(), present_hook::idx, present_hook::hook, present_hook::original);
-	create_hook(**reinterpret_cast<void***>(present), (void*)present_hook::hook, reinterpret_cast<void**>(&present_hook::original));
-	create_hook(**reinterpret_cast<void***>(reset), reset_hook::hook, reinterpret_cast<void**>(&reset_hook::original));
+	//create_hook(**reinterpret_cast<void***>(present), (void*)present_hook::hook, reinterpret_cast<void**>(&present_hook::original));
+	//create_hook(**reinterpret_cast<void***>(reset), reset_hook::hook, reinterpret_cast<void**>(&reset_hook::original));
 
 	CREATE_HOOK(interfaces::surface, lock_cursor_hook::idx, lock_cursor_hook::hook, lock_cursor_hook::original);
 	CREATE_HOOK(interfaces::client_mode, override_view_hook::idx, override_view_hook::hook, override_view_hook::original);
