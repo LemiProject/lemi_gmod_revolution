@@ -60,7 +60,7 @@ public:
 	virtual bool					uses_full_frame_buffer_texture() = 0;
 	virtual client_shadow_handle_t	get_shadow_handle() = 0;
 	virtual client_render_handle_t& render_handle() = 0;
-	virtual void* get_model() = 0;
+	virtual model_t* get_model() = 0;
 	virtual void					draw_model(int flags) = 0;
 	virtual int						get_body() = 0;
 	virtual void					compute_fx_bled() = 0;

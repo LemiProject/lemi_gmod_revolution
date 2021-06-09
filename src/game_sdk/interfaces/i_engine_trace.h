@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #define  Assert( _exp ) ((void)0)
 
 

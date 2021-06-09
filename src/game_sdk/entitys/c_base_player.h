@@ -128,9 +128,7 @@ public:
 	 {
 	 	auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 	 	lua->push_special((int)e_special::glob); //1
-	 	lua->get_field(-1, "Entity");
-	 	lua->push_number(get_index()); //2
-	 	lua->call(1, 1); //2 - 1 = 1 + 1 = 2  AJFHA FUCKING LUA AAKSJDKSADJLKASJDLKAJSDLKJASD
+		push_entity();
 
 	 	lua->get_field(-1, "GetViewPunchAngles");
 	 	lua->push(-2);
@@ -160,9 +158,7 @@ public:
 	{
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		lua->push_special((int)e_special::glob); //1
-		lua->get_field(-1, "Entity");
-		lua->push_number(get_index()); //2
-		lua->call(1, 1); //2 - 1 = 1 + 1 = 2  AJFHA FUCKING LUA AAKSJDKSADJLKASJDLKAJSDLKJASD
+		push_entity();
 
 		lua->get_field(-1, "GetViewOffset");
 		lua->push(-2);
