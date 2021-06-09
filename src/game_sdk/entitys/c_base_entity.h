@@ -118,31 +118,17 @@ public:
 	
 	bool is_visible_by(c_base_entity* from)
 	{
-		class visible_filter : public i_trace_filter
-		{
-		public:
-			bool should_hit_entity(void* pEntity, int mask) override
-			{
-				return !(pEntity == pSkip) && static_cast<c_base_entity*>(pEntity)->get_model_name().find("fence") == std::string::npos;
-			}
-			virtual trace_type_t get_trace_type() const
-			{
-				return trace_everything;
-			}
-			void* pSkip;
-		};
-		
 		ray_t ray;
 		trace_t tr;
-		visible_filter filter;
+		c_trace_filter filter;
 		filter.pSkip = from;
-
+		
 		c_vector eye_pos = from->get_eye_pos();
 		c_vector end_pos = this->get_eye_pos();
 
 		ray.init(eye_pos, end_pos);
 
-		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+		interfaces::engine_trace->trace_ray(ray, MASK_SHOT, &filter, &tr);
 
 		if (tr.m_pEnt == this || tr.fraction >= 0.98f)
 			return true;
@@ -177,6 +163,20 @@ public:
 		lua->push(-2);
 		lua->call(1, 1);
 		return lua->get_string();
+	}
+
+	int get_material_type()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		if (!lua)
+			return 0;
+		c_lua_auto_pop p(lua);
+		push_entity();
+
+		lua->get_field(-1, "GetMaterialType");
+		lua->push(-2);
+		lua->call(1, 1);
+		return lua->get_number();
 	}
 	
 	c_vector get_bone(int bone)
