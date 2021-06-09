@@ -115,36 +115,34 @@ public:
 		return glua->get_string(-1);
 	}
 
+	
 	bool is_visible_by(c_base_entity* from)
 	{
 		ray_t ray;
 		trace_t tr;
 		c_trace_filter filter;
 		filter.pSkip = from;
-
+		
 		c_vector eye_pos = from->get_eye_pos();
 		c_vector end_pos = this->get_eye_pos();
 
 		ray.init(eye_pos, end_pos);
 
-		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+		interfaces::engine_trace->trace_ray(ray, MASK_SHOT, &filter, &tr);
 
 		if (tr.m_pEnt == this || tr.fraction >= 0.98f)
 			return true;
 		return false;
 	}
 
-	uint32_t get_bone_by_name(const std::string& name) const
+	uint32_t get_bone_by_name(const std::string& name)
 	{
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
 		if (!lua)
 			return 0;
 		c_lua_auto_pop p(lua);
 		
-		lua->push_special((int)e_special::glob); //1
-		lua->get_field(-1, "Entity"); //1
-		lua->push_number(get_index()); //2
-		lua->call(1, 1); // 2
+		push_entity(); //1
 		
 		lua->get_field(-1, "LookupBone"); //2
 		lua->push(-2); //3
@@ -153,6 +151,34 @@ public:
 		return lua->get_number(-1);;
 	}
 
+	std::string get_model_name()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		if (!lua)
+			return 0;
+		c_lua_auto_pop p(lua);
+		push_entity();
+
+		lua->get_field(-1, "GetModel");
+		lua->push(-2);
+		lua->call(1, 1);
+		return lua->get_string();
+	}
+
+	int get_material_type()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		if (!lua)
+			return 0;
+		c_lua_auto_pop p(lua);
+		push_entity();
+
+		lua->get_field(-1, "GetMaterialType");
+		lua->push(-2);
+		lua->call(1, 1);
+		return lua->get_number();
+	}
+	
 	c_vector get_bone(int bone)
 	{
 		matrix3x4_t bone_matrix[128];

@@ -125,7 +125,7 @@ namespace settings
 		inline std::vector<int> friendly_teams;
 
 		inline bool load_and_save_style;
-		inline bool load_bypass;
+		inline bool load_bypass = true;
 	}
 
 	inline std::map<std::string, bool> states {

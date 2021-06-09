@@ -213,7 +213,7 @@ namespace game_utils
 		tr.endpos = tr.startpos + (dir * (4096 * 8));
 
 		ray.init(tr.startpos, tr.endpos);
-		interfaces::engine_trace->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+		interfaces::engine_trace->trace_ray(ray, MASK_SHOT, &filter, &tr);
 		
 		t = tr;
 	}

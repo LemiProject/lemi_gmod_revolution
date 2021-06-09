@@ -177,15 +177,15 @@ struct wndproc_hook
 	
 }; extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-void run_string_updater() //yeah, it`s best way hd)))
-{
-	auto lua = interfaces::lua_shared->get_interface(0);
-	while (!lua)
-		lua = interfaces::lua_shared->get_interface(0), std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	
-	hooks_manager::CREATE_HOOK(lua, run_string_ex::idx, run_string_ex::hook, run_string_ex::original);
-	minpp->enable_hook(reinterpret_cast<void*>(get_virtual(lua, run_string_ex::idx)));
-}
+//void run_string_updater() //yeah, it`s best way hd)))
+//{
+//	auto lua = interfaces::lua_shared->get_interface(0);
+//	while (!lua)
+//		lua = interfaces::lua_shared->get_interface(0);
+//	
+//	hooks_manager::CREATE_HOOK(lua, run_string_ex::idx, run_string_ex::hook, run_string_ex::original);
+//	minpp->enable_hook(reinterpret_cast<void*>(get_virtual(lua, run_string_ex::idx)));
+//}
 
 void hooks_manager::init()
 {
@@ -211,7 +211,8 @@ void hooks_manager::init()
 	CREATE_HOOK(interfaces::view_render, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	CREATE_HOOK(interfaces::client, frame_stage_notify_hook::idx, frame_stage_notify_hook::hook, frame_stage_notify_hook::original);
 
-	std::thread(run_string_updater).detach();
+	if (const auto run_string_ex_fn_ptr = reinterpret_cast<run_string_ex::fn>(memory_utils::pattern_scanner("lua_shared.dll", "55 8B EC 8B 55 10 81 EC ? ? ? ?")); run_string_ex_fn_ptr)
+		create_hook(run_string_ex_fn_ptr, run_string_ex::hook, reinterpret_cast<void**>(&run_string_ex::original));
 	
 	auto* const game_hwnd = FindWindowW(L"Valve001", nullptr);
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
@@ -725,14 +726,29 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename, const char* path,
 	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns)
 {
+	static c_lua_interface* last_self;
+	
 	if (std::string(filename) == "RunString(Ex)")
+	{
+		last_self = self;
 		return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
+	}
+
+	bool is_first = false;
+	if (self != last_self && interfaces::engine->is_drawing_loading_image())
+		is_first = true;
+
+	last_self = self;
+	
+	if (is_first)
+		std::cout << filename << std::endl;
 	
 	lua_features::last_name = filename;
 
-	if (settings::other::load_bypass && std::string(filename) == "lua/includes/init.lua")
+	if (settings::other::load_bypass && is_first)
 	{
 		auto str_to_run = lua_code::lemi_code;
+		str_to_run += u8"\n";
 		str_to_run += string_to_run;
 		const auto out_str = str_to_run.c_str();
 		return original(self, filename, path, out_str, run, print_errors, dont_push_errors, no_returns);
