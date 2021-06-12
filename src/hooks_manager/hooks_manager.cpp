@@ -362,7 +362,13 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd)
 			if (cmd->buttons & IN_ATTACK)
 				cmd->buttons &= ~IN_ATTACK;
 
+	if (movement::free_cam::is_in_free_cam)
+		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles;
+	
 	original(interfaces::client_mode, frame_time, cmd);
+
+	if (movement::free_cam::is_in_free_cam)
+		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles;
 	
 	{
 		static auto spawn_time = 0.f;
