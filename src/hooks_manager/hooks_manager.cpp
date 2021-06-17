@@ -41,7 +41,6 @@ inline unsigned int get_virtual(void* _class, const unsigned int index) { return
 
 std::shared_ptr<min_hook_pp::c_min_hook> minpp = nullptr;
 
-
 #define CREATE_HOOK(_class, index, detour, original) create_hook(reinterpret_cast<void*>(get_virtual(_class, index)), \
 	detour, reinterpret_cast<void**>(&original));
 
@@ -191,8 +190,8 @@ void hooks_manager::init()
 {
 	minpp = std::make_shared<min_hook_pp::c_min_hook>();
 
-	uintptr_t present = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ?? ?? ?? ?? 8B F8 85 DB") + 2;
-	uintptr_t reset = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 2;
+	//uintptr_t present = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ?? ?? ?? ?? 8B F8 85 DB") + 2;
+	//uintptr_t reset = (uintptr_t)memory_utils::pattern_scanner("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 FF 78 18") + 2;
 	
 	CREATE_HOOK(render_system::get_device(), end_scene_hook::idx, end_scene_hook::hook, end_scene_hook::original);
 	CREATE_HOOK(render_system::get_device(), reset_hook::idx, reset_hook::hook, reset_hook::original);
@@ -247,6 +246,15 @@ void override_view_hook::hook(c_view_setup* setup)
 	
 	if (game_utils::matrix_offset == 0x0)
 		game_utils::matrix_offset = (reinterpret_cast<DWORD>(&interfaces::engine->get_world_to_screen_matrix()) + 0x40);
+
+	if (!globals::local_player_states::real_fov)
+		globals::local_player_states::real_fov = setup->fov;
+	
+	static bool fov_changed;
+	if (settings::values["world::fov"])
+		setup->fov = settings::values["world::fov"], fov_changed = true;
+	else if (fov_changed)
+		setup->fov = globals::local_player_states::real_fov, fov_changed = false;
 
 	if (get_local_player() && get_local_player()->is_alive())
 		if (settings::states["aim_bot::no_recoil"])

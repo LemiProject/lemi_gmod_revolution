@@ -203,6 +203,7 @@ namespace settings
 		//World visuals
 		{"world::third_person_distance", 0.f},
 		{"world::free_camera_speed", 1.f}, //1 - 10
+		{"world::fov", 0.f},
 		
 		//HVH
 		{"hvh::yaw_type", 0},

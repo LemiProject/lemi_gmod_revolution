@@ -115,7 +115,7 @@ void main_window::draw()
 	{
 		int x, y;
 		interfaces::engine->get_screen_size(x, y);
-		auto size = ImVec2(x / 2, y / 2);
+		auto size = ImVec2(x * 0.65f, y / 2);
 		
 		if (x <= 1600)
 			size = ImVec2(x * 0.7f, y / 2);
