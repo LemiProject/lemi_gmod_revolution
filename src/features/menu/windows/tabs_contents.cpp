@@ -191,6 +191,10 @@ void menu_tabs_content::draw_hvh()
 
 	Hotkey("FakeDuck##HVHFD", &binds["hvh::fake_duck"]);
 	internal::set_tooltip("Not 'perfect' fakeduck");
+
+	internal::text_and_toggle_button("FakeLags", "##HVHFL", &states["hvh::fake_lags"]);
+
+	SliderFloat("FakeLags factor##HVHFL", &values["hvh::fake_lags_value"], 0.f, 24.f, "%.0f", 1.f);
 	
 	EndGroupPanel();
 }

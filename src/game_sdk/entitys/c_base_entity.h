@@ -187,6 +187,26 @@ public:
 		auto hitbox = bone_matrix[bone];
 		return { hitbox[0][3], hitbox[1][3], hitbox[2][3] };
 	}
+
+	void set_abs_origin(const c_vector& position)
+	{
+		using fn = void(__thiscall*)(void*, const c_vector& origin);
+		static fn orig_fn;
+		if (!orig_fn)
+			orig_fn = reinterpret_cast<fn>(memory_utils::pattern_scanner("client.dll",
+			                                                             "55 8B EC 56 57 8B F1 E8 ? ? ? ? 8B 7D 08 F3 0F 10 07"));
+		orig_fn(this, position);
+	}
+
+	void set_abs_angles(const c_vector& ang)
+	{
+		using fn = void(__thiscall*)(void*, const c_vector& origin);
+		static fn orig_fn;
+		if (!orig_fn)
+			orig_fn = reinterpret_cast<fn>(memory_utils::pattern_scanner("client.dll",
+				"55 8B EC 81 EC ? ? ? ? 56 57 8B F1 E8 ? ? ? ? 8B 7D 08"));
+		orig_fn(this, ang);
+	}
 };
 
 __forceinline c_base_entity* get_entity_by_index(const int i)

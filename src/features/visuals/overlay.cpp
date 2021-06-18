@@ -36,4 +36,11 @@ void visuals::overlay::run_overlay()
 
 		directx_render::outlined_circle(ImVec2(sw / 2, sh / 2), radius, c_color(0, 0, 0));
 	}
+
+	if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid())
+	{
+		c_vector screen_flp;
+		if (game_utils::world_to_screen(globals::local_player_states::fakelagpos, screen_flp)) 
+			directx_render::filled_circle({ screen_flp.x, screen_flp.y }, 15, colors::red_color);
+	}
 }

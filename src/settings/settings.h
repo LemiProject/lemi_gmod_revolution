@@ -183,7 +183,8 @@ namespace settings
 		{"lua::hack_globals", false},
 
 		//HVH
-		{"hvh::anti_aims", false}
+		{"hvh::anti_aims", false},
+		{"hvh::fake_lags", false},
 	};
 	
 	inline std::map<std::string, float> values {
@@ -207,7 +208,8 @@ namespace settings
 		
 		//HVH
 		{"hvh::yaw_type", 0},
-		{"hvh::pitch_type", 0}
+		{"hvh::pitch_type", 0},
+		{"hvh::fake_lags_value", 0}
 	};
 	
 	inline std::map<std::string, std::string> strings {
