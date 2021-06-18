@@ -371,6 +371,7 @@ void draw_bypass_lua()
 		bypass_editor = new TextEditor();
 		bypass_editor->SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 		bypass_editor->SetShowWhitespaces(false);
+		bypass_editor->SetText(lua_code::lemi_code);
 	}
 	
 	auto cpos = editor->GetCursorPosition();

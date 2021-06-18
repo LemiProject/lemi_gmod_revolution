@@ -183,7 +183,8 @@ namespace settings
 		{"lua::hack_globals", false},
 
 		//HVH
-		{"hvh::anti_aims", false}
+		{"hvh::anti_aims", false},
+		{"hvh::fake_lags", false},
 	};
 	
 	inline std::map<std::string, float> values {
@@ -203,10 +204,12 @@ namespace settings
 		//World visuals
 		{"world::third_person_distance", 0.f},
 		{"world::free_camera_speed", 1.f}, //1 - 10
+		{"world::fov", 0.f},
 		
 		//HVH
 		{"hvh::yaw_type", 0},
-		{"hvh::pitch_type", 0}
+		{"hvh::pitch_type", 0},
+		{"hvh::fake_lags_value", 0}
 	};
 	
 	inline std::map<std::string, std::string> strings {

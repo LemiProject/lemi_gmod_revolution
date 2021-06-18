@@ -109,7 +109,7 @@ void render_system::on_scene_end(uintptr_t ret_address)
         VirtualQuery((LPVOID)ret_address, &mi, sizeof(MEMORY_BASIC_INFORMATION));
         char mn[MAX_PATH];
         GetModuleFileName((HMODULE)mi.AllocationBase, mn, MAX_PATH);
-        if (strstr(mn, "gameoverlay"))
+        if (std::string(mn).find("gameoverlay") != std::string::npos)
             game_overlay_return_address = ret_address;
     }
     if (game_overlay_return_address != (uintptr_t)ret_address && !render_target)
@@ -430,13 +430,13 @@ void surface_render::corner_box(math::box_t box, c_color color)
     {
         math::vec2_t inline_padding = { add.x < 0 ? -1 : 1, add.y < 0 ? -1 : 1 };
         
-        line({center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + add.x/* + inline_padding.x*/, center.y + inline_padding.y }, colors::black_color);
-        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + inline_padding.x, center.y + add.y/* + inline_padding.y */}, colors::black_color);
+        line({center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + add.x, center.y + inline_padding.y }, colors::black_color);
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + inline_padding.x, center.y + add.y}, colors::black_color);
 
         inline_padding = { -inline_padding.x, -inline_padding.y };
         
-        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + add.x/* + inline_padding.x*/, center.y + inline_padding.y }, colors::black_color);
-        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + inline_padding.x, center.y + add.y /*+ inline_padding.y */}, colors::black_color);
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + add.x, center.y + inline_padding.y }, colors::black_color);
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + inline_padding.x, center.y + add.y}, colors::black_color);
         
         line(center, {center.x + add.x, center.y}, color);
         line(center, {center.x, center.y + add.y}, color);

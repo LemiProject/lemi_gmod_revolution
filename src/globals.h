@@ -19,11 +19,16 @@ namespace globals
 		
 		inline bool is_fake_duck;
 		inline bool in_third_person;
+
+		inline c_vector fakelagpos;
+		inline matrix3x4_t fakebones;
+		inline bool fakevalid;
 		
+		inline float real_fov;
+
 #ifdef _DEBUG
 		inline c_vector land_position;
 #endif
-
 	}
 
 	namespace game_data

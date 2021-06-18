@@ -206,6 +206,12 @@ struct matrix3x4_t
 	const float* operator[](int i) const { return m_fl_mat_val[i]; }
 	float* base() { return &m_fl_mat_val[0][0]; }
 	const float* base() const { return &m_fl_mat_val[0][0]; }
-
+	
 	float m_fl_mat_val[3][4];
 };
+
+inline void set_matrix_pos(matrix3x4_t& mat, c_vector pos) {
+	for (size_t i = 0; i < 3; i++) {
+		mat[i][3] = pos[i];
+	}
+}

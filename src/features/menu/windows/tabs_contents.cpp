@@ -191,6 +191,10 @@ void menu_tabs_content::draw_hvh()
 
 	Hotkey("FakeDuck##HVHFD", &binds["hvh::fake_duck"]);
 	internal::set_tooltip("Not 'perfect' fakeduck");
+
+	internal::text_and_toggle_button("FakeLags", "##HVHFL", &states["hvh::fake_lags"]);
+
+	SliderFloat("FakeLags factor##HVHFL", &values["hvh::fake_lags_value"], 0.f, 24.f, "%.0f", 1.f);
 	
 	EndGroupPanel();
 }
@@ -347,17 +351,24 @@ void menu_tabs_content::draw_visuals()
 	{
 		internal::text_and_toggle_button("Third person", "##VISUALS_WORLD_TP", &states["world::third_person"]);
 		Hotkey("Third person key##VISUALS_WORLD_TP_KEY", &binds["world::third_person_key"]);
-		PushItemWidth(GetWindowSize().x / 6);
+		//PushItemWidth(GetWindowSize().x / 6);
 		SliderFloat("Third person distance##TPD", &values["world::third_person_distance"], 60.f, 1000.f, "%.0f");
-		PopItemWidth();
+		//PopItemWidth();
 
 		Spacing();
 		
 		internal::text_and_toggle_button("Free Camera", "##VISUALS_FREE_CAMERA", &states["world::free_camera"]);
 		Hotkey("Free Camera Key##VISUALS_WORLD_FREE_CAMERA_KEY", &binds["world::free_camera_key"]);
-		PushItemWidth(GetWindowSize().x / 6);
+		//PushItemWidth(GetWindowSize().x / 6);
 		SliderFloat("Free Camera Speed##FREE_CAMERA_SPEED", &values["world::free_camera_speed"], 1.f, 10.f, "%.1f");
-		PopItemWidth();
+		//PopItemWidth();
+
+		Spacing();
+		Spacing();
+
+		//PushItemWidth(GetWindowSize().x / 6);
+		SliderFloat("Custom fov##CUSTOM_FOV", &values["world::fov"], 0.f, 360.f, "%.0f");
+		//PopItemWidth();
 	}
 	EndGroupPanel();
 }
