@@ -126,6 +126,8 @@ namespace settings
 
 		inline bool load_and_save_style;
 		inline bool load_bypass = true;
+
+		inline bool legit_aa = false;
 	}
 
 	inline std::map<std::string, bool> states {

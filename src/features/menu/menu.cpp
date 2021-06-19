@@ -73,6 +73,8 @@ void draw_debug()
 
 	//Checkbox("FL##SDASD", &settings::other::fakelag);
 	//SliderInt("FFS##sdasdsd", &settings::other::fakelagval, 0, 30);
+
+	Checkbox("LegitAA##sdasd", &settings::other::legit_aa);
 	
 	End();
 }
