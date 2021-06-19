@@ -580,3 +580,97 @@ void directx_render::directx_lua_api::push_all(c_lua_interface* lua)
 
 	
 }
+
+namespace chams_manager {
+	struct entinfo_t
+	{
+        c_vector origin;
+        q_angle angle;
+        c_color color;
+        i_material* material;
+	};
+	
+    std::map<c_base_entity*, entinfo_t> chams_list;
+
+    std::mutex chams_mutex;
+
+    bool currently_draw_chams = false;
+}
+
+void chams_manager::initialize_chams_manager()
+{
+	
+}
+
+void chams_manager::shutdown_chams_manager()
+{
+	
+}
+
+void chams_manager::add_entity(c_base_entity* ent, i_material* mat, c_color col, const c_vector& origin, const q_angle& ang)
+{
+    if (currently_draw_chams || !ent || !mat)
+		return;
+	
+    //std::unique_lock l(chams_mutex);
+    c_vector orig = origin;
+    q_angle angle = ang;
+	
+    if (!orig.is_valid())
+        orig = ent->get_origin();
+    if (!angle.is_valid())
+        angle = ent->get_angles();
+	
+    chams_list.emplace(ent, entinfo_t{ orig, angle, col, mat });
+}
+
+void chams_manager::draw_chams()
+{
+    //std::unique_lock l(chams_mutex);
+	if (chams_list.empty())
+        return;
+
+    currently_draw_chams = true;
+	
+    for (const auto& chams : chams_list) {
+	    if (chams.first && chams.second.origin.is_valid() && chams.second.angle.is_valid() && chams.second.material) {
+            
+            chams.first->set_abs_origin(chams.second.origin);
+            chams.first->set_abs_angles(chams.second.angle);
+
+            float oldColor[3];
+            float oldBlend;
+	    	
+            interfaces::model_render->forced_material_override(chams.second.material);
+            interfaces::render_view->get_color_modulation(oldColor);
+            oldBlend = interfaces::render_view->get_blend();
+	    	
+            interfaces::render_view->set_color_modulation(chams.second.color.get_clamped().data());
+            interfaces::render_view->set_blend(chams.second.color.get_clamped()[3]);
+            
+	    	
+            chams.first->draw_model(0x1);
+
+
+            interfaces::render_view->set_color_modulation(oldColor);
+            interfaces::render_view->set_blend(oldBlend);
+	    	
+            interfaces::model_render->forced_material_override(nullptr);
+
+	    	
+            //chams.first->set_abs_origin(chams.first->get_origin());
+            //chams.first->set_abs_angles(chams.first->get_angles());
+	    	
+            
+	    }
+    }
+
+    currently_draw_chams = false;
+	
+    chams_list.clear();
+}
+
+bool chams_manager::is_chams_manager_calls()
+{
+    return currently_draw_chams;
+}

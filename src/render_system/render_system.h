@@ -105,3 +105,15 @@ namespace directx_render
 		void push_all(c_lua_interface* lua);
 	}
 }
+
+
+namespace chams_manager {
+	void initialize_chams_manager();
+	void shutdown_chams_manager();
+
+	void add_entity(c_base_entity* ent, i_material* mat, c_color col, const c_vector& origin = c_vector(), const q_angle& ang = q_angle());
+
+	void draw_chams();
+
+	bool is_chams_manager_calls();
+}

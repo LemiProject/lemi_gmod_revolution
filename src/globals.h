@@ -23,6 +23,7 @@ namespace globals
 		inline c_vector fakelagpos;
 		inline matrix3x4_t fakebones;
 		inline bool fakevalid;
+		inline bool is_fake_lag;
 		
 		inline float real_fov;
 

@@ -154,6 +154,20 @@ public:
 	 	return {x, y, z};
 	 }
 
+	bool is_speaking()
+	{
+		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
+		c_lua_auto_pop p(lua);
+
+		push_entity();
+
+		lua->get_field(-1, "IsSpeaking");
+		lua->push(-2);
+		lua->call(1, 1);
+
+		return lua->get_bool();
+	}
+	
 	q_angle get_view_offset_unduck()
 	{
 		auto lua = interfaces::lua_shared->get_interface((int)e_special::glob);
@@ -233,6 +247,32 @@ public:
 		color.init(r, g, b);
 		return color;
 	}
+};
+
+
+/// <summary>
+/// Wrapper for local player
+/// </summary>
+class c_local_player : public c_base_player
+{
+public:
+	//TODO: Fix this
+	/*bool is_speaking()
+	{
+		using getm_fn = c_voice_status * (__stdcall*)();
+		static getm_fn get_voice_status;
+		if (!get_voice_status)
+			get_voice_status = (getm_fn)(memory_utils::pattern_scanner("client.dll", "E8 ? ? ? ? 8B C8 E8 ? ? ? ? EB 16") + 1);
+
+		using islps_fn = bool(__thiscall*)(c_voice_status*);
+		static islps_fn is_lp_sp;
+		if (!is_lp_sp)
+			is_lp_sp = (islps_fn)memory_utils::pattern_scanner("client.dll", "8A 41 55");
+
+		auto voice = get_voice_status();
+		
+		return is_lp_sp(voice);
+	}*/
 };
 
 __forceinline c_base_player* get_local_player()

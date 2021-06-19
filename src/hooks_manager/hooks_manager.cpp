@@ -321,7 +321,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 		return false;
 	}
 
-	auto* const lp = get_local_player();
+	auto* const lp = (c_local_player*)get_local_player();
 	if (!lp || !lp->is_alive()) {
 		original(interfaces::client_mode, frame_time, cmd);
 		return false;
@@ -405,17 +405,45 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	{
 		static auto tick_counter = 0;
 		static auto should_send = false;
-		if (settings::states["hvh::fake_lags"] && !(cmd->buttons & IN_ATTACK)) {
+		if (settings::states["hvh::fake_lags"] && !(cmd->buttons & IN_ATTACK) && !lp->is_speaking()) {
 			if (tick_counter >= settings::values["hvh::fake_lags_value"])
 				tick_counter = 0, should_send = !should_send;
 			tick_counter++;
 			if (should_send)
-				send_packets = true, globals::local_player_states::fakelagpos = lp->get_origin(), should_send = false;
+				send_packets = true, globals::local_player_states::fakelagpos = lp->get_origin(), should_send = false, globals::local_player_states::is_fake_lag = false;
 			else
-				send_packets = false;
+				send_packets = false, globals::local_player_states::is_fake_lag = true;
+		}
+		else {
+			globals::local_player_states::fakelagpos = lp->get_origin();
 		}
 	}
 
+	{
+		static auto tick_counter = 0;
+		static auto should_send = false;
+		static q_angle old_ang;
+
+		old_ang = cmd->viewangles;
+		
+		if (settings::other::legit_aa && !(cmd->buttons & IN_ATTACK) && !lp->is_speaking()) {
+			if (settings::states["hvh::fake_lags"]) {
+				if (!globals::local_player_states::is_fake_lag)
+					cmd->viewangles.y += 90.f;
+				else
+					cmd->viewangles = old_ang;
+			} else {
+				if (tick_counter == 2)
+					tick_counter = 0, should_send = !should_send;
+				tick_counter++;
+				if (should_send)
+					send_packets = true, cmd->viewangles = old_ang;
+				else
+					send_packets = false, cmd->viewangles.y += 90.f;
+			}
+		}
+	}
+	
 	{
 		globals::local_player_states::is_fake_duck = false;
 
@@ -487,8 +515,10 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 
 	bg_window::update_entity_list();
 	lua_features::run_all_code();
-
-	//std::cout << 1.0f / interfaces::global_vars->interval_per_tick << std::endl;
+	//chams_manager::draw_chams();
+	
+	//if (GetAsyncKeyState(VK_MENU))
+		//std::cout << lp->is_speaking() << std::endl;
 	
 	//if (globals::local_player_states::in_third_person)
 	//get_local_player()->get_angles() = { 0, 0, 0 };
@@ -548,12 +578,18 @@ void view_render_hook::hook(void* self, void* edx, void* rect) {
 	if (render_system::vars::_is_screen_grab)
 		return;
 
+	//chams_manager::draw_chams();
+	
 	interfaces::surface->start_drawing();
 	{
 		/*		if (settings::states["lua::hack_hooks"])
 					lua::hook_call("LASGHudPaint");*/
 	}
 	interfaces::surface->finish_drawing();
+
+	//interfaces::render_view.->Push3DView(globals->view, 0, nullptr, Interfaces->view_render->GetFrustum());
+	
+	
 }
 
 void render_view_hook::hook(i_view_render* view_render, void* edx, c_view_setup& setup, int clear_flags,
@@ -651,6 +687,9 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 		return settings::visuals::entitys_to_draw.exist(ent.data());
 	};
 
+	if (chams_manager::is_chams_manager_calls())
+		return original(interfaces::model_render, draw_state, render_info, bone);
+	
 	if (!settings::states["visuals::chams_enabled"] || !interfaces::engine->is_in_game() || render_system::vars::
 		_is_screen_grab || interfaces::engine->is_taking_screenshot() || (settings::states["other::anti_obs"] &&
 			settings::states["visuals::chams_obs_check"]))
@@ -660,8 +699,8 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 
 	i_material* material = interfaces::material_system->find_material(
 		settings::strings["visuals::chams_material"].c_str(), "Model textures");
-	material->increment_reference_count();
-
+	material->add_ref();
+	
 	auto force_mat = [](bool ignore_z, float* color, i_material* mat) {
 		interfaces::render_view->set_color_modulation(color);
 		interfaces::render_view->set_blend(color[3]);
@@ -672,33 +711,22 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 	auto* ent = get_entity_by_index(render_info.entity_index);
 
 	if (ent && material && ent->is_alive() && (ent->is_player() || is_draw(ent->get_class_name()))) {
-		//render_info.angles = { 0, 0, 0 };
-		static bool local_player_model_override_drawing;
 		
 		if (ent != get_local_player())
 			force_mat(settings::states["visuals::ignore_z"],
 			          settings::colors::colors_map["chams_color_modulation"].data(), material);
-		else if (!local_player_model_override_drawing) {
-			if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid()) {
-				
-				local_player_model_override_drawing = true;
+		else {
+			//original(interfaces::model_render, draw_state, render_info, bone);
+			
+			if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid() && abs((globals::local_player_states::fakelagpos - ent->get_origin()).length()) >= 5.f)
+				chams_manager::add_entity(ent, material, colors::black_color, globals::local_player_states::fakelagpos);
 
-				get_local_player()->set_abs_origin(globals::local_player_states::fakelagpos);
-
-				interfaces::model_render->forced_material_override(material);
-				interfaces::render_view->set_color_modulation(colors::black_color.get_clamped().data());
-				interfaces::render_view->set_blend(0.8f);
-				get_local_player()->draw_model(0x1);
-				interfaces::model_render->forced_material_override(nullptr);
-				
-				local_player_model_override_drawing = false;
-			}
-
-			force_mat(settings::states["visuals::ignore_z"],
-				settings::colors::colors_map["chams_color_modulation"].data(), material);
+			
 		}
 	}
 
+	chams_manager::draw_chams();
+	
 	original(interfaces::model_render, draw_state, render_info, bone);
 	interfaces::model_render->forced_material_override(nullptr);
 }

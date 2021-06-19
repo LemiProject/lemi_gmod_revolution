@@ -7,6 +7,15 @@
 class c_vector;
 class c_view_setup;
 
+class c_voice_status
+{
+public:
+	virtual ~c_voice_status() = 0;
+
+	virtual int init(void*, void*) = 0;
+	virtual void vid_init() = 0;
+};
+
 class c_client	//TODO: COMPLETE THIS https://i.imgur.com/ut06Dyc.png
 {
 public:
