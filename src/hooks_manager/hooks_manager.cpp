@@ -311,7 +311,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move) - 1);
 
-	game_utils::c_send_packets_helper send_packets_helper;
+	game_utils::c_send_packets_helper send_packets_helper(send_packets);
 	
 	//update game data
 	{
