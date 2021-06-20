@@ -309,7 +309,7 @@
     <ClInclude Include="deps\include\bind_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\features\menu\windows\overlay.h">
+    <ClInclude Include="src\features\menu\windows\imoverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -449,7 +449,7 @@
     <ClCompile Include="src\features\movement\freecam.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\features\menu\windows\overlay.cpp">
+    <ClCompile Include="src\features\menu\windows\imoverlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

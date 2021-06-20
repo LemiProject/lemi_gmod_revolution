@@ -413,9 +413,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 				tick_counter = 0, should_send = !should_send;
 			tick_counter++;
 			if (should_send)
-				send_packets_helper.set(true), globals::local_player_states::fakelagpos = lp->get_origin(), should_send = false, globals::local_player_states::is_fake_lag = false;
+				send_packets_helper.set_force(true), globals::local_player_states::fakelagpos = lp->get_origin(), should_send = false, globals::local_player_states::is_fake_lag = false;
 			else
-				send_packets_helper.set(false), globals::local_player_states::is_fake_lag = true;
+				send_packets_helper.set_force(false), globals::local_player_states::is_fake_lag = true;
 		}
 		else {
 			globals::local_player_states::fakelagpos = lp->get_origin();
