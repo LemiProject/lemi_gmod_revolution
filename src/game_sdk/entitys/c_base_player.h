@@ -64,7 +64,7 @@ public:
 	{
 		auto str = get_user_group();
 		return str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
-		|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos;
+		|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos || str.find("root") != std::string::npos;
 	}
 
 	std::string get_team_name()
@@ -273,11 +273,32 @@ public:
 		
 		return is_lp_sp(voice);
 	}*/
+
+	/// <summary>
+	/// https://wiki.facepunch.com/gmod/Global.PrintMessage without lua
+	/// </summary>
+	/// <param name="str"></param>
+	/// <param name="type">https://wiki.facepunch.com/gmod/Enums/HUD</param>
+	void client_print(const std::string& str, int type) //55 8B EC 56 8B 75 10 85 F6 74 57
+	{
+		using fn = void(__cdecl*)(c_base_player*, int, const char*);
+		static fn f;
+		if (!f)
+			f = reinterpret_cast<fn>(memory_utils::pattern_scanner("client.dll", "55 8B EC 56 8B 75 10 85 F6 74 57"));
+		f(this, type, str.c_str());
+	}
+
+	c_vector get_view_offset(bool duck = true)
+	{
+		c_vector tmp;
+		auto out = interfaces::game_movement->get_player_view_offset(tmp, duck);
+		return out;
+	}
 };
 
-__forceinline c_base_player* get_local_player()
+__forceinline c_local_player* get_local_player()
 {
-	return static_cast<c_base_player*>(interfaces::entity_list->get_entity_by_index(interfaces::engine->get_local_player()));
+	return static_cast<c_local_player*>(interfaces::entity_list->get_entity_by_index(interfaces::engine->get_local_player()));
 }
 
 

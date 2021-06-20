@@ -15,12 +15,21 @@
 
 #include "../../globals.h"
 
+#include "../menu/menu.h"
+
+static int overlay_frame_count = 0;
+
 void visuals::overlay::run_overlay()
 {
 	auto local_player = get_local_player();
+
+	if (!menu::menu_is_open() && !interfaces::engine->is_in_game()) {
+		c_color text_color = color_from_hsv((int)((float)overlay_frame_count * 0.02f) % 360, 1, 1);
+		text(render_system::fonts::in_game_font, "LemiProject", { 0, 0 }, 30.f, text_color, directx_render::e_font_flags::font_outline);
+	}
+
 	
-	if (settings::states["visuals::draw_fov"] && interfaces::engine->is_in_game() && local_player)
-	{
+	if (settings::states["visuals::draw_fov"] && interfaces::engine->is_in_game() && local_player) {
 		auto ply_fov = globals::view::last_view_setup.fov;
 		auto fov = settings::values["aim_bot::aim_bot_fov"];
 		fov = fov > 180 ? 180 : fov;
@@ -37,10 +46,11 @@ void visuals::overlay::run_overlay()
 		directx_render::outlined_circle(ImVec2(sw / 2, sh / 2), radius, c_color(0, 0, 0));
 	}
 
-	if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid())
-	{
+	if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid()) {
 		c_vector screen_flp;
 		if (game_utils::world_to_screen(globals::local_player_states::fakelagpos, screen_flp)) 
 			directx_render::filled_circle({ screen_flp.x, screen_flp.y }, 15, colors::red_color);
 	}
+
+	overlay_frame_count++;
 }

@@ -397,6 +397,9 @@ void menu_tabs_content::draw_misc()
 
 		Hotkey("Auto mega-jump", &binds["exploits::auto_mega_jump"]);
 		internal::set_tooltip("Automatically places a block under you, which on most servers allows you to take off high");
+
+		internal::text_and_toggle_button("RunString Block", "##BLOCK_RUN_STRING", &states["misc::runstring_block"]);
+		internal::set_tooltip("Block in game runstrings");
 	}
 	EndGroupPanel();
 }
