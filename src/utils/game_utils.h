@@ -229,6 +229,76 @@ namespace game_utils
 
 		return true;
 	}
+
+	/// <summary>
+	/// Class for helping abuse bSendPackets
+	/// </summary>
+	class c_send_packets_helper
+	{
+		bool send_p;
+		bool is_force;
+	
+	public:
+		c_send_packets_helper() = default;
+
+		/// <summary>
+		/// Set packet not force
+		/// </summary>
+		/// <param name="val">new packet value</param>
+		void set(bool val)
+		{
+			if (!is_force) 
+				send_p = val;
+		}
+
+		/// <summary>
+		/// Set packet as force
+		/// </summary>
+		/// <param name="val">new packet value</param>
+		void set_force(bool val)
+		{
+			send_p = val;
+			is_force = true;
+		}
+
+		/// <summary>
+		/// Set packet as force if cond is true else as not force
+		/// </summary>
+		/// <param name="val">new packet value</param>
+		/// <param name="cond">condition</param>
+		void set_force(bool val, bool cond)
+		{
+			if (cond)
+				set_force(val);
+			else
+				set(val);
+		}
+		
+		/// <summary>
+		/// Say, what current packet value no force
+		/// </summary>
+		void not_force()
+		{
+			is_force = false;
+		}
+
+		/// <summary>
+		/// Say, what current packet value is force
+		/// </summary>
+		void force()
+		{
+			is_force = true;
+		}
+
+		/// <summary>
+		/// Apply send packets
+		/// </summary>
+		/// <param name="sp"></param>
+		void apply(bool& sp) const
+		{
+			sp = send_p;
+		}
+	};
 }
 
 

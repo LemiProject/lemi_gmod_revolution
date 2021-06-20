@@ -1,10 +1,12 @@
 #include "lua_features.h"
 
 
+#include <filesystem>
 #include <iostream>
 #include <vector>
 #include <mutex>
 
+#include "file_tools.h"
 #include "../../interfaces.h"
 #include "../../utils/game_utils.h"
 
@@ -27,6 +29,8 @@ void lua_features::add_code_to_run(const std::string& str)
 void lua_features::run_all_code()
 {
 	std::unique_lock l(run_mutex);
+	is_hack_call = true;
+	
 	auto lua = interfaces::lua_shared->get_interface((int)e_type::client);
 	if (lua)
 	{
@@ -43,6 +47,73 @@ void lua_features::run_all_code()
 	}
 
 	codes_to_run_safe.clear();
+	is_hack_call = false;
+}
+
+std::vector<std::string> get_autorun_luas()
+{
+	auto get_lua_dir = [&]()
+	{
+		auto dir_path = file_tools::get_hack_directory_path();
+		dir_path.append("lua");
+		if (!file_tools::exist(dir_path.string()))
+			file_tools::create_directory(dir_path.string());
+		dir_path.append("autorun");
+		if (!file_tools::exist(dir_path.string()))
+			file_tools::create_directory(dir_path.string());
+		return dir_path.string();
+	};
+
+	auto get_luas = [&]()
+	{
+		auto path = get_lua_dir();
+		std::vector<std::string> out;
+		for (auto& p : std::filesystem::directory_iterator(path))
+			if (!p.is_directory())
+				if (p.path().filename().string().find(".lua") != std::string::npos)
+					out.push_back(p.path().filename().string());
+		return out;
+	};
+
+	return get_luas();
+}
+
+void lua_features::run_auto_run(c_lua_interface* intr)
+{
+	//is_hack_call = true;
+
+	auto get_lua_dir = [&]()
+	{
+		auto dir_path = file_tools::get_hack_directory_path();
+		dir_path.append("lua");
+		if (!file_tools::exist(dir_path.string()))
+			file_tools::create_directory(dir_path.string());
+		dir_path.append("autorun");
+		if (!file_tools::exist(dir_path.string()))
+			file_tools::create_directory(dir_path.string());
+		return dir_path.string();
+	};
+
+
+	auto lua = interfaces::lua_shared->get_interface((int)e_type::client);
+	if (lua) {
+		for (const auto& i : get_autorun_luas()) {
+			try {
+				if (!std::filesystem::exists(get_lua_dir() + "\\" + i))
+					continue;
+
+				std::string content;
+				file_tools::read_file(content, get_lua_dir() + "\\" + i);
+
+				add_code_to_run(content);
+
+				std::cout << i << "\tloaded as autorun" << std::endl;
+			}
+			catch (...) {
+			}
+		}
+	}
+	//is_hack_call = false;
 }
 
 std::string lua_code::lemi_code = u8R"(

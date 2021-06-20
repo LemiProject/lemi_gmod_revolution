@@ -175,6 +175,7 @@ namespace settings
 		{"other::anti_obs", false},
 		{"other::rapid_fire", false},
 		{"misc::auto_strafe", false},
+		{"misc::runstring_block", false},
 
 		//World visuals
 		{"world::third_person", false},

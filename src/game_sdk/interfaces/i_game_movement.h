@@ -19,7 +19,7 @@ public:
 	virtual void	idk() = 0;
 	virtual c_vector get_player_mins(bool ducked) = 0;
 	virtual c_vector get_player_maxs(bool ducked) = 0;
-	virtual c_vector const& get_player_view_offset(bool ducked)= 0;
+	virtual c_vector& get_player_view_offset(c_vector& view, bool ducked) = 0;
 	virtual void	trace_player_b_box(const c_vector& start, const c_vector& end, unsigned int fMask, int collisionGroup, trace_t& pm) = 0;
 	virtual void	try_touch_ground(const c_vector& start, const c_vector& end, const c_vector& mins, const c_vector& maxs, unsigned int fMask, int collisionGroup, trace_t& pm) = 0;
 	virtual void	idk5() = 0;

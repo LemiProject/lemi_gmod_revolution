@@ -259,7 +259,8 @@ void override_view_hook::hook(c_view_setup* setup) {
 
 	if (!globals::local_player_states::in_third_person)
 		if (globals::local_player_states::is_fake_duck)
-			setup->origin = get_local_player()->get_origin() + get_local_player()->get_view_offset_unduck();
+			setup->origin.z = get_local_player()->get_origin().z + get_local_player()->get_view_offset(false).z;
+			
 
 	original(interfaces::client_mode, setup);
 }
@@ -310,6 +311,8 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	_asm mov move, ebp;
 	auto& send_packets = *(***reinterpret_cast<bool****>(move) - 1);
 
+	game_utils::c_send_packets_helper send_packets_helper;
+	
 	//update game data
 	{
 		if (get_local_player())
@@ -321,7 +324,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 		return false;
 	}
 
-	auto* const lp = (c_local_player*)get_local_player();
+	auto* const lp = get_local_player();
 	if (!lp || !lp->is_alive()) {
 		original(interfaces::client_mode, frame_time, cmd);
 		return false;
@@ -410,9 +413,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 				tick_counter = 0, should_send = !should_send;
 			tick_counter++;
 			if (should_send)
-				send_packets = true, globals::local_player_states::fakelagpos = lp->get_origin(), should_send = false, globals::local_player_states::is_fake_lag = false;
+				send_packets_helper.set(true), globals::local_player_states::fakelagpos = lp->get_origin(), should_send = false, globals::local_player_states::is_fake_lag = false;
 			else
-				send_packets = false, globals::local_player_states::is_fake_lag = true;
+				send_packets_helper.set(false), globals::local_player_states::is_fake_lag = true;
 		}
 		else {
 			globals::local_player_states::fakelagpos = lp->get_origin();
@@ -437,9 +440,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 					tick_counter = 0, should_send = !should_send;
 				tick_counter++;
 				if (should_send)
-					send_packets = true, cmd->viewangles = old_ang;
+					send_packets_helper.set_force(true), cmd->viewangles = old_ang;
 				else
-					send_packets = false, cmd->viewangles.y += 90.f;
+					send_packets_helper.set_force(false), cmd->viewangles.y += 90.f;
 			}
 		}
 	}
@@ -455,12 +458,12 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 				ticks_counter = 0, should_send = !should_send;
 			ticks_counter++;
 			if (should_send) {
-				send_packets = true;
+				send_packets_helper.set_force(true, !settings::states["hvh::fake_lags"]);
 				cmd->buttons |= IN_DUCK;
 			}
 			else {
 				cmd->buttons &= ~IN_DUCK;
-				send_packets = false;
+				send_packets_helper.set_force(false, !settings::states["hvh::fake_lags"]);
 			}
 		}
 	}
@@ -522,7 +525,9 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	
 	//if (globals::local_player_states::in_third_person)
 	//get_local_player()->get_angles() = { 0, 0, 0 };
-
+	
+	send_packets_helper.apply(send_packets);
+	
 	if (settings::states["aim_bot::aim_bot_silent_aim"])
 		return !settings::states["aim_bot::aim_bot_silent_aim"];
 
@@ -718,8 +723,8 @@ void draw_model_execute_hook::hook(draw_model_state_t& draw_state, model_render_
 		else {
 			//original(interfaces::model_render, draw_state, render_info, bone);
 			
-			if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid() && abs((globals::local_player_states::fakelagpos - ent->get_origin()).length()) >= 5.f)
-				chams_manager::add_entity(ent, material, colors::black_color, globals::local_player_states::fakelagpos);
+			/*if (settings::states["hvh::fake_lags"] && globals::local_player_states::fakelagpos.is_valid() && abs((globals::local_player_states::fakelagpos - ent->get_origin()).length()) >= 5.f)
+				chams_manager::add_entity(ent, material, colors::black_color, globals::local_player_states::fakelagpos);*/
 
 			
 		}
@@ -763,9 +768,9 @@ void paint_traverse_hook::hook(i_panel* self, void* nn_var, unsigned panel, bool
 
 		directx_render::render_surface([&]() {
 			visuals::run_visuals();
-			if (settings::states["lua::hack_hooks"] /*&& numm == 2*/) {
+			if (settings::states["lua::hack_hooks"]) {
 				lua::hook_call("LDrawVisuals");
-				//numm = 0;
+				
 			}
 		});
 	}
@@ -776,7 +781,19 @@ bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename,
                          const char* string_to_run, bool run, bool print_errors, bool dont_push_errors,
                          bool no_returns) {
 	static c_lua_interface* last_self;
-
+	static bool last_first;
+	
+	if (lua_features::is_hack_call) {
+		return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
+	}
+	
+	if (interfaces::engine->is_in_game() && settings::states["misc::runstring_block"] 
+		&& !lua_features::is_hack_call && std::string(filename) != "RunString(Ex)") {
+		if (get_local_player())
+			get_local_player()->client_print(std::string("RunString Blocked! Filename: ") + filename, 3);
+		return original(self, filename, path, "", run, print_errors, dont_push_errors, no_returns);
+	}
+	
 	if (std::string(filename) == "RunString(Ex)") {
 		last_self = self;
 		return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
@@ -790,17 +807,25 @@ bool run_string_ex::hook(c_lua_interface* self, void* edx, const char* filename,
 
 	if (is_first)
 		std::cout << filename << std::endl;
-
+		
+	
 	lua_features::last_name = filename;
 
-	if (settings::other::load_bypass && is_first) {
-		auto str_to_run = lua_code::lemi_code;
-		str_to_run += u8"\n";
-		str_to_run += string_to_run;
-		const auto out_str = str_to_run.c_str();
-		return original(self, filename, path, out_str, run, print_errors, dont_push_errors, no_returns);
-	}
+	if (is_first) {
+		lua_features::run_auto_run(self);
+		
+		std::string out_str = string_to_run;
+		if (settings::other::load_bypass) {
+			auto str_to_run = lua_code::lemi_code;
+			str_to_run += u8"\n";
+			str_to_run += string_to_run;
+			out_str = str_to_run;
+		}
 
+		last_first = true;
+		return original(self, filename, path, out_str.c_str(), run, print_errors, dont_push_errors, no_returns);
+	}
+	
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }
 
