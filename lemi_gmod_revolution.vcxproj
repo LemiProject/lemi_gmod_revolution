@@ -210,7 +210,7 @@
     <ClInclude Include="src\features\menu\styles.h" />
     <ClInclude Include="src\features\menu\windows\bgwindow.h" />
     <ClInclude Include="src\features\menu\windows\main_window.h" />
-    <ClInclude Include="src\features\menu\windows\overlay.h" />
+    <ClInclude Include="src\features\menu\windows\imoverlay.h" />
     <ClInclude Include="src\features\menu\windows\tabs_contents.h" />
     <ClInclude Include="src\features\movement\movement.h" />
     <ClInclude Include="src\features\prediction_system\prediction_system.h" />
@@ -289,7 +289,7 @@
     <ClCompile Include="src\features\menu\menu_lua_api.cpp" />
     <ClCompile Include="src\features\menu\windows\bgwindow.cpp" />
     <ClCompile Include="src\features\menu\windows\main_window.cpp" />
-    <ClCompile Include="src\features\menu\windows\overlay.cpp" />
+    <ClCompile Include="src\features\menu\windows\imoverlay.cpp" />
     <ClCompile Include="src\features\menu\windows\tabs_contents.cpp" />
     <ClCompile Include="src\features\movement\freecam.cpp" />
     <ClCompile Include="src\features\movement\movement.cpp" />

@@ -15,7 +15,7 @@
 
 #include "../../globals.h"
 #include "../../settings/settings.h"
-#include "windows/overlay.h"
+#include "windows/imoverlay.h"
 
 bool is_open = false;
 
