@@ -15,6 +15,7 @@
 
 #include "../../globals.h"
 #include "../../settings/settings.h"
+#include "windows/overlay.h"
 
 bool is_open = false;
 
@@ -89,6 +90,8 @@ void menu::draw()
 
 		if (!interfaces::surface->is_cursor_visible())
 			ImGui::GetIO().MouseDrawCursor = true;
+
+		//imgui_overlay::draw();
 		
 		bg_window::draw();
 		main_window::draw();

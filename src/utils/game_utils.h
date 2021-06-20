@@ -239,7 +239,10 @@ namespace game_utils
 		bool is_force;
 	
 	public:
-		c_send_packets_helper() = default;
+		c_send_packets_helper(bool send)
+		{
+			send_p = send;
+		}
 
 		/// <summary>
 		/// Set packet not force
