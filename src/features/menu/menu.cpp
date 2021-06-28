@@ -82,6 +82,10 @@ void draw_debug()
 
 #endif
 
+bool last_is_open;
+bool should_call_animation;
+float startAnimTime;
+
 void menu::draw()
 {
 	if (is_open)
@@ -91,15 +95,38 @@ void menu::draw()
 		if (!interfaces::surface->is_cursor_visible())
 			ImGui::GetIO().MouseDrawCursor = true;
 
-		//imgui_overlay::draw();
+		float alpha = 1.f;
+
+		auto current_time = interfaces::engine->get_time_stamp_from_start();
+		
+		if (!last_is_open) {
+			startAnimTime = current_time;
+		}
+
+		if (startAnimTime + 2.f >= current_time) {
+			auto endTime = startAnimTime + 2.f;
+			auto delta = endTime - current_time;
+			auto fullDelta = endTime - startAnimTime;
+
+			if (fullDelta - delta > 1)
+				alpha = std::clamp(fullDelta - delta / 100, 0.f, 1.f);
+			else
+				alpha = std::clamp(fullDelta - delta, 0.f, 1.f);
+		}
+		
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 		
 		bg_window::draw();
 		main_window::draw();
+
+		ImGui::PopStyleVar();
 	}
 	else
 	{
 		ImGui::GetIO().MouseDrawCursor = false;
 	}
+
+	last_is_open = is_open;
 #ifdef _DEBUG
 	draw_debug();
 #endif

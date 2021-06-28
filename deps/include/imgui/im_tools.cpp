@@ -11,6 +11,7 @@
 
 using json = nlohmann::json;
 
+
 void ImGui::BorderPrevItem(const ImVec4& color)
 {
 	GetWindowDrawList()->AddRect(GetItemRectMin(), GetItemRectMax(), GetColorU32(color));
@@ -774,4 +775,55 @@ bool ImGui::ImGuiLoadStyle(const std::string& from, ImGuiStyle& style)
 			style.Colors[i] = arr_to_im4(colors_.find(GetStyleColorName(i))->second);
 
 	return true;
+}
+
+struct AnimationData
+{
+	float startTime;
+	bool isEnd;
+};
+
+std::map<std::string, AnimationData> fadeAnimations;
+
+bool ImGui::BeginFadeAnimation(const std::string& animationId, float duration, float startValue, float endValue)
+{
+	if (fadeAnimations.find(animationId) == fadeAnimations.end())
+		fadeAnimations.emplace(animationId, AnimationData {(float)GetTime(), true});
+
+	auto curAnim = fadeAnimations[animationId];
+	auto prevEnd = curAnim.isEnd;
+	curAnim.isEnd = curAnim.startTime + duration / 100.f <= GetTime();
+	auto isNewAnim = prevEnd && !curAnim.isEnd;
+	
+	if (curAnim.isEnd) {
+		PushStyleVar(ImGuiStyleVar_Alpha, 100.f);
+		return true;
+	}
+		
+	if (isNewAnim) {
+		curAnim.startTime = GetTime();
+	}
+
+	if (!curAnim.isEnd) {
+		auto endTime = curAnim.startTime + duration / 100.f;
+		auto delta = endTime - GetTime();
+		int procentage = delta / (endTime / 100.f);
+		
+		if (procentage >= 100) {
+			curAnim.isEnd = true;
+			PushStyleVar(ImGuiStyleVar_Alpha, procentage / 100.f);
+			return true;
+		}
+		
+		PushStyleVar(ImGuiStyleVar_Alpha, procentage / 100.f);
+		curAnim.isEnd = false;	
+	}
+	
+	return false;
+}
+
+void ImGui::EndFadeAnimation()
+{
+
+	PopStyleVar();
 }

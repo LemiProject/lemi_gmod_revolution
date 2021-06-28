@@ -22,6 +22,7 @@
 #include "../render_system/render_system.h"
 #include "../utils/hack_utils.h"
 #include "../utils/game_utils.h"
+#include "../utils/input_system.h"
 
 #include "imgui/imgui_impl_dx9.h"
 
@@ -841,8 +842,7 @@ void frame_stage_notify_hook::hook(c_client* client, void* edx, int stage) {
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param) {
-	/*	if (settings::states["lua::hack_hooks"])
-			lua::hook_call("LWndProcHook");*/
+	//input_system::process_binds();
 
 	if (message_type == WM_CLOSE) {
 		hack_utils::shutdown_hack();

@@ -10,6 +10,8 @@
 
 #include <fmt/format.h>
 
+#include "../utils/input_system.h"
+
 settings::json json_settings;
 
 std::string get_file_content(std::string_view path)
@@ -121,16 +123,31 @@ void settings::init_config_system()
 bool settings::get_bind_state(const std::string& name, bool may_be_null)
 {
 	auto key = binds[name];
-	if (may_be_null)
-		return GetAsyncKeyState(key) || key == 0;
+
+	if (!may_be_null) {
+		if (key == 0)
+			return false;
+		return GetAsyncKeyState(key);
+	}
+
+	if (key <= 0)
+		return true;
 	return GetAsyncKeyState(key);
 }
 
 bool settings::get_bind_state(uint32_t bind, bool may_be_null)
 {
-	if (may_be_null)
-		return GetAsyncKeyState(bind) || bind == 0;
-	return GetAsyncKeyState(bind);
+	auto key = bind;
+
+	if (!may_be_null) {
+		if (key == 0)
+			return false;
+		return GetAsyncKeyState(key);
+	}
+
+	if (key <= 0)
+		return true;
+	return GetAsyncKeyState(key);
 }
 
 int settings::lua_api::lua_api_get_hack_var__Imp(c_lua_interface* lua)

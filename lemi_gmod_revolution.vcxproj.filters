@@ -204,9 +204,6 @@
     <ClInclude Include="src\features\menu\windows\tabs_contents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\settings\settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="deps\include\color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -306,10 +303,13 @@
     <ClInclude Include="src\features\aim\spreads\fas2nospread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="deps\include\bind_system.h">
+    <ClInclude Include="src\features\menu\windows\imoverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\features\menu\windows\imoverlay.h">
+    <ClInclude Include="src\settings\settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\input_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -392,9 +392,6 @@
     <ClCompile Include="src\utils\netvars.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\settings\settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="deps\include\imgui\imgui_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -450,6 +447,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\features\menu\windows\imoverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\settings\settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\input_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
