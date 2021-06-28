@@ -27,7 +27,7 @@ namespace ImGui
 		CustomColor_t(const ImVec4& col) : color(col), active(col), hovered(col) {}
 		CustomColor_t(const ImVec4& color, const ImVec4& hovered, const ImVec4& active) : color(color), active(active), hovered(hovered) {}
 	};
-
+	
 	IMGUI_API void BorderPrevItem(const ImVec4& color = {1, 0, 0, 1});
 	
 	IMGUI_API void FullscreenNextWindow();
@@ -68,4 +68,10 @@ namespace ImGui
 
 	IMGUI_API bool ImGuiSaveStyle(std::string& to, const ImGuiStyle& style);
 	IMGUI_API bool ImGuiLoadStyle(const std::string& from, ImGuiStyle& style);
+
+
+	/// <returns>True, if animation is end</returns>
+	/// <param name="duration">Duration in milliseconds</param>
+	IMGUI_API bool BeginFadeAnimation(const std::string& animationId, float duration, float startValue = 0.f, float endValue = 1.f);
+	IMGUI_API void EndFadeAnimation();
 }

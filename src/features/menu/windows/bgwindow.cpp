@@ -521,11 +521,19 @@ void draw_glua_loader()
 
 void bg_window::draw()
 {
+	static int frame_count = 0;
+	
 	int w, h;
 	interfaces::engine->get_screen_size(w, h);
-	ImGui::SetNextWindowPos(ImVec2(0.f, 0.f), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(0.f, 2.f), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(w + 2, h), ImGuiCond_Always);
 
+	c_color border_color_left = color_from_hsv((int)((float)frame_count * 0.02f) % 360, 1, 1);
+	c_color border_color_right = color_from_hsv((int)((float)frame_count * 0.05f) % 360, 1, 1);
+
+	ImGui::GetBackgroundDrawList()->AddRectFilledMultiColor({ 0, 0 }, { (float)w, 2 }, border_color_left.get_u32(), border_color_right.get_u32(),
+		border_color_right.get_u32(), border_color_left.get_u32());
+	
 	ImGui::Begin("##BGWINDOW", nullptr,
 	             ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
 	             ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar);
@@ -561,6 +569,7 @@ void bg_window::draw()
 		
 		ImGui::EndMenuBar();
 	}
+	
 	auto menu_size = ImGui::GetItemRectSize();
 	
 	
@@ -624,6 +633,7 @@ void bg_window::draw()
 	if (show_glua_loader)
 		draw_glua_loader();
 
-	
+
+	frame_count++;
 	//ImGui::ShowDemoWindow();
 }
