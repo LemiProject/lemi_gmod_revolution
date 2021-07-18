@@ -12,6 +12,8 @@ namespace menu
 	void init();
 	void draw();
 
+	inline float menu_alpha = 0.f;
+	
 	namespace lua_ui_api
 	{
 		inline std::map<std::string, std::string> widgets;

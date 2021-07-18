@@ -184,6 +184,13 @@ void menu_tabs_content::draw_hvh()
 			}
 			EndCombo();
 		}
+
+		Spacing();
+
+		internal::text_and_toggle_button("LegitAA", "##LEGITAA", &states["hvh::legit_aa"]);
+		internal::set_tooltip("Set yours viewangles +- 90 on client");
+		Hotkey("LegitAA change side", &binds["hvh::legit_aa_side"]);
+		
 	}
 	EndGroupPanel();
 	

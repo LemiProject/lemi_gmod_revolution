@@ -50,9 +50,10 @@ void movement::bunny_hop::run_auto_strafe(c_user_cmd& cmd)
     if (local_player->get_move_type() == (int)e_move_type::ladder)
         return;
 
+	
     if (!(cmd.buttons & IN_JUMP) || !(local_player->get_flags() & (1 << 0)))
         return;
-
+	
     c_vector view_angles;
     interfaces::engine->get_view_angles(view_angles);
 
@@ -75,4 +76,32 @@ void movement::bunny_hop::run_auto_strafe(c_user_cmd& cmd)
 
     cmd.forwardmove = (cos_rot * cmd.forwardmove) - (sin_rot * cmd.sidemove);
     cmd.sidemove = (sin_rot * cmd.forwardmove) + (cos_rot * cmd.sidemove);
+
+    /*static bool direction = true;
+	
+    float bhop_yaw = 0.f;
+    if (local_player->get_velocity().length() > 50.f) {
+        float x = 30.f, y = local_player->get_velocity().length(), z = 0.f, a = 0.f;
+        z = x / y;
+        z = fabs(z);
+        a = x * z;
+
+        bhop_yaw = a;
+    }
+
+	
+    if (direction) {
+        cmd.viewangles[math::yaw] -= bhop_yaw;
+        cmd.viewangles[math::yaw] = math::normalize_angle(cmd.viewangles[math::yaw]);
+        cmd.sidemove = -400.f;
+        direction = false;
+    } else {
+        cmd.viewangles[math::yaw] += bhop_yaw;
+        cmd.viewangles[math::yaw] = math::normalize_angle(cmd.viewangles[math::yaw]);
+        cmd.sidemove = 400.f;
+        direction = true;
+    }*/
+	
+    if (cmd.mousedx != 0)
+		cmd.sidemove = cmd.mousedx < 0 ? -450.f : 450.f;
 }

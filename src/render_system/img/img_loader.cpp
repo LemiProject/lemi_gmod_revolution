@@ -20,6 +20,10 @@ c_image::~c_image()
 {
 }
 
+voic c_image::initialize_dx() {
+	
+}
+
 void c_image::resize(const int w, const int h)
 {
 	stbir_resize_uint8(reinterpret_cast<unsigned char*>(data.data()), width, height, 0, reinterpret_cast<unsigned char*>(&data[0]), w, h, 0, format == rgb ? 3 : 4);

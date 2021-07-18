@@ -116,7 +116,12 @@ namespace settings
 			default: return "";
 			}
 		}
-		
+
+		enum class legit_aa_side : uint32_t
+		{
+			right,
+			left
+		};
 	}
 	
 	namespace other
@@ -188,9 +193,10 @@ namespace settings
 		//HVH
 		{"hvh::anti_aims", false},
 		{"hvh::fake_lags", false},
+		{"hvh::legit_aa", false},
 	};
 	
-	inline std::map<std::string, float> values {
+	inline std::map<std::string, float> values{
 		// Player ESP
 		{"visuals::esp_distance_player", 20000.f},
 		{"visuals::esp_box_type_player", (float)visuals::e_esp_box_type::bounding},
@@ -208,11 +214,12 @@ namespace settings
 		{"world::third_person_distance", 0.f},
 		{"world::free_camera_speed", 1.f}, //1 - 10
 		{"world::fov", 0.f},
-		
+
 		//HVH
 		{"hvh::yaw_type", 0},
 		{"hvh::pitch_type", 0},
-		{"hvh::fake_lags_value", 0}
+		{"hvh::fake_lags_value", 0},
+		{"hvh::legit_aa_side", 0},
 	};
 	
 	inline std::map<std::string, std::string> strings {
@@ -236,7 +243,8 @@ namespace settings
 		{"world::free_camera_key", 0},
 		
 		//HVH
-		{"hvh::fake_duck", 0}
+		{"hvh::fake_duck", 0},
+		{"hvh::legit_aa_side", 0},
 	};
 
 	inline std::map<std::string, int> flags {

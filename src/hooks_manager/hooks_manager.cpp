@@ -262,7 +262,6 @@ void override_view_hook::hook(c_view_setup* setup) {
 		if (globals::local_player_states::is_fake_duck)
 			setup->origin.z = get_local_player()->get_origin().z + get_local_player()->get_view_offset(false).z;
 			
-
 	original(interfaces::client_mode, setup);
 }
 
@@ -334,48 +333,46 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	auto old_cmd = *cmd;
 	globals::game_data::last_cmd = old_cmd;
 
-	if (movement::free_cam::is_in_free_cam)
-		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles;
+	auto should_null_cmd = settings::states["world::free_camera"];
+	
+	if (!should_null_cmd) {
+		movement::run_movement(*cmd);
 
-	movement::run_movement(*cmd);
+		engine_prediction.start(cmd, lp);
+		{
+			aim::run_aimbot(cmd);
 
-	engine_prediction.start(cmd, lp);
-	{
-		aim::run_aimbot(cmd);
+			if (settings::states["aim_bot::aim_bot_trigger_bot"] && settings::get_bind_state(
+				"aim_bot::aim_bot_trigger_bot_key")) {
+				trace_t tr;
+				game_utils::trace_view_angles(tr, cmd->viewangles);
+				if (tr.m_pEnt) {
+					if (reinterpret_cast<c_base_player*>(tr.m_pEnt)->is_player()) {
+						auto ply = (c_base_player*)tr.m_pEnt;
 
-		if (settings::states["aim_bot::aim_bot_trigger_bot"] && settings::get_bind_state(
-			"aim_bot::aim_bot_trigger_bot_key")) {
-			trace_t tr;
-			game_utils::trace_view_angles(tr, cmd->viewangles);
-			if (tr.m_pEnt) {
-				if (reinterpret_cast<c_base_player*>(tr.m_pEnt)->is_player()) {
-					auto ply = (c_base_player*)tr.m_pEnt;
-
-					if (ply->is_alive() && game_utils::pass_aimbot_filters(ply))
-						cmd->buttons |= IN_ATTACK;
+						if (ply->is_alive() && game_utils::pass_aimbot_filters(ply))
+							cmd->buttons |= IN_ATTACK;
+					}
 				}
 			}
+
+			aim::anti_recoil_and_spread(cmd);
 		}
+		engine_prediction.end();
 
-		aim::anti_recoil_and_spread(cmd);
+		auto weapon = get_primary_weapon(lp);
+		if (weapon)
+			if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() >= interfaces::global_vars->
+				curtime)
+				if (cmd->buttons & IN_ATTACK)
+					cmd->buttons &= ~IN_ATTACK;
 	}
-	engine_prediction.end();
 
-	auto weapon = get_primary_weapon(lp);
-	if (weapon)
-		if (settings::states["other::rapid_fire"] && weapon->get_next_primary_attack() >= interfaces::global_vars->
-			curtime)
-			if (cmd->buttons & IN_ATTACK)
-				cmd->buttons &= ~IN_ATTACK;
-
-	if (movement::free_cam::is_in_free_cam)
-		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles;
-
+	if (should_null_cmd)
+		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles, cmd->impulse = 0;
+	
 	original(interfaces::client_mode, frame_time, cmd);
-
-	if (movement::free_cam::is_in_free_cam)
-		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f, cmd->viewangles = old_cmd.viewangles;
-
+	
 	{
 		static auto spawn_time = 0.f;
 		static auto should_undo = false;
@@ -424,16 +421,23 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	}
 
 	{
+		static auto cc = 0;
+		if (input_system::is_key_just_pressed(settings::binds["hvh::legit_aa_side"], 20) && settings::states["hvh::legit_aa"] && cc > 20) {
+			settings::values["hvh::legit_aa_side"] = !settings::values["hvh::legit_aa_side"]; //if right = 0 and left = 1 :)
+			cc = 0;
+		}
+		cc++;
+		
 		static auto tick_counter = 0;
 		static auto should_send = false;
 		static q_angle old_ang;
 
 		old_ang = cmd->viewangles;
 		
-		if (settings::other::legit_aa && !(cmd->buttons & IN_ATTACK) && !lp->is_speaking()) {
+		if (settings::states["hvh::legit_aa"] && !(cmd->buttons & IN_ATTACK) && !lp->is_speaking()) {
 			if (settings::states["hvh::fake_lags"]) {
 				if (!globals::local_player_states::is_fake_lag)
-					cmd->viewangles.y += 90.f;
+					cmd->viewangles.y += (settings::hvh::legit_aa_side)settings::values["hvh::legit_aa_side"] == settings::hvh::legit_aa_side::right ? -90.f : 90.f;
 				else
 					cmd->viewangles = old_ang;
 			} else {
@@ -443,7 +447,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 				if (should_send)
 					send_packets_helper.set_force(true), cmd->viewangles = old_ang;
 				else
-					send_packets_helper.set_force(false), cmd->viewangles.y += 90.f;
+					send_packets_helper.set_force(false), cmd->viewangles.y += (settings::hvh::legit_aa_side)settings::values["hvh::legit_aa_side"] == settings::hvh::legit_aa_side::right ? -90.f : 90.f;
 			}
 		}
 	}
@@ -483,7 +487,13 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 				spawn_time = interfaces::engine->get_last_time_stamp();
 	}
 
+	send_packets_helper.apply(send_packets);
+	
 	globals::local_player_states::viewangles = cmd->viewangles;
+	if (settings::states["hvh::legit_aa"] && !(cmd->buttons & IN_ATTACK) && !lp->is_speaking() && send_packets) {
+		globals::local_player_states::viewangles.y += (settings::hvh::legit_aa_side)settings::values["hvh::legit_aa_side"] == settings::hvh::legit_aa_side::right ? -90.f : 90.f;
+	}
+	
 	globals::local_player_states::velocity = lp->get_velocity();
 	globals::local_player_states::position = lp->get_origin();
 
@@ -526,8 +536,7 @@ bool create_move_hook::hook(float frame_time, c_user_cmd* cmd) {
 	
 	//if (globals::local_player_states::in_third_person)
 	//get_local_player()->get_angles() = { 0, 0, 0 };
-	
-	send_packets_helper.apply(send_packets);
+
 	
 	if (settings::states["aim_bot::aim_bot_silent_aim"])
 		return !settings::states["aim_bot::aim_bot_silent_aim"];
@@ -842,8 +851,9 @@ void frame_stage_notify_hook::hook(c_client* client, void* edx, int stage) {
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param) {
-	//input_system::process_binds();
-
+	input_system::on_windpoc(message_type, w_param, l_param);
+	input_system::process_binds();
+	
 	if (message_type == WM_CLOSE) {
 		hack_utils::shutdown_hack();
 		return true;

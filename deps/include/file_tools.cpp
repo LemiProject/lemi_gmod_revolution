@@ -46,7 +46,7 @@ void file_tools::read_file(std::string& out, const std::string& path)
 
 std::string file_tools::get_hack_directory()
 {
-	auto documents = sago::getDocumentsFolder();
+	auto documents = sago::getDataHome();
 	filesystem::path path(documents);
 	path.append("LemiProject");
 
@@ -64,7 +64,7 @@ std::string file_tools::get_hack_directory()
 
 std::filesystem::path file_tools::get_hack_directory_path()
 {
-	auto documents = sago::getDocumentsFolder();
+	auto documents = sago::getDataHome();
 	filesystem::path path(documents);
 	path.append("LemiProject");
 

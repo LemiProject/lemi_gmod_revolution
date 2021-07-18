@@ -256,10 +256,10 @@ public:
 class c_local_player : public c_base_player
 {
 public:
-	//TODO: Fix this
-	/*bool is_speaking()
+	//TODO: FIX THIS
+	/*bool is_local_player_speaking()
 	{
-		using getm_fn = c_voice_status * (__stdcall*)();
+		/*using getm_fn = c_voice_status * (__cdecl*)();
 		static getm_fn get_voice_status;
 		if (!get_voice_status)
 			get_voice_status = (getm_fn)(memory_utils::pattern_scanner("client.dll", "E8 ? ? ? ? 8B C8 E8 ? ? ? ? EB 16") + 1);
@@ -268,10 +268,8 @@ public:
 		static islps_fn is_lp_sp;
 		if (!is_lp_sp)
 			is_lp_sp = (islps_fn)memory_utils::pattern_scanner("client.dll", "8A 41 55");
-
-		auto voice = get_voice_status();
 		
-		return is_lp_sp(voice);
+		return is_lp_sp(get_voice_status());#1#
 	}*/
 
 	/// <summary>
@@ -288,7 +286,7 @@ public:
 		f(this, type, str.c_str());
 	}
 
-	c_vector get_view_offset(bool duck = true)
+	c_vector get_view_offset(bool duck = true) //IDA moment...
 	{
 		c_vector tmp;
 		auto out = interfaces::game_movement->get_player_view_offset(tmp, duck);

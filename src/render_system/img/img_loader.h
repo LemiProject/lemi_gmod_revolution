@@ -12,6 +12,7 @@ class c_image
 {
 private:
 	uint32_t width, height;
+	uintptr_t id;
 	std::vector<char> data;
 	e_img_format format;
 
@@ -26,7 +27,9 @@ public:
 	[[nodiscard]] const std::vector<char>& get_data() const { return data; }
 	void get_data(std::vector<char>& _data) const { _data = this->data; }
 
-	void resize(int w, int h);
+	uintptr_t get_id();
+
+	void initialize_dx();
 };
 
 

@@ -19,6 +19,12 @@
 
 bool is_open = false;
 
+constexpr auto animation_speed = 4.f;
+
+_forceinline auto animation_add() {
+	return ImGui::GetIO().DeltaTime * animation_speed;
+}
+
 void menu::toggle_menu()
 {
 	is_open = !is_open;
@@ -26,12 +32,13 @@ void menu::toggle_menu()
 
 bool menu::menu_is_open()
 {
-	return is_open;
+	return is_open || menu_alpha > 0.f;
 }
 
 void menu::set_open_state(const bool state)
 {
 	is_open = state;
+	menu_alpha = state ? 1.f : 0.f;
 }
 
 void menu::init()
@@ -88,33 +95,19 @@ float startAnimTime;
 
 void menu::draw()
 {
-	if (is_open)
+	if (menu_is_open())
 	{
 		//interfaces::input_system->enable_input(true);
 
 		if (!interfaces::surface->is_cursor_visible())
 			ImGui::GetIO().MouseDrawCursor = true;
 
-		float alpha = 1.f;
-
-		auto current_time = interfaces::engine->get_time_stamp_from_start();
+		if (is_open)
+			menu_alpha = ImMin(menu_alpha + animation_add(), 1.f);
+		else
+			menu_alpha = ImMax(menu_alpha - animation_add(), 0.f);
 		
-		if (!last_is_open) {
-			startAnimTime = current_time;
-		}
-
-		if (startAnimTime + 2.f >= current_time) {
-			auto endTime = startAnimTime + 2.f;
-			auto delta = endTime - current_time;
-			auto fullDelta = endTime - startAnimTime;
-
-			if (fullDelta - delta > 1)
-				alpha = std::clamp(fullDelta - delta / 100, 0.f, 1.f);
-			else
-				alpha = std::clamp(fullDelta - delta, 0.f, 1.f);
-		}
-		
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, menu_alpha);
 		
 		bg_window::draw();
 		main_window::draw();
